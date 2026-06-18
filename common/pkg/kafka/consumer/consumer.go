@@ -83,7 +83,6 @@ func (c *Consumer) consumeTopic(
 			return
 		default:
 		}
-		c.logger.Infof("ABOUT TO READ MESSAGE topic=%s", topic)
 
 		msg, err := reader.ReadMessage(ctx)
 		if err != nil {
@@ -95,20 +94,13 @@ func (c *Consumer) consumeTopic(
 			c.logger.Printf("fetch error topic=%s err=%v\n", topic, err)
 			continue
 		}
-		c.logger.Infof("RECEIVED MESSAGE topic=%s key=%s value=%s", topic, string(msg.Key), string(msg.Value))
-		c.logger.Infof("READ SUCCESS topic=%s key=%s value_size=%d", topic, string(msg.Key), len(msg.Value))
 
 		c.logger.Infof("HANDLER START topic=%s key=%s", topic, string(msg.Key))
-		start := time.Now()
-		c.logger.Infof("ABOUT TO CALL HANDLER topic=%s key=%s value_size=%d", topic, string(msg.Key), len(msg.Value))
+
 		if err := handler(ctx, msg.Value); err != nil {
 			c.logger.Errorf("HANDLER FAILED topic=%s err=%v payload=%s", topic, err, string(msg.Value))
 			continue
 		}
-
-		c.logger.Infof("HANDLER SUCCESS topic=%s key=%s duration=%s", topic, string(msg.Key), time.Since(start))
-
-		c.logger.Infof("HANDLING message topic=%s key=%s", topic, string(msg.Key))
 
 		if err := reader.CommitMessages(ctx, msg); err != nil {
 			if ctx.Err() != nil {
