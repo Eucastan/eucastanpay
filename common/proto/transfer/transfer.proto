@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package transfer;
+
+option go_package = "github.com/Eucastan/eucastanpay/common/proto/transfer";
+
+import "google/protobuf/timestamp.proto";
+
+service TransferService {
+  rpc ReverseTransfer (ReverseRequest) returns (ReverseResponse);
+  rpc ReconcileAccount (ReconcileAccountRequest) returns (ReconcileAccountResponse);
+  rpc GetAllTransfers(ListTransfersRequest) returns (ListTransfersResponse);
+}
+
+message Transfer {
+	string transfer_id = 1;
+	string reference = 2;
+	string step = 3;
+	string from_acc_id = 4;
+	int64 from_acc_no = 5;
+	string to_acc_id = 6;
+	int64 to_acc_no = 7;
+	int64 amount = 8;
+	string description = 9;
+	string idempotency_key = 10;
+	string type = 11;
+	string status = 12;
+	string mode = 13;
+	string reversal_ref = 14;
+    bool is_reversed = 15;
+	int64 from_balance_after = 16;
+	int64 to_balance_after = 17;
+	google.protobuf.Timestamp created_at = 18;
+	google.protobuf.Timestamp updated_at = 19;
+}
+
+message ListTransfersRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message ListTransfersResponse {
+  repeated Transfer transfers = 1;
+}
+
+message ReverseRequest {
+  string user_id = 1;
+  string reference = 2;
+  string idempotency_key = 3;
+  string admin_id = 4;
+}
+
+message ReverseResponse {
+  string status = 1;
+}
+
+message ReconcileAccountRequest {
+  string account_id = 1;
+  int64 account_no = 2;
+}
+
+message ReconcileAccountResponse {
+  string status = 1;
+  bool valid = 2;
+}
