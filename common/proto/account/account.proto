@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package account;
+
+option go_package = "github.com/Eucastan/eucastanpay/common/proto/account";
+
+import "google/protobuf/timestamp.proto";
+
+service AccountService {
+    rpc Credit(GetCreditRequest) returns (GetCreditResponse);
+    rpc Debit(GetDebitRequest) returns (GetDebitResponse);
+    rpc GetUserAccount(GetUserAccountRequest) returns (GetAccountResponse);
+    rpc GetBalance(GetBalanceRequest) returns (GetAccountResponse);
+    rpc GetAllAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+	rpc ActionOnAccount(ActionRequest) returns (ActionResponse);
+}
+
+message Account {
+	string account_id = 1;
+	string user_id = 2;
+	int64  account_no = 3;
+	int64  balance = 4;
+	string account_type = 5;
+	string currency = 6;
+	google.protobuf.Timestamp created_at = 7;
+	google.protobuf.Timestamp updated_at = 8;
+}
+
+message ListAccountsRequest {
+    string account_id = 1;
+	string user_id = 2;
+	int64  account_no = 3;
+	int64  balance = 4;
+	string account_type = 5;
+	string currency = 6;
+	google.protobuf.Timestamp created_at = 7;
+	google.protobuf.Timestamp updated_at = 8;
+}
+
+message ListAccountsResponse {
+    repeated Account accounts = 1;
+}
+
+message GetCreditRequest {
+    string id = 1;
+    int64 account_no = 2;
+    int64 amount = 3;
+}
+
+message GetDebitRequest {
+    string id = 1;
+    int64 account_no = 2;
+    int64 amount = 3;
+}
+
+message GetCreditResponse {
+    string message = 1;
+}
+
+message GetDebitResponse {
+    string message = 1;
+}
+
+message GetUserAccountRequest {
+	string AccountId = 1;
+    string user_id = 2;
+}
+
+message GetBalanceRequest {
+    string id = 1;
+    int64 account_no = 2;
+}
+
+message GetAccountResponse {
+    string id = 1;
+	string user_id = 2;
+	int64 account_no = 3;
+	int64 balance = 4;
+	string account_type = 5;
+	string currency = 6;
+}
+
+message ActionRequest {
+	string account_id = 1;
+	string status = 2;
+	int64 account_no = 3;
+}
+
+message ActionResponse {
+	string message = 1;
+}
