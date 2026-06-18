@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package audit;
+
+option go_package = "github.com/Eucastan/eucastanpay/common/proto/audit";
+
+service AuditService {
+  rpc SearchAudit (SearchRequest) returns (SearchResponse);
+  rpc GetAuditByID (GetByIDRequest) returns (AuditEntry);
+}
+
+message SearchRequest {
+  string correlation_id = 1;
+  string reference       = 2;
+  string event_type      = 3;
+  int64  min_amount      = 4;
+  int64  max_amount      = 5;
+  int64  from_date       = 6;  // Unix timestamp
+  int64  to_date         = 7;  // Unix timestamp
+  int32  limit           = 8;
+  int32  offset          = 9;
+}
+
+message SearchResponse {
+  repeated AuditEntry entries = 1;
+  int32 total_count           = 2;
+}
+
+message GetByIDRequest {
+  string id = 1;
+}
+
+message AuditEntry {
+  string id              = 1;
+  string event_type      = 2;
+  string service         = 3;
+  string correlation_id  = 4;
+  string reference       = 5;
+  string account_id      = 6;
+  string user_id         = 7;
+  int64  amount          = 8;
+  string status          = 9;
+  string payload         = 10;   // JSON string
+  int64  created_at      = 11;   // Unix timestamp
+}
