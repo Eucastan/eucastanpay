@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/Eucastan/eucastanpay/common/proto/user";
+
+import "google/protobuf/timestamp.proto";
+
+service UserService {
+    rpc GetUserByID(GetUserByIDRequest) returns (UserResponse);
+    rpc GetAllUsers(ListUsersRequest) returns (ListUsersResponse);
+	rpc ActionOnUser(ActionRequest) returns (ActionResponse);
+}
+
+message User {
+	string user_id = 1;
+	string email = 2;
+	string phone = 3;
+	string first_name = 4;
+	string last_name = 5;
+	string date_of_birth = 6;
+	string status = 7;
+	bool   email_verified = 8;
+	google.protobuf.Timestamp created_at = 9;
+	google.protobuf.Timestamp updated_at = 10;
+}
+
+message GetUserByIDRequest {
+    string user_id = 1;
+}
+
+message UserResponse {
+    string user_id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string kyc_status = 5;
+}
+
+message ListUsersRequest {
+    string user_id = 1;
+	string email = 2;
+	string phone = 3;
+	string first_name = 4;
+	string last_name = 5;
+	string date_of_birth = 6;
+	string status = 7;
+	bool   email_verified = 8;
+	google.protobuf.Timestamp created_at = 9;
+	google.protobuf.Timestamp updated_at = 10;
+}
+
+message ListUsersResponse {
+    repeated User users = 1;
+}
+
+message ActionRequest {
+	string user_id = 1;
+	string status = 2;
+}
+
+message ActionResponse {
+	string message = 1;
+}
