@@ -12,6 +12,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/idempotency"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
+	"github.com/Eucastan/eucastanpay/common/pkg/healthcheck"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/consumer"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
@@ -52,7 +53,10 @@ func main() {
 	accRepo := postgres.NewAccountRepository(db.DB)
 	accUseCase := service.NewAccountUseCase(accRepo, publisher)
 
-	go worker.StartOutboxWorker(context.Background(), db.DB, publisher, log)
+	appCtx, appCancel := context.WithCancel(context.Background())
+	defer appCancel()
+
+	go worker.StartOutboxWorker(appCtx, db.DB, publisher, log)
 
 	accountConsumer := eventhandler.NewAccountConsumer(accRepo, accUseCase, idempotencyStore, publisher, log)
 
@@ -84,14 +88,24 @@ func main() {
 		),
 	)
 
-	consumerInit.Start(context.Background())
+	consumerInit.Start(appCtx)
 
 	accHandler := handler.NewAccountHandler(accUseCase)
+
+	// Health check init
+	healthChecker := healthcheck.NewHealthChecker("account-service", cfg.Version, log)
+	healthChecker.SetDatabase(db.DB)
+	healthChecker.SetKafkaProducer(publisher)
+	// healthChecker.AddGRPCClient("account-service", allClients.ConnAccount)
 
 	r := gin.Default()
 	mw := middleware.New(log, cfg.JWTSecret)
 	r.Use(mw.Logger(), mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
+
+	r.GET("/health", healthChecker.Health)
+	r.GET("/live", healthChecker.Liveness)
+	r.GET("/ready", healthChecker.Readiness)
 
 	api.NewRouter(r, accHandler, cfg)
 
@@ -103,7 +117,7 @@ func main() {
 	// gRPC Server (inter-service)
 	listenAddr, err := net.Listen("tcp", ":"+cfg.GRPCPort)
 	if err != nil {
-		log.WithError(err).Error("gRPC server failed to listen for connection")
+		log.WithError(err).Fatal("gRPC server failed to listen for connection")
 	}
 
 	defer listenAddr.Close()
@@ -135,9 +149,19 @@ func main() {
 
 	log.Info("Shutting down servers...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	appCancel()
 
-	httpSrv.Shutdown(ctx)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer shutdownCancel()
+
+	if err := consumerInit.Close(); err != nil {
+		log.WithError(err).Error("failed to close consumer")
+	}
+
 	grpcSrv.GracefulStop()
+
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+		log.WithError(err).Error("failed to shutdown http server")
+	}
+
 }
