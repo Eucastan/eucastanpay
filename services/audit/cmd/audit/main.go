@@ -10,6 +10,7 @@ import (
 
 	"github.com/Eucastan/eucastanpay/common/idempotency"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
+	"github.com/Eucastan/eucastanpay/common/pkg/healthcheck"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/consumer"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
@@ -48,6 +49,9 @@ func main() {
 	// tracing
 	tracing.InitTracer("audit-service")
 
+	appCtx, appCancel := context.WithCancel(context.Background())
+	defer appCancel()
+
 	// Kafka Consumer
 	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "audit-service-group", log)
 	idempotencyStore := idempotency.NewPostgresStore()
@@ -76,7 +80,7 @@ func main() {
 		))
 	}
 
-	consumerInit.Start(context.Background())
+	consumerInit.Start(appCtx)
 
 	// HTTP Server
 	auditHandler := handler.NewAuditHandler(auditUC)
@@ -86,9 +90,19 @@ func main() {
 	metrics.InitMetrics()
 	r.Use(metrics.MetricsMiddleware())
 
+	// Health check init
+	healthChecker := healthcheck.NewHealthChecker("audit-service", cfg.Version, log)
+	healthChecker.SetDatabase(db.DB)
+	healthChecker.SetKafkaProducer(publisher)
+	// healthChecker.AddGRPCClient("account-service", allClients.ConnAccount)
+
 	mw := middleware.New(log, cfg.JWTSecret)
 	r.Use(mw.Logger(), mw.Recovery(), mw.Auth())
 	r.Use(middleware.CorrelationMiddleware())
+
+	r.GET("/health", healthChecker.Health)
+	r.GET("/ready", healthChecker.Readiness)
+	r.GET("/live", healthChecker.Liveness)
 
 	api.NewRouter(r, auditHandler)
 
@@ -115,10 +129,17 @@ func main() {
 
 	log.Info("Shutting down Audit Service...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	appCancel()
 
-	if err := httpSrv.Shutdown(ctx); err != nil {
+	ShutdownCtx, ShutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer ShutdownCancel()
+
+	if err := consumerInit.Close(); err != nil {
+		log.WithError(err).Error("Audit consumer shutdown error")
+	}
+
+	if err := httpSrv.Shutdown(ShutdownCtx); err != nil {
 		log.WithError(err).Error("HTTP shutdown error")
 	}
+
 }
