@@ -35,11 +35,12 @@ type KafkaConfig struct {
 
 func Load() (*Config, error) {
 	commonconfig.Init()
+	println("DSN =", viper.GetString("DSN"))
+	println("HTTP_PORT =", viper.GetString("HTTP_PORT"))
 
-	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
-		return nil, err
-	}
+	cfg := ToCfg()
+
+	println("cfg.Dsn =", cfg.Dsn)
 
 	brokers := viper.GetString("KAFKA_BROKERS")
 	if brokers != "" {
@@ -58,9 +59,9 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	if err := commonconfig.RequireMinLength("JWT_SECRET", cfg.GRPCPort, 32); err != nil {
+	if err := commonconfig.RequireMinLength("JWT_SECRET", cfg.JWTSecret, 32); err != nil {
 		return nil, err
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
