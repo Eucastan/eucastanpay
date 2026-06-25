@@ -13,6 +13,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpc/clients"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
+	"github.com/Eucastan/eucastanpay/common/pkg/healthcheck"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/consumer"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
@@ -60,8 +61,11 @@ func main() {
 	ledgerRepo := postgres.NewLedgerRepository(db.DB)
 	ledgerUC := service.NewLedgerUseCase(ledgerRepo, clients, log)
 
+	appCtx, appCancel := context.WithCancel(context.Background())
+	defer appCancel()
+
 	idemStore := idempotency.NewPostgresStore()
-	go worker.StartOutboxWorker(context.Background(), db.DB, publisher, log)
+	go worker.StartOutboxWorker(appCtx, db.DB, publisher, log)
 
 	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "ledger-group", log)
 	ledgerConsumer := eventshandler.NewLedgerEventHandler(ledgerRepo, ledgerUC, idemStore, publisher, log)
@@ -76,13 +80,23 @@ func main() {
 		),
 	)
 
-	consumerInit.Start(context.Background())
+	consumerInit.Start(appCtx)
 	ledgerHandler := handler.NewLedgerHandler(ledgerUC)
+
+	// Health check init
+	healthChecker := healthcheck.NewHealthChecker("ledger-service", cfg.Version, log)
+	healthChecker.SetDatabase(db.DB)
+	healthChecker.SetKafkaProducer(publisher)
+	healthChecker.AddGRPCClient("account-service", clients.ConnAccount)
 
 	r := gin.Default()
 	mw := middleware.New(log, cfg.JWTSecret)
 	r.Use(mw.Logger(), mw.Recovery(), mw.Auth())
 	r.Use(middleware.CorrelationMiddleware())
+
+	r.GET("/health", healthChecker.Health)
+	r.GET("/live", healthChecker.Liveness)
+	r.GET("/ready", healthChecker.Readiness)
 
 	api.NewRouter(r, ledgerHandler)
 
@@ -124,9 +138,18 @@ func main() {
 
 	log.Info("Shutting down Ledger Service...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	appCancel()
 
-	httpSrv.Shutdown(ctx)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer shutdownCancel()
+
+	if err := consumerInit.Close(); err != nil {
+		log.WithError(err).Error("Ledger service consumer error")
+	}
+
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+		log.WithError(err).Error("Ledger service shutdown error")
+	}
+
 	grpcServer.GracefulStop()
 }
