@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/healthcheck"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
 	"github.com/Eucastan/eucastanpay/common/pkg/middleware"
@@ -59,15 +60,28 @@ func main() {
 		redis, registerEvent,
 	)
 
-	go worker.StartOutboxWorker(context.Background(), db.DB, publisher, log)
+	appCtx, appCancel := context.WithCancel(context.Background())
+	defer appCancel()
+
+	go worker.StartOutboxWorker(appCtx, db.DB, publisher, log)
 
 	kycHandler := handler.NewKYCHandler(kycUseCase)
 	userHandler := handler.NewUserHandler(userUseCase)
+
+	// Health check init
+	healthChecker := healthcheck.NewHealthChecker("user-service", cfg.Version, log)
+	healthChecker.SetDatabase(db.DB)
+	healthChecker.SetKafkaProducer(publisher)
+	// healthChecker.AddGRPCClient("account-service", allClients.ConnAccount)
 
 	r := gin.New()
 	mw := middleware.New(log, cfg.JWTSecret)
 	r.Use(mw.Recovery(), mw.Logger())
 	r.Use(middleware.CorrelationMiddleware())
+
+	r.GET("/health", healthChecker.Health)
+	r.GET("/live", healthChecker.Liveness)
+	r.GET("/ready", healthChecker.Readiness)
 
 	api.NewRouter(r, userHandler, kycHandler, cfg)
 
@@ -100,9 +114,14 @@ func main() {
 
 	log.Info("Shutting Down User Service")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	appCancel()
 
-	httpSrv.Shutdown(ctx)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer shutdownCancel()
+
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+		log.WithError(err).Error("User service shutdown error")
+	}
+
 	grpcSrv.GracefulStop()
 }
