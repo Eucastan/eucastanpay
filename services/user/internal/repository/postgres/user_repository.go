@@ -80,14 +80,14 @@ func (r *UserRepository) FindAll(ctx context.Context) ([]domain.User, error) {
 
 func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
-	SELECT id, email, Phone, first_name, last_name, password_hash, date_of_birth, status, email_verified, created_at, updated_at
+	SELECT id, email, Phone, first_name, last_name, password_hash, date_of_birth, role, status, email_verified, created_at, updated_at
 	FROM users 
 	WHERE email = $1
 	`
 	user := &domain.User{}
 	err := r.db.QueryRow(ctx, query, email).Scan(
 		&user.ID, &user.Email, &user.Phone, &user.FirstName, &user.LastName,
-		&user.Password, &user.DateOfBirth, &user.Status, &user.EmailVerified,
+		&user.Password, &user.DateOfBirth, &user.Role, &user.Status, &user.EmailVerified,
 		&user.CreatedAt, &user.UpdatedAt,
 	)
 
