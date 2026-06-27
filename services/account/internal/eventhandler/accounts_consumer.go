@@ -36,14 +36,15 @@ func NewAccountConsumer(repo repository.AccountRepository, accUseCase usecase.Ac
 }
 
 func (h *AccountConsumer) OnUserRegistration(ctx context.Context, msg []byte) error {
-	h.logger.Info("USER REGISTRATION MESSAGE:", string(msg))
-
 	var event events.UserRegisteredEvent
 	if err := json.Unmarshal(msg, &event); err != nil {
 		return err
 	}
 
-	h.logger.Info("USER REGISTRATION EVENT:", event)
+	h.logger.WithFields(logrus.Fields{
+		"user_id": event.UserID,
+		"email":   event.Email,
+	}).Info("user registration event")
 
 	return h.Repo.WithTx(ctx, func(tx pgx.Tx) error {
 		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, event.UserID)
@@ -55,13 +56,11 @@ func (h *AccountConsumer) OnUserRegistration(ctx context.Context, msg []byte) er
 		}
 
 		createReq := &request.CreateAccountRequest{
-			AccountNo:   1440000000 + time.Now().UnixNano()%100000,
-			Balance:     1000,
 			AccountType: string(domain.SavingsAccount),
 			Currency:    "NGN",
 		}
 
-		acc, err := h.AccUseCase.CreateAccount(ctx, event.UserID, createReq)
+		acc, err := h.AccUseCase.CreateAccountTX(ctx, tx, event.UserID, createReq)
 		if err != nil {
 
 			failedEvents := events.CreateAccFailedEvent{
@@ -72,6 +71,11 @@ func (h *AccountConsumer) OnUserRegistration(ctx context.Context, msg []byte) er
 			if err := h.Repo.SaveOutboxEvent(ctx, tx, events.TopicCreateAccFailed, event.UserID, failedEvents); err != nil {
 				return err
 			}
+			h.logger.WithFields(logrus.Fields{
+				"correlation_id": failedEvents.CorrelationID,
+				"service":        failedEvents.CausationID,
+				"reason":         failedEvents.Reason,
+			})
 			return err
 		}
 
@@ -87,6 +91,12 @@ func (h *AccountConsumer) OnUserRegistration(ctx context.Context, msg []byte) er
 		if err != nil {
 			return err
 		}
+
+		h.logger.WithFields(logrus.Fields{
+			"user_id":      acc.UserID,
+			"account_id":   acc.ID,
+			"account_type": acc.AccountType,
+		}).Info("user account creation successful")
 
 		return h.IdemStore.MarkEventProcessedTx(
 			ctx,

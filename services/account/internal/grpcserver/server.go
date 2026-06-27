@@ -87,7 +87,9 @@ func (s *AccountServiceServer) GetUserAccount(ctx context.Context, req *account.
 }
 
 func (s *AccountServiceServer) GetBalance(ctx context.Context, req *account.GetBalanceRequest) (*account.GetAccountResponse, error) {
-	resp, err := s.ACC.GetBalance(ctx, req.Id)
+	userID := ctx.Value("user_id")
+
+	resp, err := s.ACC.GetBalance(ctx, req.Id, userID.(string))
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

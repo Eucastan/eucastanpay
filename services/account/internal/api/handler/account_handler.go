@@ -24,14 +24,12 @@ func (h *AccountHandler) OpenAccount(c *gin.Context) {
 
 	userId, ok := c.Get("user_id")
 	if !ok {
-		fmt.Println("user_id missing")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "user ID not found in context"})
 		return
 	}
 
 	userID, ok := userId.(string)
 	if !ok {
-		fmt.Println("Invalid user ID format")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid ID format"})
 		return
 	}
@@ -57,7 +55,13 @@ func (h *AccountHandler) GetBalance(c *gin.Context) {
 
 	accID := c.Param("id")
 
-	resp, err := h.AccUC.GetBalance(ctx, accID)
+	userID, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user ID not found in context"})
+		return
+	}
+
+	resp, err := h.AccUC.GetBalance(ctx, accID, userID.(string))
 	if err != nil {
 		fmt.Printf("GET BALANCE ERROR: %+v\n", err)
 

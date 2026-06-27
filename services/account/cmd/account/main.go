@@ -50,8 +50,8 @@ func main() {
 	idempotencyStore := idempotency.NewPostgresStore()
 	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "account-service-group", log)
 
-	accRepo := postgres.NewAccountRepository(db.DB)
-	accUseCase := service.NewAccountUseCase(accRepo, publisher)
+	accRepo := postgres.NewAccountRepository(db.DB, log)
+	accUseCase := service.NewAccountUseCase(accRepo, log)
 
 	appCtx, appCancel := context.WithCancel(context.Background())
 	defer appCancel()

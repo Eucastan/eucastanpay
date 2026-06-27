@@ -11,6 +11,7 @@ type AccountRepository interface {
 	WithTx(ctx context.Context, fn func(tx pgx.Tx) error) error
 	LockAccount(ctx context.Context, tx pgx.Tx, accID string, accNo int64) (*domain.Account, error)
 	Create(ctx context.Context, tx pgx.Tx, acc *domain.Account) error
+	Exists(ctx context.Context, userID, accType string) (bool, error)
 	FindAll(ctx context.Context) ([]domain.Account, error)
 	FindByID(ctx context.Context, accID string) (*domain.Account, error)
 	FindByIDTX(ctx context.Context, tx pgx.Tx, accID string, accNo int64) (*domain.Account, error)
