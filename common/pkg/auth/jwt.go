@@ -41,9 +41,10 @@ func GenerateAdminAccessToken(adminID, role, secret string) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
-func RefreshToken(userID, role, secret string) (string, error) {
+func RefreshToken(userID, email, role, secret string) (string, error) {
 	claims := &Claims{
 		UserID: userID,
+		Email:  email,
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
