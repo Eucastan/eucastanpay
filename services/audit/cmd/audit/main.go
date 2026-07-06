@@ -97,14 +97,14 @@ func main() {
 	// healthChecker.AddGRPCClient("account-service", allClients.ConnAccount)
 
 	mw := middleware.New(log, cfg.JWTSecret)
-	r.Use(mw.Logger(), mw.Recovery(), mw.Auth())
+	r.Use(mw.Logger(), mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
 
 	r.GET("/health", healthChecker.Health)
 	r.GET("/ready", healthChecker.Readiness)
 	r.GET("/live", healthChecker.Liveness)
 
-	api.NewRouter(r, auditHandler)
+	api.NewRouter(r, auditHandler, cfg)
 
 	httpSrv := &http.Server{
 		Addr:         ":" + cfg.HTTPPort,
