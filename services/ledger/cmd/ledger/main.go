@@ -91,14 +91,14 @@ func main() {
 
 	r := gin.Default()
 	mw := middleware.New(log, cfg.JWTSecret)
-	r.Use(mw.Logger(), mw.Recovery(), mw.Auth())
+	r.Use(mw.Logger(), mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
 
 	r.GET("/health", healthChecker.Health)
 	r.GET("/live", healthChecker.Liveness)
 	r.GET("/ready", healthChecker.Readiness)
 
-	api.NewRouter(r, ledgerHandler)
+	api.NewRouter(r, ledgerHandler, cfg)
 
 	httpSrv := &http.Server{
 		Addr:         ":" + cfg.HTTPPort,
