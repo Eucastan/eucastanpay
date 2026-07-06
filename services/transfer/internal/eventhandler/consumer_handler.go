@@ -2,13 +2,14 @@ package eventhandler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/Eucastan/eucastanpay/common/idempotency"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
+	"github.com/Eucastan/eucastanpay/common/pkg/kafka"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/domain"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/repository"
 	"github.com/google/uuid"
@@ -19,29 +20,41 @@ import (
 type TransferConsumer struct {
 	repo      repository.TransferRepository
 	idemStore idempotency.Store
+	telemetry *telemetry.Telemetry
 	publisher *producer.Publisher
 	logger    *logrus.Logger
 }
 
-func NewTransferConsumer(repo repository.TransferRepository, idemStore idempotency.Store, publisher *producer.Publisher, logger *logrus.Logger) *TransferConsumer {
+func NewTransferConsumer(repo repository.TransferRepository, idemStore idempotency.Store, telemetry *telemetry.Telemetry, publisher *producer.Publisher, logger *logrus.Logger) *TransferConsumer {
 	return &TransferConsumer{
 		repo:      repo,
 		idemStore: idemStore,
+		telemetry: telemetry,
 		publisher: publisher,
 		logger:    logger,
 	}
 }
 
 func (h *TransferConsumer) OnTransferInitiated(ctx context.Context, msg []byte) error {
+	ctx, span := h.telemetry.Start(ctx, "TransferConsumer.OnTransferInitiated")
+	defer span.End()
+
 	h.logger.Info("TRANSFER INITIATED RECEIVED")
-	var event events.TransferInitiatedEvent
-	if err := json.Unmarshal(msg, &event); err != nil {
+
+	event, err := kafka.Decode[events.TransferInitiatedEvent](msg)
+	if err != nil {
 		return err
 	}
+
+	h.logger.WithFields(logrus.Fields{
+		"operation": "OnTransferInitiated",
+		"reference": event.Reference,
+	}).Info("Entering the transactional block")
 
 	return h.repo.WithTx(ctx, func(tx pgx.Tx) error {
 		processed, err := h.idemStore.IsEventProcessedTx(ctx, tx, event.Reference)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
@@ -51,16 +64,17 @@ func (h *TransferConsumer) OnTransferInitiated(ctx context.Context, msg []byte) 
 
 		err = h.repo.SaveOutboxEvent(ctx, tx, events.TopicDebitRequested, event.Reference,
 			events.DebitRequestedEvent{
-				BaseEvent: events.NewBaseEvent(ctx, "transfer-service"),
-				Reference: event.Reference,
-				FromAccID: event.FromAccID,
-				FromAccNo: event.FromAccNo,
-				ToAccID:   event.ToAccID,
-				ToAccNo:   event.ToAccNo,
-				Amount:    event.Amount,
+				EventMetadata: events.NewChildEvent(event.EventMetadata),
+				Reference:     event.Reference,
+				FromAccID:     event.FromAccID,
+				FromAccNo:     event.FromAccNo,
+				ToAccID:       event.ToAccID,
+				ToAccNo:       event.ToAccNo,
+				Amount:        event.Amount,
 			},
 		)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
@@ -69,23 +83,27 @@ func (h *TransferConsumer) OnTransferInitiated(ctx context.Context, msg []byte) 
 }
 
 func (h *TransferConsumer) OnDebitCompleted(ctx context.Context, msg []byte) error {
-	h.logger.Info("TRANSFER DEBIT COMPLETED")
-	var event events.DebitCompletedEvent
-	if err := json.Unmarshal(msg, &event); err != nil {
+	ctx, span := h.telemetry.Start(ctx, "TransferConsumer.OnDebitCompleted")
+	defer span.End()
+
+	event, err := kafka.Decode[events.DebitCompletedEvent](msg)
+	if err != nil {
+		span.RecordError(err)
 		return err
 	}
-	h.logger.Infof("EVENT ENTERED: DebitCompleted reference=%s amount=%d", event.Reference, event.Amount)
+
+	h.logger.WithFields(logrus.Fields{
+		"operation": "OnDebitCompleted",
+		"amount":    event.Amount,
+	}).Infof("Beginning OnDebitCompleted process")
 
 	eventID := fmt.Sprintf("%s:%s", event.Reference, events.TopicDebitCompleted)
 	return h.repo.WithTx(ctx, func(tx pgx.Tx) error {
-		h.logger.Info("CHECKING IDEMPOTENCY")
-
 		processed, err := h.idemStore.IsEventProcessedTx(ctx, tx, eventID)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
-
-		h.logger.Infof("processed=%v", processed)
 
 		if processed {
 			return nil // idempotent
@@ -93,33 +111,36 @@ func (h *TransferConsumer) OnDebitCompleted(ctx context.Context, msg []byte) err
 		h.logger.Infof("IDEMPOTENCY CHECK PASSED reference=%s", eventID)
 
 		h.logger.Info("UPDATING STEP")
-		if err := h.repo.UpdateStep(ctx, tx, event.Reference, domain.StepDebited); err != nil {
+		if err := h.repo.UpdateStep(ctx, tx, event.Reference, string(domain.StepDebited)); err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		h.logger.Info("UPDATING BALANCE")
 		if err := h.repo.UpdateAfterDebit(ctx, tx, event.Reference, event.FromBalanceAfter); err != nil {
+			span.RecordError(err)
 			return err
 		}
-		h.logger.Infof("DB UPDATED AFTER DEBIT reference=%s balance=%d", event.Reference, event.FromBalanceAfter)
 
 		h.logger.Info("FETCHING TRANSFER")
 		transfer, err := h.repo.FindByReference(ctx, tx, event.Reference)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		h.logger.Info("SAVING CREDIT REQUEST")
 		err = h.repo.SaveOutboxEvent(ctx, tx, events.TopicCreditRequested, event.Reference, events.CreditRequestedEvent{
-			BaseEvent: events.NewBaseEvent(ctx, "transfer-service"),
-			Reference: event.Reference,
-			FromAccID: event.FromAccID,
-			FromAccNo: transfer.FromAccNo,
-			ToAccID:   transfer.ToAccID,
-			ToAccNo:   transfer.ToAccNo,
-			Amount:    event.Amount,
+			EventMetadata: events.NewChildEvent(event.EventMetadata),
+			Reference:     event.Reference,
+			FromAccID:     event.FromAccID,
+			FromAccNo:     transfer.FromAccNo,
+			ToAccNo:       transfer.ToAccNo,
+			Amount:        event.Amount,
 		})
+
 		if err != nil {
+			span.RecordError(err)
 			h.logger.WithError(err).Error("FAILED TO SAVE OUTBOX")
 			return err
 		}
@@ -131,23 +152,34 @@ func (h *TransferConsumer) OnDebitCompleted(ctx context.Context, msg []byte) err
 }
 
 func (h *TransferConsumer) OnDebitFailed(ctx context.Context, msg []byte) error {
+	ctx, span := h.telemetry.Start(ctx, "TransferConsumer.OnDebitFailed")
+	defer span.End()
+
 	h.logger.Info("TRANSFER DEBIT FAILED")
-	var event events.DebitFailedEvent
-	if err := json.Unmarshal(msg, &event); err != nil {
+
+	event, err := kafka.Decode[events.DebitFailedEvent](msg)
+	if err != nil {
 		return err
 	}
+
+	h.logger.WithFields(logrus.Fields{
+		"operation": "OnDebitFailed",
+		"reference": event.Reference,
+	}).Info("Processing 'OnDebitFailed' event")
 
 	eventID := fmt.Sprintf("%s:%s", event.Reference, events.TopicDebitFailed)
 	return h.repo.WithTx(ctx, func(tx pgx.Tx) error {
 		processed, err := h.idemStore.IsEventProcessedTx(ctx, tx, eventID)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 		if processed {
 			return nil // idempotent
 		}
-		// update transfer status to failed
+
 		if err := h.repo.UpdateStatus(ctx, tx, event.Reference, string(domain.TransferStatusFailed)); err != nil {
+			span.RecordError(err)
 			return err
 		}
 
@@ -156,41 +188,59 @@ func (h *TransferConsumer) OnDebitFailed(ctx context.Context, msg []byte) error 
 }
 
 func (h *TransferConsumer) OnCreditCompleted(ctx context.Context, msg []byte) error {
+	ctx, span := h.telemetry.Start(ctx, "TransferConsumer.OnCreditCompleted")
+	defer span.End()
+
 	h.logger.Info("TRANSFER CREDIT COMPLETED")
-	var event events.CreditCompletedEvent
-	if err := json.Unmarshal(msg, &event); err != nil {
+
+	event, err := kafka.Decode[events.CreditCompletedEvent](msg)
+	if err != nil {
 		return err
 	}
-	h.logger.Infof("EVENT ENTERED: CreditCompleted reference=%s amount=%d", event.Reference, event.Amount)
+
+	h.logger.WithFields(logrus.Fields{
+		"operation": "OnCreditCompleted",
+		"reference": event.Reference,
+		"amount":    event.Amount,
+	}).Info("Entering 'CreditCompleted' event")
 
 	eventID := fmt.Sprintf("%s:%s", event.Reference, events.TopicCreditCompleted)
 	return h.repo.WithTx(ctx, func(tx pgx.Tx) error {
 		processed, err := h.idemStore.IsEventProcessedTx(ctx, tx, eventID)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 		if processed {
 			return nil // idempotent
 		}
-		h.logger.Infof("IDEMPOTENCY CHECK PASSED reference=%s", eventID)
 
+		h.logger.Info("Before UpdateAfterCredit")
 		if err := h.repo.UpdateAfterCredit(ctx, tx, event.Reference, event.ToBalanceAfter); err != nil {
+			h.logger.WithError(err).Error("failed to update balance after credit")
 			return err
 		}
 
+		h.logger.Info("Before UpdateStep")
+		if err := h.repo.UpdateStep(ctx, tx, event.Reference, string(domain.StepCredited)); err != nil {
+			h.logger.WithError(err).Error("failed to update step after credit")
+			return err
+		}
+
+		h.logger.Info("Before UpdateStatus")
 		if err := h.repo.UpdateStatus(ctx, tx, event.Reference, string(domain.TransferStatusSuccess)); err != nil {
 			return err
 		}
-		h.logger.Infof("DB UPDATED AFTER CREDIT reference=%s balance=%d", event.Reference, event.ToBalanceAfter)
 
+		h.logger.Info("Before FindByReference")
 		transfer, err := h.repo.FindByReference(ctx, tx, event.Reference)
 		if err != nil {
 			return err
 		}
-		h.logger.Infof("PUBLISH CREDIT REQUEST reference=%s", event.Reference)
 
+		h.logger.Info("Before saving to outbox")
 		err = h.repo.SaveOutboxEvent(ctx, tx, events.TopicTransferCompleted, event.Reference, events.TransferCompletedEvent{
-			BaseEvent:        events.NewBaseEvent(ctx, "transfer-service"),
+			EventMetadata:    events.NewChildEvent(event.EventMetadata),
 			TransferID:       transfer.ID,
 			Reference:        event.Reference,
 			UserID:           transfer.UserID,
@@ -202,24 +252,38 @@ func (h *TransferConsumer) OnCreditCompleted(ctx context.Context, msg []byte) er
 			Timestamp:        time.Now().Unix(),
 		})
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
+		h.logger.Info("Successfully saved to outbox for transfer completed event")
+
+		h.logger.Info("Before MarkEventProcessed")
 		return h.idemStore.MarkEventProcessedTx(ctx, tx, uuid.NewString(), eventID, events.TopicCreditCompleted)
 	})
 }
 
 func (h *TransferConsumer) OnCreditFailed(ctx context.Context, msg []byte) error {
+	ctx, span := h.telemetry.Start(ctx, "TransferConsumer.OnCreditFailed")
+	defer span.End()
+
 	h.logger.Info("TRANSFER CREDIT FAILED")
-	var event events.CreditFailedEvent
-	if err := json.Unmarshal(msg, &event); err != nil {
+
+	event, err := kafka.Decode[events.CreditFailedEvent](msg)
+	if err != nil {
 		return err
 	}
+
+	h.logger.WithFields(logrus.Fields{
+		"operation": "OnCreditFailed",
+		"reference": event.Reference,
+	}).Info("Processing 'CreditFailed' event")
 
 	eventID := fmt.Sprintf("%s:%s", event.Reference, events.TopicCreditFailed)
 	return h.repo.WithTx(ctx, func(tx pgx.Tx) error {
 		processed, err := h.idemStore.IsEventProcessedTx(ctx, tx, eventID)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 		if processed {
@@ -228,23 +292,26 @@ func (h *TransferConsumer) OnCreditFailed(ctx context.Context, msg []byte) error
 
 		transfer, err := h.repo.FindByReference(ctx, tx, event.Reference)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		failedEvent := events.ReverseDebitEvent{
-			BaseEvent: events.NewBaseEvent(ctx, "transfer-service"),
-			Reference: transfer.Reference,
-			AccountID: transfer.FromAccID,
-			AccountNo: transfer.FromAccNo,
-			Amount:    transfer.Amount,
+			EventMetadata: events.NewChildEvent(event.EventMetadata),
+			Reference:     transfer.Reference,
+			AccountID:     transfer.FromAccID,
+			AccountNo:     transfer.FromAccNo,
+			Amount:        transfer.Amount,
 		}
 
 		// reverse debit
-		if err = h.repo.SaveOutboxEvent(ctx, tx, events.TopicCreditFailed, event.Reference, failedEvent); err != nil {
+		if err = h.repo.SaveOutboxEvent(ctx, tx, events.TopicDebitReverse, event.Reference, failedEvent); err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		if err := h.repo.UpdateStatus(ctx, tx, event.Reference, string(domain.TransferStatusFailed)); err != nil {
+			span.RecordError(err)
 			return err
 		}
 
@@ -253,28 +320,41 @@ func (h *TransferConsumer) OnCreditFailed(ctx context.Context, msg []byte) error
 }
 
 func (h *TransferConsumer) OnDebitReverseCompleted(ctx context.Context, msg []byte) error {
+	ctx, span := h.telemetry.Start(ctx, "TransferConsumer.OnDebitReverseCompleted")
+	defer span.End()
+
 	h.logger.Info("TRANSFER DEBIT REVERSE COMPLETED")
-	var event events.ReverseDebitEvent
-	if err := json.Unmarshal(msg, &event); err != nil {
+
+	event, err := kafka.Decode[events.ReverseDebitEvent](msg)
+	if err != nil {
+		span.RecordError(err)
 		return err
 	}
+
+	h.logger.WithFields(logrus.Fields{
+		"operation": "OnDebitReverseCompleted",
+		"reference": event.Reference,
+		"amount":    event.Amount,
+	}).Info("Processing 'OnDebitReverseCompleted' event")
 
 	eventID := fmt.Sprintf("%s:%s", event.Reference, events.TopicDebitReverseCompleted)
 	return h.repo.WithTx(ctx, func(tx pgx.Tx) error {
 		processed, err := h.idemStore.IsEventProcessedTx(ctx, tx, eventID)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 		if processed {
 			return nil // idempotent
 		}
 
-		// mark transfer as reversed
 		if err := h.repo.UpdateStatus(ctx, tx, event.Reference, string(domain.TransferStatusReversing)); err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		if err := h.repo.MarkAsReversed(ctx, tx, event.Reference); err != nil {
+			span.RecordError(err)
 			return err
 		}
 

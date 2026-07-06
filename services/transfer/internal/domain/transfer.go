@@ -4,12 +4,11 @@ import (
 	"time"
 )
 
-type TransferType string
+type TransferDirection string
 
 const (
-	TransferTypeDebit   TransferType = "debit"
-	TransferTypeCredit  TransferType = "credit"
-	TransferTypeReverse TransferType = "reverse"
+	TransferDir TransferDirection = "transfer"
+	ReverseDir  TransferDirection = "reverse"
 )
 
 type TransferMode string
@@ -30,32 +29,34 @@ const (
 	TransferStatusFailed    TransferStatus = "failed"
 )
 
+type TransferStep string
+
 const (
-	StepInitiated = "initiated"
-	StepDebited   = "debited"
-	StepCredited  = "credited"
+	StepInitiated TransferStep = "initiated"
+	StepDebited   TransferStep = "debited"
+	StepCredited  TransferStep = "credited"
+	StepCompleted TransferStep = "completed"
 )
 
 type Transfer struct {
-	ID               string         `json:"id"`
-	UserID           string         `json:"user_id"`
-	Reference        string         `json:"reference"`
-	Step             string         `json:"step"`
-	FromAccID        string         `json:"from_acc_id"`
-	FromAccNo        int64          `json:"from_acc_no"`
-	ToAccID          string         `json:"to_acc_id,omitempty"` // Inter-bank transfer
-	ToAccNo          int64          `json:"to_acc_no"`
-	Amount           int64          `json:"amount"`
-	Description      string         `json:"description"`
-	IdempotencyKey   string         `json:"idempotency_key"`
-	Type             TransferType   `json:"type"` // DEBIT, CREDIT, REVERSE
-	Status           TransferStatus `json:"status"`
-	Mode             TransferMode   `json:"mode"`
-	ReversalRef      string         `json:"reversal_ref"`
-	IsReversed       bool           `json:"is_reversed"`
-	FromBalanceAfter int64          `json:"from_balance_after"`
-	ToBalanceAfter   int64          `json:"to_balance_after"`
-	RecoveryCount    int            `json:"recovery_count"`
-	CreatedAt        time.Time      `json:"created_at"`
-	UpdatedAt        time.Time      `json:"updated_at"`
+	ID               string            `json:"id"`
+	UserID           string            `json:"user_id"`
+	Reference        string            `json:"reference"`
+	Step             TransferStep      `json:"step"`
+	FromAccID        string            `json:"from_acc_id"`
+	FromAccNo        int64             `json:"from_acc_no"`
+	ToAccNo          int64             `json:"to_acc_no"`
+	Amount           int64             `json:"amount"`
+	Description      string            `json:"description"`
+	IdempotencyKey   string            `json:"idempotency_key"`
+	Direction        TransferDirection `json:"direction"` // TRANSFER, REVERSE
+	Status           TransferStatus    `json:"status"`
+	Mode             TransferMode      `json:"mode"`
+	ReversalRef      string            `json:"reversal_ref"`
+	IsReversed       bool              `json:"is_reversed"`
+	FromBalanceAfter int64             `json:"from_balance_after"`
+	ToBalanceAfter   int64             `json:"to_balance_after"`
+	RecoveryCount    int               `json:"recovery_count"`
+	CreatedAt        time.Time         `json:"created_at"`
+	UpdatedAt        time.Time         `json:"updated_at"`
 }

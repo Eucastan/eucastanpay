@@ -3,22 +3,29 @@ package handler
 import (
 	"net/http"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/usecase"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type TransferHandler struct {
-	Transfer usecase.TransferUseCase
+	Transfer  usecase.TransferUseCase
+	telemetry *telemetry.Telemetry
 }
 
-func NewTransferHandler(transfer usecase.TransferUseCase) *TransferHandler {
-	return &TransferHandler{Transfer: transfer}
+func NewTransferHandler(transfer usecase.TransferUseCase, telemetry *telemetry.Telemetry) *TransferHandler {
+	return &TransferHandler{Transfer: transfer, telemetry: telemetry}
 }
 
 func (h *TransferHandler) TransferFromUser(c *gin.Context) {
 	ctx := c.Request.Context()
+
+	ctx, span := h.telemetry.Start(ctx, "TransferHandler.TransferFromUser")
+	defer span.End()
+
+	token := c.GetString("token")
 
 	userID, exists := c.Get("user_id")
 	if !exists {
@@ -33,6 +40,8 @@ func (h *TransferHandler) TransferFromUser(c *gin.Context) {
 		})
 		return
 	}
+
+	ctx = interceptor.AppendJWTToContext(ctx, token)
 
 	var req request.TransferRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -69,10 +78,26 @@ func (h *TransferHandler) GetTransfer(c *gin.Context) {
 
 func (h *TransferHandler) ReverseTransfer(c *gin.Context) {
 	ctx := c.Request.Context()
-	originalRef := c.Param("reference")
-	idemKey := uuid.NewString()
 
-	userID, _ := c.Get("user_id")
+	originalRef := c.Param("reference")
+
+	token := c.GetString("token")
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user_id not found in context"})
+		return
+	}
+
+	ctx = interceptor.AppendJWTToContext(ctx, token)
+
+	idemKey := c.GetHeader("Idempotency-Key")
+	if idemKey == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Idempotency-Key header is required",
+		})
+		return
+	}
 
 	resp, err := h.Transfer.ReverseTransfer(ctx, userID.(string), originalRef, idemKey)
 	if err != nil {

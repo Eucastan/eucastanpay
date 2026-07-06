@@ -18,14 +18,5 @@ func Init(cfg *config.Config, log *logrus.Logger) (*clients.Clients, error) {
 		Insecure:           true,
 	}
 
-	cl, err := clients.NewClients(clientCfg, log)
-	if err != nil {
-		return nil, err
-	}
-
-	return &clients.Clients{
-		User:    cl.User,
-		Account: cl.Account,
-		Ledger:  cl.Ledger,
-	}, nil
+	return clients.NewClients(clientCfg, log)
 }

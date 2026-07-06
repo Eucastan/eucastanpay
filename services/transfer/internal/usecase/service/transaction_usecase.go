@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/Eucastan/eucastanpay/common/pkg/errors"
+	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpc/clients"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/account"
 	"github.com/Eucastan/eucastanpay/common/proto/ledger"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/domain"
@@ -23,21 +24,27 @@ type TransferUseCase struct {
 	TX repository.TransferRepository
 	*clients.Clients
 	Publisher *producer.Publisher
+	telemetry *telemetry.Telemetry
 	log       *logrus.Logger
 }
 
-func NewTransferUseCase(tx repository.TransferRepository, cl *clients.Clients, publisher *producer.Publisher, log *logrus.Logger) *TransferUseCase {
+func NewTransferUseCase(tx repository.TransferRepository, cl *clients.Clients, publisher *producer.Publisher, telemetry *telemetry.Telemetry, log *logrus.Logger) *TransferUseCase {
 	return &TransferUseCase{
 		TX:        tx,
 		Clients:   cl,
 		Publisher: publisher,
+		telemetry: telemetry,
 		log:       log,
 	}
 }
 
 func (u *TransferUseCase) GetAllTransfers(ctx context.Context) ([]response.TransferResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.GetAllTransfers")
+	defer span.End()
+
 	acc, err := u.TX.FindAll(ctx)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -48,11 +55,10 @@ func (u *TransferUseCase) GetAllTransfers(ctx context.Context) ([]response.Trans
 			Reference:   v.Reference,
 			FromAccID:   v.FromAccID,
 			FromAccNo:   v.FromAccNo,
-			ToAccID:     v.ToAccID,
 			ToAccNo:     v.ToAccNo,
 			Amount:      v.Amount,
 			Description: v.Description,
-			Type:        string(v.Type),
+			Direction:   string(v.Direction),
 			Status:      string(v.Status),
 			CreatedAt:   v.CreatedAt,
 		})
@@ -62,12 +68,17 @@ func (u *TransferUseCase) GetAllTransfers(ctx context.Context) ([]response.Trans
 }
 
 func (u *TransferUseCase) GetByID(ctx context.Context, id string) (*response.TransferResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.GetByID")
+	defer span.End()
+
 	logger := u.log.WithFields(logrus.Fields{
-		"id": id,
+		"operation": "GetByID",
+		"id":        id,
 	})
 
 	transfer, err := u.TX.FindByID(ctx, id)
 	if err != nil {
+		span.RecordError(err)
 		logger.WithError(err).Error("failed to transaction")
 		return nil, err
 	}
@@ -82,24 +93,41 @@ func (u *TransferUseCase) TransferFromUser(
 	idemKey string,
 	input *request.TransferRequest,
 ) (*response.TransferResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.TransferFromUser")
+	defer span.End()
+
+	u.telemetry.Count(ctx, 1)
+
 	account, err := u.Account.GetUserAccount(ctx, &account.GetUserAccountRequest{
-		AccountId: input.FromAccID,
-		UserId:    userID,
+		UserId: userID,
 	})
 	if err != nil {
 		u.log.WithError(err).Error("failed to confirm user has account")
+		u.telemetry.RecordError(span, err)
 		return nil, err
 	}
 
 	if account.UserId != userID {
-		return nil, errors.ErrUserNotOwner
+		return nil, errmessage.ErrUserNotOwner
 	}
 
-	return u.Transfer(ctx, userID, idemKey, input)
+	identity := &request.TransactionIdentity{
+		FromAccID:   account.AccountId,
+		FromAccNo:   account.AccountNo,
+		ToAccNo:     input.ToAccNo,
+		Amount:      input.Amount,
+		Description: input.Description,
+		Mode:        input.Mode,
+	}
+
+	return u.Transfer(ctx, userID, idemKey, identity)
 
 }
 
 func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalRef, idemKey string) (*response.TransferResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.ReverseTransfer")
+	defer span.End()
+
 	logger := u.log.WithFields(logrus.Fields{
 		"operation":       "reverse_transfer",
 		"original_ref":    originalRef,
@@ -109,6 +137,7 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalR
 
 	existing, err := u.TX.FindByIdempotencyKey(ctx, idemKey)
 	if err == nil {
+		span.RecordError(err)
 		resp := response.ToTransferResponse(existing)
 		return &resp, nil
 	}
@@ -119,14 +148,15 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalR
 		// Find original transfer inside transaction
 		original, err := u.TX.FindByReference(ctx, tx, originalRef)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		if original.IsReversed {
-			return errors.ErrAlreadyReversed
+			return errmessage.ErrAlreadyReversed
 		}
 		if original.Status != domain.TransferStatusSuccess {
-			return errors.ErrCannotReverseNonSuccessfulTransfer
+			return errmessage.ErrCannotReverseNonSuccessfulTransfer
 		}
 
 		// Create reversal transfer
@@ -136,14 +166,12 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalR
 			UserID:         userID,
 			Reference:      reversalRef,
 			Step:           domain.StepInitiated,
-			FromAccID:      original.ToAccID,
 			FromAccNo:      original.ToAccNo,
-			ToAccID:        original.FromAccID,
 			ToAccNo:        original.FromAccNo,
 			Amount:         original.Amount,
 			Description:    "Reversal of " + originalRef,
 			IdempotencyKey: idemKey,
-			Type:           domain.TransferTypeReverse,
+			Direction:      domain.ReverseDir,
 			Status:         domain.TransferStatusPending,
 			Mode:           original.Mode,
 			ReversalRef:    originalRef,
@@ -151,27 +179,30 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalR
 		}
 
 		if err := u.TX.Create(ctx, tx, reversal); err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		// Mark original transfer as reversing
 		if err := u.TX.UpdateStatus(ctx, tx, originalRef, string(domain.TransferStatusReversing)); err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		// Publish reversal event to start saga
 		reverseEvent := events.ReverseDebitEvent{
-			BaseEvent: events.NewBaseEvent(ctx, "transfer-service"),
-			Reference: reversalRef,
-			AccountID: reversal.FromAccID,
-			AccountNo: reversal.FromAccNo,
-			Amount:    reversal.Amount,
+			EventMetadata: events.NewRootEvent(ctx),
+			Reference:     reversalRef,
+			AccountID:     reversal.FromAccID,
+			AccountNo:     reversal.FromAccNo,
+			Amount:        reversal.Amount,
 		}
 
 		return u.TX.SaveOutboxEvent(ctx, tx, events.TopicDebitReverse, reversalRef, reverseEvent)
 	})
 
 	if err != nil {
+		span.RecordError(err)
 		logger.WithError(err).Error("Reverse transfer failed")
 		return nil, err
 	}
@@ -186,6 +217,8 @@ func (u *TransferUseCase) ReconcileAccount(
 	accID string,
 	accNo int64,
 ) error {
+	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.ReconciliationAccount")
+	defer span.End()
 
 	logger := u.log.WithField("account_id", accID)
 
@@ -207,18 +240,20 @@ func (u *TransferUseCase) ReconcileAccount(
 		return err
 	}
 
-	if err := u.TX.WithTx(ctx, func(tx pgx.Tx) error {
+	err = u.TX.WithTx(ctx, func(tx pgx.Tx) error {
 		auditEvent := events.AdminActionEvent{
-			BaseEvent:  events.NewBaseEvent(ctx, "transfer-service"),
-			AdminID:    "system", // or extract from context
-			Action:     "reconcile_account",
-			TargetType: "account",
-			TargetID:   accID,
-			Reason:     "manual_reconciliation",
+			EventMetadata: events.NewRootEvent(ctx),
+			AdminID:       "system",
+			Action:        "reconcile_account",
+			TargetType:    "account",
+			TargetID:      accID,
+			Reason:        "manual_reconciliation",
 		}
 		return u.TX.SaveOutboxEvent(ctx, tx, events.TopicAdminActionTaken, accID, auditEvent)
-	}); err != nil {
+	})
+	if err != nil {
 		logger.WithError(err).Error("failed to save admin action event")
+		return err
 	}
 
 	logger.Info("reconciliation successful")

@@ -12,12 +12,11 @@ type TransferResponse struct {
 	Step             string    `json:"step"`
 	FromAccID        string    `json:"from_account_id"`
 	FromAccNo        int64     `json:"from_account_no"`
-	ToAccID          string    `json:"to_account_id,omitempty"` // Inter-bank transfer
 	ToAccNo          int64     `json:"to_account_no"`
 	Amount           int64     `json:"amount"`
 	Description      string    `json:"description"`
 	IdempotencyKey   string    `json:"idempotency_key"`
-	Type             string    `json:"type"` // DEBIT, CREDIT, REVERSE
+	Direction        string    `json:"type"` // TRANSFER, REVERSE
 	Status           string    `json:"status"`
 	Mode             string    `json:"mode"`
 	ReversalRef      string    `json:"reversal_ref"`
@@ -31,15 +30,14 @@ func ToTransferResponse(t *domain.Transfer) TransferResponse {
 	return TransferResponse{
 		ID:               t.ID,
 		Reference:        t.Reference,
-		Step:             t.Step,
+		Step:             string(t.Step),
 		FromAccID:        t.FromAccID,
 		FromAccNo:        t.FromAccNo,
-		ToAccID:          t.ToAccID,
 		ToAccNo:          t.ToAccNo,
 		Amount:           t.Amount,
 		Description:      t.Description,
 		IdempotencyKey:   t.IdempotencyKey,
-		Type:             string(t.Type),
+		Direction:        string(t.Direction),
 		Status:           string(t.Status),
 		Mode:             string(t.Mode),
 		ReversalRef:      t.ReversalRef,

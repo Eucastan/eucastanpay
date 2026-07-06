@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Eucastan/eucastanpay/common/pkg/errors"
+	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/domain"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/dto/request"
@@ -14,18 +14,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey string, input *request.TransferRequest) (*response.TransferResponse, error) {
+func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey string, input *request.TransactionIdentity) (*response.TransferResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.Transfer")
+	defer span.End()
+
 	logger := u.log.WithFields(logrus.Fields{
 		"reference":       "",
 		"user_id":         userID,
 		"idempotency_key": idemKey,
 		"amount":          input.Amount,
 	})
-
-	// check self transfer
-	if input.FromAccID == input.ToAccID {
-		return nil, errors.ErrCanNotTransferToSelf
-	}
 
 	existing, err := u.TX.FindByIdempotencyKey(ctx, idemKey)
 	switch err {
@@ -34,7 +32,7 @@ func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey s
 		resp := response.ToTransferResponse(existing)
 		return &resp, nil
 
-	case errors.ErrTranferNotFound:
+	case errmessage.ErrTranferNotFound:
 		// continue creating transfer
 
 	default:
@@ -44,7 +42,7 @@ func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey s
 	switch domain.TransferMode(input.Mode) {
 	case domain.IntraBank, domain.InterBank, domain.OwnAccount:
 	default:
-		return nil, errors.ErrInvalidTransferMode
+		return nil, errmessage.ErrInvalidTransferMode
 	}
 
 	ref := uuid.NewString()
@@ -56,12 +54,11 @@ func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey s
 		Step:           domain.StepInitiated,
 		FromAccID:      input.FromAccID,
 		FromAccNo:      input.FromAccNo,
-		ToAccID:        input.ToAccID,
 		ToAccNo:        input.ToAccNo,
 		Amount:         input.Amount,
 		Description:    input.Description,
 		IdempotencyKey: idemKey,
-		Type:           domain.TransferTypeDebit,
+		Direction:      domain.TransferDir,
 		Status:         domain.TransferStatusPending,
 		Mode:           domain.TransferMode(input.Mode),
 		CreatedAt:      time.Now(),
@@ -73,7 +70,7 @@ func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey s
 	err = u.TX.WithTx(ctx, func(tx pgx.Tx) error {
 
 		if err := u.TX.Create(ctx, tx, transfer); err != nil {
-			if err == errors.ErrDuplicateRequest {
+			if err == errmessage.ErrDuplicateRequest {
 
 				existing, findErr := u.TX.FindByIdempotencyKey(ctx, idemKey)
 				if findErr != nil {
@@ -87,15 +84,14 @@ func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey s
 		}
 
 		transferInitiated := events.TransferInitiatedEvent{
-			BaseEvent:  events.NewBaseEvent(ctx, "transfer-service"),
-			TransferID: transfer.ID,
-			Reference:  ref,
-			FromAccID:  transfer.FromAccID,
-			FromAccNo:  transfer.FromAccNo,
-			ToAccID:    transfer.ToAccID,
-			ToAccNo:    transfer.ToAccNo,
-			Amount:     transfer.Amount,
-			Timestamp:  time.Now().Unix(),
+			EventMetadata: events.NewRootEvent(ctx),
+			TransferID:    transfer.ID,
+			Reference:     ref,
+			FromAccID:     transfer.FromAccID,
+			FromAccNo:     transfer.FromAccNo,
+			ToAccNo:       transfer.ToAccNo,
+			Amount:        transfer.Amount,
+			Timestamp:     time.Now().Unix(),
 		}
 
 		return u.TX.SaveOutboxEvent(ctx, tx,
@@ -154,16 +150,12 @@ func (u *TransferUseCase) RecoverStuckTransfers(ctx context.Context) {
 							events.TopicDebitRequested,
 							t.Reference,
 							events.DebitRequestedEvent{
-								BaseEvent: events.NewBaseEvent(
-									ctx,
-									"transfer-service",
-								),
-								Reference: t.Reference,
-								FromAccID: t.FromAccID,
-								FromAccNo: t.FromAccNo,
-								ToAccID:   t.ToAccID,
-								ToAccNo:   t.ToAccNo,
-								Amount:    t.Amount,
+								EventMetadata: events.NewRootEvent(ctx),
+								Reference:     t.Reference,
+								FromAccID:     t.FromAccID,
+								FromAccNo:     t.FromAccNo,
+								ToAccNo:       t.ToAccNo,
+								Amount:        t.Amount,
 							},
 						); err != nil {
 							return err
@@ -177,14 +169,10 @@ func (u *TransferUseCase) RecoverStuckTransfers(ctx context.Context) {
 							events.TopicCreditRequested,
 							t.Reference,
 							events.CreditRequestedEvent{
-								BaseEvent: events.NewBaseEvent(
-									ctx,
-									"transfer-service",
-								),
-								Reference: t.Reference,
-								ToAccID:   t.ToAccID,
-								ToAccNo:   t.ToAccNo,
-								Amount:    t.Amount,
+								EventMetadata: events.NewRootEvent(ctx),
+								Reference:     t.Reference,
+								ToAccNo:       t.ToAccNo,
+								Amount:        t.Amount,
 							},
 						); err != nil {
 							return err
