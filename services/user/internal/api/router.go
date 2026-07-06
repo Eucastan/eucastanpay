@@ -20,11 +20,15 @@ func NewRouter(r *gin.Engine, user *handler.UserHandler, kyc *handler.KYCHandler
 		public.POST("/login", user.LoginUser)
 	}
 
-	protected := r.Group("api/v1")
-	protected.Use(middleware.Auth(cfg.JWTSecret))
+	auth := r.Group("api/v1")
+	auth.Use(middleware.Auth(cfg.JWTSecret))
 	{
-		protected.POST("/kyc/:user_id/create", middleware.RequireRole("user"), kyc.CreateKYC)
-		protected.GET("/kyc/:user_id", middleware.RequireRole("user"), kyc.GetKYC)
-		protected.PATCH("/kyc/:user_id/approve", middleware.RequireRole("user"), kyc.ApprovedKYC)
+		auth.POST("/refresh", middleware.RequireRole("user"), user.RefreshToken)
+		auth.POST("/logout-all", middleware.RequireRole("user"), user.LogoutAllUsers)
+		auth.POST("/logout", middleware.RequireRole("user"), user.Logout)
+
+		auth.POST("/kyc/:user_id/create", middleware.RequireRole("user"), kyc.CreateKYC)
+		auth.GET("/kyc/:user_id", middleware.RequireRole("user"), kyc.GetKYC)
+		auth.PATCH("/kyc/:user_id/approve", middleware.RequireRole("user"), kyc.ApprovedKYC)
 	}
 }

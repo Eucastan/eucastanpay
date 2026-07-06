@@ -11,6 +11,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/auth"
 	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
 	"github.com/Eucastan/eucastanpay/common/pkg/redisclient"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/user/config"
 	"github.com/Eucastan/eucastanpay/services/user/internal/domain"
 	"github.com/Eucastan/eucastanpay/services/user/internal/dto/request"
@@ -24,6 +25,7 @@ import (
 type UserUseCase struct {
 	User      repository.UserRepository
 	Auth      repository.AuthRepository
+	telemetry *telemetry.Telemetry
 	cfg       *config.Config
 	Email     usecase.EmailSender
 	Redis     redisclient.RedisClient
@@ -33,6 +35,7 @@ type UserUseCase struct {
 func NewUserUseCase(
 	user repository.UserRepository,
 	auth repository.AuthRepository,
+	telemetry *telemetry.Telemetry,
 	cfg *config.Config,
 	email usecase.EmailSender,
 	redis redisclient.RedisClient,
@@ -42,6 +45,7 @@ func NewUserUseCase(
 	return &UserUseCase{
 		User:      user,
 		Auth:      auth,
+		telemetry: telemetry,
 		cfg:       cfg,
 		Email:     email,
 		Redis:     redis,
@@ -50,12 +54,17 @@ func NewUserUseCase(
 }
 
 func (u *UserUseCase) Register(ctx context.Context, input *request.RegisterRequest) (*response.UserResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.Register")
+	defer span.End()
+
 	if _, err := u.User.FindByEmail(ctx, input.Email); err == nil {
+		span.RecordError(err)
 		return nil, errmessage.ErrDuplicateEmail
 	}
 
 	hashPass, err := password.GeneratePassHash(input.Password)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -74,32 +83,38 @@ func (u *UserUseCase) Register(ctx context.Context, input *request.RegisterReque
 	}
 
 	if err := u.User.Create(ctx, user); err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
 	token, err := auth.GenerateAccessToken(user.ID, user.Email, string(domain.EmailToken), u.cfg.JWTSecret)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
-	if err := u.Auth.Create(ctx, &domain.Token{
+	err = u.Auth.Create(ctx, &domain.Token{
 		ID:        uuid.NewString(),
 		UserID:    user.ID,
 		Token:     token,
 		TokenType: domain.EmailToken,
 		ExpiredAt: time.Now().Add(24 * time.Hour),
-	}); err != nil {
+	})
+	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
 	link := "http://localhost:8080/verify?token=" + token
 	if err := u.Email.SendVerificationEmail(user.Email, link); err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
 	response := response.ToUserResponse(user)
 
 	if err := u.Publisher.OnUserRegistration(ctx, &response); err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -107,13 +122,18 @@ func (u *UserUseCase) Register(ctx context.Context, input *request.RegisterReque
 }
 
 func (u *UserUseCase) VerifyEmail(ctx context.Context, token string) error {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.VerifyEmail")
+	defer span.End()
+
 	claims, err := auth.ValidateToken(token, u.cfg.JWTSecret)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
 	tkn, err := u.Auth.FindToken(ctx, token, string(domain.EmailToken))
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -123,13 +143,19 @@ func (u *UserUseCase) VerifyEmail(ctx context.Context, token string) error {
 
 	user, err := u.User.FindByID(ctx, claims.UserID)
 	if err != nil {
+		span.RecordError(err)
 		return err
+	}
+
+	if user.EmailVerified {
+		return nil
 	}
 
 	user.EmailVerified = true
 	user.Status = domain.StatusActive
 
 	if err := u.User.Update(ctx, user); err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -137,22 +163,29 @@ func (u *UserUseCase) VerifyEmail(ctx context.Context, token string) error {
 }
 
 func (u *UserUseCase) Login(ctx context.Context, input *request.LoginRequest) (*response.AuthResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.Login")
+	defer span.End()
+
 	user, err := u.User.FindByEmail(ctx, input.Email)
 	if err != nil {
+		span.RecordError(err)
 		return nil, errmessage.ErrInvalidCredentials
 	}
 
 	if err := password.IsMatch(user.Password, input.Password); err != nil {
+		span.RecordError(err)
 		return nil, errmessage.ErrPasswordNotConfirmed
 	}
 
 	accessToken, err := auth.GenerateAccessToken(user.ID, user.Email, user.Role, u.cfg.JWTSecret)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
-	refreshToken, err := auth.RefreshToken(user.ID, user.Role, u.cfg.JWTSecret)
+	refreshToken, err := auth.RefreshToken(user.ID, user.Email, user.Role, u.cfg.JWTSecret)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -165,6 +198,7 @@ func (u *UserUseCase) Login(ctx context.Context, input *request.LoginRequest) (*
 	}
 
 	if err = u.Auth.Create(ctx, tkn); err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -187,8 +221,12 @@ func (u *UserUseCase) Login(ctx context.Context, input *request.LoginRequest) (*
 }
 
 func (u *UserUseCase) GetAllUsers(ctx context.Context) ([]response.UserResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.GetAllUsers")
+	defer span.End()
+
 	acc, err := u.User.FindAll(ctx)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -210,8 +248,12 @@ func (u *UserUseCase) GetAllUsers(ctx context.Context) ([]response.UserResponse,
 }
 
 func (u *UserUseCase) GetUserByID(ctx context.Context, id string) (*response.UserResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.GetUserByID")
+	defer span.End()
+
 	user, err := u.User.FindByID(ctx, id)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -221,8 +263,12 @@ func (u *UserUseCase) GetUserByID(ctx context.Context, id string) (*response.Use
 }
 
 func (u *UserUseCase) UserCurrentStatus(ctx context.Context, id, status string) (string, error) {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.UserCurrentStatus")
+	defer span.End()
+
 	user, err := u.User.FindByID(ctx, id)
 	if err != nil {
+		span.RecordError(err)
 		return "", err
 	}
 
@@ -251,6 +297,7 @@ func (u *UserUseCase) UserCurrentStatus(ctx context.Context, id, status string) 
 	}
 
 	if err := u.User.Update(ctx, user); err != nil {
+		span.RecordError(err)
 		return "", err
 	}
 
@@ -258,15 +305,19 @@ func (u *UserUseCase) UserCurrentStatus(ctx context.Context, id, status string) 
 }
 
 func (u *UserUseCase) RefreshToken(ctx context.Context, oldToken string) (string, string, error) {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.RefreshToken")
+	defer span.End()
 
 	_, err := auth.ValidateToken(oldToken, u.cfg.JWTSecret)
 	if err != nil {
+		span.RecordError(err)
 		return "", "", err
 	}
 
 	// Get token from DB
 	storedToken, err := u.Auth.FindToken(ctx, oldToken, string(domain.RefreshToken))
 	if err != nil {
+		span.RecordError(err)
 		return "", "", err
 	}
 
@@ -283,15 +334,24 @@ func (u *UserUseCase) RefreshToken(ctx context.Context, oldToken string) (string
 
 	// Revoke old token
 	if err := u.Auth.Revoked(ctx, oldToken); err != nil {
+		span.RecordError(err)
+		return "", "", err
+	}
+
+	user, err := u.User.FindByID(ctx, storedToken.UserID)
+	if err != nil {
+		span.RecordError(err)
 		return "", "", err
 	}
 
 	newRefresh, err := auth.RefreshToken(
-		storedToken.UserID,
-		string(domain.RefreshToken),
+		user.ID,
+		user.Email,
+		user.Role,
 		u.cfg.JWTSecret,
 	)
 	if err != nil {
+		span.RecordError(err)
 		return "", "", err
 	}
 
@@ -306,38 +366,50 @@ func (u *UserUseCase) RefreshToken(ctx context.Context, oldToken string) (string
 	}
 
 	if err := u.Auth.Create(ctx, newToken); err != nil {
+		span.RecordError(err)
 		return "", "", err
 	}
 
 	// Generate new access token
-	user, err := u.User.FindByID(ctx, storedToken.UserID)
-	if err != nil {
-		return "", "", err
-	}
-
 	newAccess, err := auth.GenerateAccessToken(
 		user.ID, user.Email, user.Role, u.cfg.JWTSecret,
 	)
 	if err != nil {
+		span.RecordError(err)
 		return "", "", err
 	}
 
 	return newAccess, newRefresh, nil
 }
 
+func (u *UserUseCase) LogoutAllUsers(ctx context.Context, userID string) error {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.LogoutAllUsers")
+	defer span.End()
+
+	return u.Auth.RevokeAllByUser(ctx, userID)
+}
+
 func (u *UserUseCase) Logout(ctx context.Context, refreshToken string) error {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.Logout")
+	defer span.End()
+
 	return u.Auth.Revoked(ctx, refreshToken)
 }
 
 func (u *UserUseCase) ForgotPassword(ctx context.Context, input *request.ForgotPasswordRequest) error {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.ForgottenPassword")
+	defer span.End()
+
 	exists, err := u.User.FindByEmail(ctx, input.Email)
 	if err != nil {
+		span.RecordError(err)
 		logrus.Errorf("user with email %s not found: %v", input.Email, err)
 		return nil
 	}
 
 	resetToken, err := auth.GenerateAccessToken(exists.ID, exists.Email, exists.Role, u.cfg.JWTSecret)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -351,22 +423,28 @@ func (u *UserUseCase) ForgotPassword(ctx context.Context, input *request.ForgotP
 	}
 
 	if err := u.Auth.Create(ctx, tkn); err != nil {
+		span.RecordError(err)
 		return err
 	}
 
 	// Send an email
-	link := "https://localhost:8080/verify?" + resetToken
+	link := "https://localhost:8080/reset-password?token=" + resetToken
 	return u.Email.SendResetPasswordEmail(exists.Email, link)
 }
 
 func (u *UserUseCase) ResetPassword(ctx context.Context, req *request.ResetPasswordRequest) error {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.ResetPassword")
+	defer span.End()
+
 	claims, err := auth.ValidateToken(req.Token, u.cfg.JWTSecret)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
 	tkn, err := u.Auth.FindToken(ctx, req.Token, string(domain.PasswordResetToken))
 	if err != nil || tkn.Revoked {
+		span.RecordError(err)
 		return err
 	}
 
@@ -376,6 +454,7 @@ func (u *UserUseCase) ResetPassword(ctx context.Context, req *request.ResetPassw
 
 	user, err := u.User.FindByID(ctx, claims.UserID)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -385,14 +464,21 @@ func (u *UserUseCase) ResetPassword(ctx context.Context, req *request.ResetPassw
 
 	hashed, err := password.GeneratePassHash(req.Password)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
 	user.Password = hashed
 
 	if err := u.User.Update(ctx, user); err != nil {
+		span.RecordError(err)
 		return err
 	}
-	return u.Auth.Revoked(ctx, req.Token)
 
+	if err := u.Auth.RevokeAllByUser(ctx, user.ID); err != nil {
+		span.RecordError(err)
+		return err
+	}
+
+	return u.Auth.Revoked(ctx, req.Token)
 }

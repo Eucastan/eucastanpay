@@ -2,9 +2,10 @@ package postgres
 
 import (
 	"context"
-	"encoding/json"
 
-	"github.com/Eucastan/eucastanpay/common/pkg/errors"
+	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
+	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/user/internal/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -12,16 +13,24 @@ import (
 )
 
 type KYCRepository struct {
-	db *pgxpool.Pool
+	db        *pgxpool.Pool
+	telemetry *telemetry.Telemetry
 }
 
-func NewKYCRepository(db *pgxpool.Pool) *KYCRepository {
-	return &KYCRepository{db: db}
+func NewKYCRepository(db *pgxpool.Pool, telemetry *telemetry.Telemetry) *KYCRepository {
+	return &KYCRepository{
+		db:        db,
+		telemetry: telemetry,
+	}
 }
 
 func (r *KYCRepository) WithTX(ctx context.Context, fn func(tx pgx.Tx) error) error {
+	ctx, span := r.telemetry.Start(ctx, "KYCRepository.WithTX")
+	defer span.End()
+
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -34,6 +43,7 @@ func (r *KYCRepository) WithTX(ctx context.Context, fn func(tx pgx.Tx) error) er
 
 	if err := fn(tx); err != nil {
 		_ = tx.Rollback(ctx)
+		span.RecordError(err)
 		return err
 	}
 
@@ -41,6 +51,9 @@ func (r *KYCRepository) WithTX(ctx context.Context, fn func(tx pgx.Tx) error) er
 }
 
 func (r *KYCRepository) Create(ctx context.Context, kyc *domain.KYC) error {
+	ctx, span := r.telemetry.Start(ctx, "KYCRepository.Create")
+	defer span.End()
+
 	query := `
 		INSERT INTO kycs (id, user_id, id_type, id_number, status, verified_at, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -56,11 +69,18 @@ func (r *KYCRepository) Create(ctx context.Context, kyc *domain.KYC) error {
 		kyc.VerifiedAt,
 		kyc.CreatedAt,
 	).Scan(&kyc.CreatedAt, &kyc.ID, &kyc.UserID)
+	if err != nil {
+		span.RecordError(err)
+		return err
+	}
 
-	return err
+	return nil
 }
 
 func (r *KYCRepository) FindByID(ctx context.Context, id string) (*domain.KYC, error) {
+	ctx, span := r.telemetry.Start(ctx, "KYCRepository.FindByID")
+	defer span.End()
+
 	query := `
 	   SELECT id, user_id, id_type, id_number, status, verified_at, created_at
 	   FROM kycs 
@@ -74,13 +94,17 @@ func (r *KYCRepository) FindByID(ctx context.Context, id string) (*domain.KYC, e
 	)
 
 	if err == pgx.ErrNoRows {
-		return nil, errors.ErrUserNotFound
+		span.RecordError(err)
+		return nil, errmessage.ErrUserNotFound
 	}
 
 	return kyc, err
 }
 
 func (r *KYCRepository) FindByUserID(ctx context.Context, userID string) (*domain.KYC, error) {
+	ctx, span := r.telemetry.Start(ctx, "KYCRepository.FindByUserID")
+	defer span.End()
+
 	query := `
 	   SELECT id, user_id, id_type, id_number, status, verified_at, created_at
 	   FROM kycs 
@@ -94,26 +118,37 @@ func (r *KYCRepository) FindByUserID(ctx context.Context, userID string) (*domai
 	)
 
 	if err == pgx.ErrNoRows {
-		return nil, errors.ErrUserNotFound
+		span.RecordError(err)
+		return nil, errmessage.ErrUserNotFound
 	}
 
 	return kyc, err
 }
 
 func (r *KYCRepository) Update(ctx context.Context, kyc *domain.KYC) error {
+	ctx, span := r.telemetry.Start(ctx, "KYCRepository.Update")
+	defer span.End()
+
 	query := `
 	    UPDATE kycs 
 		SET status = $2
 		WHERE id = $1
 	`
 
-	_, err := r.db.Exec(ctx, query, kyc.ID, kyc.Status)
-	return err
+	if _, err := r.db.Exec(ctx, query, kyc.ID, kyc.Status); err != nil {
+		span.RecordError(err)
+		return err
+	}
+	return nil
 }
 
 func (r *KYCRepository) SaveOutboxEvent(ctx context.Context, tx pgx.Tx, topic, key string, payload interface{}) error {
-	data, err := json.Marshal(payload)
+	ctx, span := r.telemetry.Start(ctx, "KYCRepository.SaveOutboxEvent")
+	defer span.End()
+
+	data, err := producer.Encode(payload)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -122,6 +157,10 @@ func (r *KYCRepository) SaveOutboxEvent(ctx context.Context, tx pgx.Tx, topic, k
         VALUES ($1, $2, $3, $4)
     `
 
-	_, err = tx.Exec(ctx, query, uuid.NewString(), topic, key, data)
-	return err
+	if _, err = tx.Exec(ctx, query, uuid.NewString(), topic, key, data); err != nil {
+		span.RecordError(err)
+		return err
+	}
+
+	return nil
 }

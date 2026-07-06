@@ -21,13 +21,13 @@ func NewPublishUserRegistration(outbox repository.UserRepository) *PublishUserRe
 
 func (p *PublishUserRegistration) OnUserRegistration(ctx context.Context, u *response.UserResponse) error {
 	userData := &events.UserRegisteredEvent{
-		BaseEvent: events.NewBaseEvent(ctx, "user-service"),
-		UserID:    u.ID,
-		Email:     u.Email,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		Phone:     u.Phone,
-		Timestamp: u.CreatedAt.Unix(),
+		EventMetadata: events.NewRootEvent(ctx),
+		UserID:        u.ID,
+		Email:         u.Email,
+		FirstName:     u.FirstName,
+		LastName:      u.LastName,
+		Phone:         u.Phone,
+		Timestamp:     u.CreatedAt.Unix(),
 	}
 
 	return p.Outbox.WithTX(ctx, func(tx pgx.Tx) error {

@@ -15,6 +15,7 @@ type UserUseCaseInterface interface {
 	GetUserByID(ctx context.Context, id string) (*response.UserResponse, error)
 	UserCurrentStatus(ctx context.Context, id, status string) (string, error)
 	RefreshToken(ctx context.Context, oldToken string) (string, string, error)
+	LogoutAllUsers(ctx context.Context, userID string) error
 	Logout(ctx context.Context, refreshToken string) error
 	ForgotPassword(ctx context.Context, input *request.ForgotPasswordRequest) error
 	ResetPassword(ctx context.Context, req *request.ResetPasswordRequest) error

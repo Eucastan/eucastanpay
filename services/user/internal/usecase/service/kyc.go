@@ -6,6 +6,7 @@ import (
 
 	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/user/config"
 	"github.com/Eucastan/eucastanpay/services/user/internal/domain"
 	"github.com/Eucastan/eucastanpay/services/user/internal/dto/request"
@@ -16,28 +17,36 @@ import (
 )
 
 type KYCUseCase struct {
-	Kyc repository.KYCRepository
-	cfg *config.Config
+	Kyc       repository.KYCRepository
+	telemetry *telemetry.Telemetry
+	cfg       *config.Config
 }
 
 func NewKYCUseCase(
 	kyc repository.KYCRepository,
+	telemetry *telemetry.Telemetry,
 	cfg *config.Config,
 ) *KYCUseCase {
 	return &KYCUseCase{
-		Kyc: kyc,
-		cfg: cfg,
+		Kyc:       kyc,
+		telemetry: telemetry,
+		cfg:       cfg,
 	}
 }
 
 func (u *KYCUseCase) CreateKYC(ctx context.Context, userID string, input *request.KYCRequest) error {
+	ctx, span := u.telemetry.Start(ctx, "KYCUseCase.CreateKYC")
+	defer span.End()
+
 	_, err := u.Kyc.FindByUserID(ctx, userID)
 	if err == nil {
+		span.RecordError(err)
 		return errmessage.ErrKYCAlreadyExists
 	}
 
 	kyc := util.KYCDbType(userID, input)
 	if err := u.Kyc.Create(ctx, kyc); err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -54,8 +63,12 @@ func (u *KYCUseCase) CreateKYC(ctx context.Context, userID string, input *reques
 }
 
 func (u *KYCUseCase) GetKYC(ctx context.Context, userID string) (*response.KYCResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "KYCUseCase.GetKYC")
+	defer span.End()
+
 	kyc, err := u.Kyc.FindByUserID(ctx, userID)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -66,8 +79,12 @@ func (u *KYCUseCase) GetKYC(ctx context.Context, userID string) (*response.KYCRe
 }
 
 func (u *KYCUseCase) ApproveKYC(ctx context.Context, userID string) error {
+	ctx, span := u.telemetry.Start(ctx, "KYCUseCase.GetKYC")
+	defer span.End()
+
 	kyc, err := u.Kyc.FindByUserID(ctx, userID)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 

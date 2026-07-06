@@ -152,6 +152,25 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 	})
 }
 
+func (h *UserHandler) LogoutAllUsers(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userID, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user ID not found in context"})
+		return
+	}
+
+	if err := h.User.LogoutAllUsers(ctx, userID.(string)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to logout: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User logout successful",
+	})
+}
+
 func (h *UserHandler) Logout(c *gin.Context) {
 	ctx := c.Request.Context()
 
