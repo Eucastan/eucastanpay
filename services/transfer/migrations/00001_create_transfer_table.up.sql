@@ -6,12 +6,11 @@ CREATE TABLE IF NOT EXISTS transfers(
     step VARCHAR(50),
     from_account_id TEXT NOT NULL,
     from_account_no BIGINT NOT NULL,
-    to_account_id TEXT NOT NULL,
     to_account_no BIGINT NOT NULL,
     amount BIGINT NOT NULL CHECK (amount > 0),
     description TEXT,
     idempotency_key TEXT UNIQUE NOT NULL,
-    type TEXT NOT NULL,         
+    direction TEXT NOT NULL,         
 	status TEXT NOT NULL,
 	mode TEXT NOT NULL,
 	reversal_ref TEXT NOT NULL DEFAULT '',
@@ -28,7 +27,7 @@ ADD COLUMN last_recovery_at TIMESTAMP;
 
 CREATE INDEX idx_transfer_reference ON transfers(reference);
 CREATE INDEX idx_transfer_from_account ON transfers(from_account_id);
-CREATE INDEX idx_transfer_to_account ON transfers(to_account_id);
+CREATE INDEX idx_transfer_to_account_no ON transfers(to_account_no);
 CREATE INDEX idx_transfer_user ON transfers(user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_transfers_idempotency_key ON transfers(idempotency_key);
 CREATE INDEX IF NOT EXISTS idx_transfers_status_step ON transfers(status, step);
