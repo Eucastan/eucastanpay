@@ -13,6 +13,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
 	"github.com/Eucastan/eucastanpay/common/pkg/middleware"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/user"
 	"github.com/Eucastan/eucastanpay/services/user/config"
 	"github.com/Eucastan/eucastanpay/services/user/internal/api"
@@ -25,6 +26,8 @@ import (
 	"github.com/Eucastan/eucastanpay/services/user/internal/usecase/service"
 	"github.com/Eucastan/eucastanpay/services/user/internal/worker"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 )
 
@@ -37,6 +40,14 @@ func main() {
 	log := logger.New(cfg.LogLevel)
 	log.Info("Starting User service...")
 
+	tracer := otel.Tracer("user-service")
+	meter := otel.Meter("user-service")
+
+	tm, err := telemetry.New(tracer, meter, log)
+	if err != nil {
+		panic(err)
+	}
+
 	db := database.NewPostgresDB(cfg, log)
 	defer db.CloseDB()
 
@@ -45,25 +56,25 @@ func main() {
 	redis := redis.NewRedisClient(cfg, log)
 	defer redis.Close()
 
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers)
+	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
 	defer publisher.Close()
 
-	authRepo := postgres.NewAuthRepository(db.DB)
-	kycRepo := postgres.NewKYCRepository(db.DB)
-	userRepo := postgres.NewUserRepository(db.DB)
+	authRepo := postgres.NewAuthRepository(db.DB, tm)
+	kycRepo := postgres.NewKYCRepository(db.DB, tm)
+	userRepo := postgres.NewUserRepository(db.DB, tm)
 
-	kycUseCase := service.NewKYCUseCase(kycRepo, cfg)
+	kycUseCase := service.NewKYCUseCase(kycRepo, tm, cfg)
 
 	registerEvent := worker.NewPublishUserRegistration(userRepo)
 	userUseCase := service.NewUserUseCase(
-		userRepo, authRepo, cfg, email,
+		userRepo, authRepo, tm, cfg, email,
 		redis, registerEvent,
 	)
 
 	appCtx, appCancel := context.WithCancel(context.Background())
 	defer appCancel()
 
-	go worker.StartOutboxWorker(appCtx, db.DB, publisher, log)
+	go worker.StartOutboxWorker(appCtx, db.DB, publisher, tm, log)
 
 	kycHandler := handler.NewKYCHandler(kycUseCase)
 	userHandler := handler.NewUserHandler(userUseCase)
@@ -78,6 +89,7 @@ func main() {
 	mw := middleware.New(log, cfg.JWTSecret)
 	r.Use(mw.Recovery(), mw.Logger())
 	r.Use(middleware.CorrelationMiddleware())
+	r.Use(otelgin.Middleware("notification-service"))
 
 	r.GET("/health", healthChecker.Health)
 	r.GET("/live", healthChecker.Liveness)
