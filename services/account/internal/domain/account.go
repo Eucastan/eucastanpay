@@ -7,6 +7,7 @@ import (
 type Account struct {
 	ID          string    `json:"id"`
 	UserID      string    `json:"user_id"`
+	Email       string    `json:"email"`
 	AccountNo   int64     `json:"account_no"`
 	Balance     int64     `json:"balance"`
 	AccountType ACCType   `json:"account_type"`

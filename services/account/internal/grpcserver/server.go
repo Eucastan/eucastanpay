@@ -71,13 +71,13 @@ func (s *AccountServiceServer) Debit(ctx context.Context, req *account.GetDebitR
 }
 
 func (s *AccountServiceServer) GetUserAccount(ctx context.Context, req *account.GetUserAccountRequest) (*account.GetAccountResponse, error) {
-	resp, err := s.ACC.GetByAccountIDAndUserID(ctx, req.AccountId, req.UserId)
+	resp, err := s.ACC.GetByUserID(ctx, req.UserId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &account.GetAccountResponse{
-		Id:          resp.ID,
+		AccountId:   resp.ID,
 		UserId:      resp.UserID,
 		AccountNo:   resp.AccountNo,
 		Balance:     resp.Balance,
@@ -87,15 +87,19 @@ func (s *AccountServiceServer) GetUserAccount(ctx context.Context, req *account.
 }
 
 func (s *AccountServiceServer) GetBalance(ctx context.Context, req *account.GetBalanceRequest) (*account.GetAccountResponse, error) {
-	userID := ctx.Value("user_id")
 
-	resp, err := s.ACC.GetBalance(ctx, req.Id, userID.(string))
+	userID, ok := ctx.Value("user_id").(string)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "missing user_id")
+	}
+
+	resp, err := s.ACC.GetBalance(ctx, req.Id, userID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &account.GetAccountResponse{
-		Id:          resp.ID,
+		AccountId:   resp.ID,
 		UserId:      resp.UserID,
 		AccountNo:   resp.AccountNo,
 		Balance:     resp.Balance,

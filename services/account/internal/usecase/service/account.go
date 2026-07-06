@@ -7,6 +7,7 @@ import (
 
 	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/account/internal/domain"
 	"github.com/Eucastan/eucastanpay/services/account/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/account/internal/dto/response"
@@ -17,31 +18,38 @@ import (
 )
 
 type AccountUseCase struct {
-	ACC    repository.AccountRepository
-	logger *logrus.Logger
+	ACC       repository.AccountRepository
+	telemetry *telemetry.Telemetry
+	logger    *logrus.Logger
 }
 
-func NewAccountUseCase(acc repository.AccountRepository, logger *logrus.Logger) *AccountUseCase {
+func NewAccountUseCase(acc repository.AccountRepository, telemetry *telemetry.Telemetry, logger *logrus.Logger) *AccountUseCase {
 	return &AccountUseCase{
-		ACC:    acc,
-		logger: logger,
+		ACC:       acc,
+		telemetry: telemetry,
+		logger:    logger,
 	}
 }
 
 func (u *AccountUseCase) CreateAccountTX(
 	ctx context.Context,
 	tx pgx.Tx,
-	userID string,
+	userID, email string,
 	acc *request.CreateAccountRequest,
 ) (*response.AccountResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.CreateAccountTX")
+	defer span.End()
+
 	u.logger.WithFields(logrus.Fields{
 		"user_id":      userID,
+		"email":        email,
 		"account_type": acc.AccountType,
 		"service":      "account",
 	}).Info("creating account")
 
-	exists, err := u.ACC.Exists(ctx, userID, acc.AccountType)
+	exists, err := u.ACC.Exists(ctx, tx, userID, acc.AccountType)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -52,6 +60,7 @@ func (u *AccountUseCase) CreateAccountTX(
 	account := &domain.Account{
 		ID:          uuid.NewString(),
 		UserID:      userID,
+		Email:       email,
 		Balance:     1000,
 		AccountType: domain.ACCType(acc.AccountType),
 		Currency:    acc.Currency,
@@ -60,6 +69,7 @@ func (u *AccountUseCase) CreateAccountTX(
 	}
 
 	if err := u.ACC.Create(ctx, tx, account); err != nil {
+		span.RecordError(err)
 		u.logger.WithError(err).WithFields(logrus.Fields{
 			"user_id":      userID,
 			"account_type": acc.AccountType,
@@ -79,11 +89,15 @@ func (u *AccountUseCase) CreateAccountTX(
 
 func (u *AccountUseCase) CreateAccount(
 	ctx context.Context,
-	userID string,
+	userID, email string,
 	acc *request.CreateAccountRequest,
 ) (*response.AccountResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.CreateAccount")
+	defer span.End()
+
 	u.logger.WithFields(logrus.Fields{
 		"user_id":      userID,
+		"email":        email,
 		"account_type": acc.AccountType,
 		"service":      "account",
 	}).Info("creating account")
@@ -91,8 +105,9 @@ func (u *AccountUseCase) CreateAccount(
 	var a domain.Account
 
 	err := u.ACC.WithTx(ctx, func(tx pgx.Tx) error {
-		exists, err := u.ACC.Exists(ctx, userID, acc.AccountType)
+		exists, err := u.ACC.Exists(ctx, tx, userID, acc.AccountType)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
@@ -103,6 +118,7 @@ func (u *AccountUseCase) CreateAccount(
 		account := &domain.Account{
 			ID:          uuid.NewString(),
 			UserID:      userID,
+			Email:       email,
 			Balance:     1000, // initial unwithdrawable balance
 			AccountType: domain.ACCType(acc.AccountType),
 			Currency:    acc.Currency,
@@ -111,8 +127,10 @@ func (u *AccountUseCase) CreateAccount(
 		}
 
 		if err := u.ACC.Create(ctx, tx, account); err != nil {
+			span.RecordError(err)
 			u.logger.WithError(err).WithFields(logrus.Fields{
 				"user_id":      userID,
+				"email":        email,
 				"account_id":   account.UserID,
 				"account_type": account.AccountType,
 			}).Error("failed to create account")
@@ -120,13 +138,14 @@ func (u *AccountUseCase) CreateAccount(
 		}
 
 		createAccountEvent := events.AccountCreatedEvent{
-			BaseEvent:   events.NewBaseEvent(ctx, "account-service"),
-			AccountID:   account.ID,
-			UserID:      account.UserID,
-			AccountNo:   account.AccountNo,
-			AccountType: string(account.AccountType),
-			Currency:    account.Currency,
-			Timestamp:   time.Now().Unix(),
+			EventMetadata: events.NewChildEvent(events.NewRootEvent(ctx)),
+			AccountID:     account.ID,
+			UserID:        account.UserID,
+			Email:         account.Email,
+			AccountNo:     account.AccountNo,
+			AccountType:   string(account.AccountType),
+			Currency:      account.Currency,
+			Timestamp:     time.Now().Unix(),
 		}
 
 		if err := u.ACC.SaveOutboxEvent(ctx, tx, events.TopicAccountCreated, account.ID, createAccountEvent); err != nil {
@@ -147,6 +166,7 @@ func (u *AccountUseCase) CreateAccount(
 	})
 
 	if err != nil {
+		span.RecordError(err)
 		u.logger.WithError(err).WithFields(logrus.Fields{
 			"user_id":      userID,
 			"account_id":   a.UserID,
@@ -167,13 +187,18 @@ func (u *AccountUseCase) CreateAccount(
 }
 
 func (u *AccountUseCase) Credit(ctx context.Context, tx pgx.Tx, accID string, input *request.CreditRequest) error {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.Credit")
+	defer span.End()
+
 	u.logger.WithFields(logrus.Fields{
 		"account_id": accID,
 		"account_no": input.AccountNo,
 	}).Info("initiating credit operation")
 
+	u.logger.Info("Before LockAccount")
 	acc, err := u.ACC.LockAccount(ctx, tx, accID, input.AccountNo)
 	if err != nil {
+		span.RecordError(err)
 		u.logger.WithError(err).WithFields(logrus.Fields{
 			"user_id":    acc.UserID,
 			"account_id": accID,
@@ -182,13 +207,32 @@ func (u *AccountUseCase) Credit(ctx context.Context, tx pgx.Tx, accID string, in
 		return err
 	}
 
+	u.logger.Info("After LockAccount")
+
+	u.logger.Info("Before IsActive")
+
+	isActive, err := u.ACC.IsActive(ctx, tx, accID, acc.UserID)
+	if err != nil {
+		span.RecordError(err)
+		return err
+	}
+
+	if !isActive {
+		return errmessage.ErrNotEligibleForOperation
+	}
+
 	if acc.Status == domain.CloseAccount || acc.Status == domain.FreezeAccount {
 		return errmessage.ErrNotEligibleForOperation
 	}
 
+	u.logger.Info("Before UpdateBalance")
+
 	if err := u.ACC.UpdateBalance(ctx, tx, accID, input.Amount, true); err != nil {
+		span.RecordError(err)
 		return err
 	}
+
+	u.logger.Info("After UpdateBalance")
 
 	u.logger.WithFields(logrus.Fields{
 		"account_no": input.AccountNo,
@@ -199,6 +243,9 @@ func (u *AccountUseCase) Credit(ctx context.Context, tx pgx.Tx, accID string, in
 }
 
 func (u *AccountUseCase) Debit(ctx context.Context, tx pgx.Tx, accID string, input *request.DebitRequest) error {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.Debit")
+	defer span.End()
+
 	u.logger.WithFields(logrus.Fields{
 		"account_id": accID,
 		"account_no": input.AccountNo,
@@ -206,12 +253,23 @@ func (u *AccountUseCase) Debit(ctx context.Context, tx pgx.Tx, accID string, inp
 
 	acc, err := u.ACC.LockAccount(ctx, tx, accID, input.AccountNo)
 	if err != nil {
+		span.RecordError(err)
 		u.logger.WithError(err).WithFields(logrus.Fields{
 			"account_id": accID,
 			"account_no": input.AccountNo,
 		}).Error("failed debit operation locking")
 
 		return err
+	}
+
+	isActive, err := u.ACC.IsActive(ctx, tx, accID, acc.UserID)
+	if err != nil {
+		span.RecordError(err)
+		return err
+	}
+
+	if !isActive {
+		return errmessage.ErrNotEligibleForOperation
 	}
 
 	if acc.Status == domain.CloseAccount || acc.Status == domain.FreezeAccount {
@@ -223,6 +281,7 @@ func (u *AccountUseCase) Debit(ctx context.Context, tx pgx.Tx, accID string, inp
 	}
 
 	if err := u.ACC.UpdateBalance(ctx, tx, accID, input.Amount, false); err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -237,8 +296,12 @@ func (u *AccountUseCase) Debit(ctx context.Context, tx pgx.Tx, accID string, inp
 }
 
 func (u *AccountUseCase) GetAllAccount(ctx context.Context) ([]response.AccountResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.GetAllAccount")
+	defer span.End()
+
 	accounts, err := u.ACC.FindAll(ctx)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -251,8 +314,12 @@ func (u *AccountUseCase) GetAllAccount(ctx context.Context) ([]response.AccountR
 }
 
 func (u *AccountUseCase) GetByUserID(ctx context.Context, userID string) (*response.AccountResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.GetByUserID")
+	defer span.End()
+
 	acc, err := u.ACC.FindByUserID(ctx, userID)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -262,8 +329,12 @@ func (u *AccountUseCase) GetByUserID(ctx context.Context, userID string) (*respo
 }
 
 func (u *AccountUseCase) GetByAccountIDAndUserID(ctx context.Context, accID, userID string) (*response.AccountResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.GetByAccountIDAndUserID")
+	defer span.End()
+
 	acc, err := u.ACC.FindByAccountIDAndUserID(ctx, accID, userID)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -273,9 +344,12 @@ func (u *AccountUseCase) GetByAccountIDAndUserID(ctx context.Context, accID, use
 }
 
 func (u *AccountUseCase) GetBalance(ctx context.Context, accID, userID string) (*response.AccountResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.GetBalance")
+	defer span.End()
 
 	acc, err := u.ACC.FindByAccountIDAndUserID(ctx, accID, userID)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
@@ -283,10 +357,14 @@ func (u *AccountUseCase) GetBalance(ctx context.Context, accID, userID string) (
 }
 
 func (u *AccountUseCase) ActionOnAccount(ctx context.Context, accID, status string, accNo int64) (string, error) {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.ActionOnAccount")
+	defer span.End()
+
 	var message string
 	err := u.ACC.WithTx(ctx, func(tx pgx.Tx) error {
 		acc, err := u.ACC.FindByIDTX(ctx, tx, accID, accNo)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
@@ -318,6 +396,7 @@ func (u *AccountUseCase) ActionOnAccount(ctx context.Context, accID, status stri
 	})
 
 	if err != nil {
+		span.RecordError(err)
 		return "", err
 	}
 

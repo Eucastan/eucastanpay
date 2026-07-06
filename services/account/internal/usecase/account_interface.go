@@ -9,8 +9,8 @@ import (
 )
 
 type AccountUseCase interface {
-	CreateAccountTX(ctx context.Context, tx pgx.Tx, userID string, acc *request.CreateAccountRequest) (*response.AccountResponse, error)
-	CreateAccount(ctx context.Context, userID string, acc *request.CreateAccountRequest) (*response.AccountResponse, error)
+	CreateAccountTX(ctx context.Context, tx pgx.Tx, userID, email string, acc *request.CreateAccountRequest) (*response.AccountResponse, error)
+	CreateAccount(ctx context.Context, userID, email string, acc *request.CreateAccountRequest) (*response.AccountResponse, error)
 	Credit(ctx context.Context, tx pgx.Tx, accID string, input *request.CreditRequest) error
 	Debit(ctx context.Context, tx pgx.Tx, accID string, input *request.DebitRequest) error
 	GetAllAccount(ctx context.Context) ([]response.AccountResponse, error)

@@ -34,6 +34,12 @@ func (h *AccountHandler) OpenAccount(c *gin.Context) {
 		return
 	}
 
+	email, ok := c.Get("email")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "email not found in context"})
+		return
+	}
+
 	var req request.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		fmt.Println("Invalid request from client")
@@ -41,7 +47,7 @@ func (h *AccountHandler) OpenAccount(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.AccUC.CreateAccount(ctx, userID, &req)
+	resp, err := h.AccUC.CreateAccount(ctx, userID, email.(string), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open account"})
 		return

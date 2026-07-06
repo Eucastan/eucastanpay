@@ -3,11 +3,13 @@ package eventhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/Eucastan/eucastanpay/common/idempotency"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/account/internal/domain"
 	"github.com/Eucastan/eucastanpay/services/account/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/account/internal/repository"
@@ -22,22 +24,35 @@ type AccountConsumer struct {
 	AccUseCase usecase.AccountUseCase
 	IdemStore  idempotency.Store
 	Publisher  *producer.Publisher
+	telemetry  *telemetry.Telemetry
 	logger     *logrus.Logger
 }
 
-func NewAccountConsumer(repo repository.AccountRepository, accUseCase usecase.AccountUseCase, idemStore idempotency.Store, publisher *producer.Publisher, logger *logrus.Logger) *AccountConsumer {
+func NewAccountConsumer(
+	repo repository.AccountRepository,
+	accUseCase usecase.AccountUseCase,
+	idemStore idempotency.Store,
+	publisher *producer.Publisher,
+	telemetry *telemetry.Telemetry,
+	logger *logrus.Logger,
+) *AccountConsumer {
 	return &AccountConsumer{
 		Repo:       repo,
 		AccUseCase: accUseCase,
 		IdemStore:  idemStore,
 		Publisher:  publisher,
+		telemetry:  telemetry,
 		logger:     logger,
 	}
 }
 
 func (h *AccountConsumer) OnUserRegistration(ctx context.Context, msg []byte) error {
+	ctx, span := h.telemetry.Start(ctx, "AccountConsumer.OnUserRegistration")
+	defer span.End()
+
 	var event events.UserRegisteredEvent
 	if err := json.Unmarshal(msg, &event); err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -49,6 +64,7 @@ func (h *AccountConsumer) OnUserRegistration(ctx context.Context, msg []byte) er
 	return h.Repo.WithTx(ctx, func(tx pgx.Tx) error {
 		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, event.UserID)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 		if processed {
@@ -60,35 +76,41 @@ func (h *AccountConsumer) OnUserRegistration(ctx context.Context, msg []byte) er
 			Currency:    "NGN",
 		}
 
-		acc, err := h.AccUseCase.CreateAccountTX(ctx, tx, event.UserID, createReq)
+		acc, err := h.AccUseCase.CreateAccountTX(ctx, tx, event.UserID, event.Email, createReq)
 		if err != nil {
-
+			span.RecordError(err)
 			failedEvents := events.CreateAccFailedEvent{
-				BaseEvent: events.NewBaseEvent(ctx, "account-service"),
-				AccountID: "",
-				Reason:    err.Error(),
+				EventMetadata: events.NewChildEvent(event.EventMetadata),
+				AccountID:     "",
+				Reason:        err.Error(),
 			}
+
 			if err := h.Repo.SaveOutboxEvent(ctx, tx, events.TopicCreateAccFailed, event.UserID, failedEvents); err != nil {
+				span.RecordError(err)
 				return err
 			}
+
 			h.logger.WithFields(logrus.Fields{
 				"correlation_id": failedEvents.CorrelationID,
 				"service":        failedEvents.CausationID,
 				"reason":         failedEvents.Reason,
 			})
+
 			return err
 		}
 
 		err = h.Repo.SaveOutboxEvent(ctx, tx, events.TopicAccountCreated, event.UserID, events.AccountCreatedEvent{
-			BaseEvent:   events.NewBaseEvent(ctx, "account-service"),
-			AccountID:   acc.ID,
-			UserID:      acc.UserID,
-			AccountNo:   acc.AccountNo,
-			AccountType: acc.AccountType,
-			Currency:    acc.Currency,
-			Timestamp:   acc.CreatedAt.Unix(),
+			EventMetadata: events.NewChildEvent(event.EventMetadata),
+			AccountID:     acc.ID,
+			UserID:        event.UserID,
+			Email:         event.Email,
+			AccountNo:     acc.AccountNo,
+			AccountType:   acc.AccountType,
+			Currency:      acc.Currency,
+			Timestamp:     acc.CreatedAt.Unix(),
 		})
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
@@ -109,48 +131,69 @@ func (h *AccountConsumer) OnUserRegistration(ctx context.Context, msg []byte) er
 }
 
 func (h *AccountConsumer) OnDebitRequested(ctx context.Context, msg []byte) error {
-	h.logger.Info("DEBIT REQUESTED MESSAGE:", string(msg))
+	ctx, span := h.telemetry.Start(ctx, "AccountConsumer.OnDebitRequested")
+	defer span.End()
 
 	var event events.DebitRequestedEvent
 	if err := json.Unmarshal(msg, &event); err != nil {
+		span.RecordError(err)
 		return err
 	}
 
-	h.logger.Info("DEBIT REQUESTED EVENT:", event)
+	h.logger.WithFields(logrus.Fields{
+		"operation":  "OnDebiteRequest",
+		"account_no": event.FromAccNo,
+		"amount":     event.Amount,
+	}).Info("DEBIT REQUESTED EVENT:", event)
 
 	input := &request.DebitRequest{
 		AccountNo: event.FromAccNo,
 		Amount:    event.Amount,
 	}
 
+	eventID := fmt.Sprintf("%s:%s", event.Reference, events.TopicDebitRequested)
 	return h.Repo.WithTx(ctx, func(tx pgx.Tx) error {
-		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, event.Reference)
+		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, eventID)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 		if processed {
 			return nil
 		}
 
+		h.logger.WithFields(logrus.Fields{
+			"operation": "OnDebitRequested",
+			"reference": event.Reference,
+		}).Info("Processing debit request")
+
 		if err := h.AccUseCase.Debit(ctx, tx, event.FromAccID, input); err != nil {
 			failEvent := events.DebitFailedEvent{
-				BaseEvent: events.NewBaseEvent(ctx, "account-service"),
-				Reference: event.Reference,
-				Reason:    err.Error(),
+				EventMetadata: events.NewChildEvent(event.EventMetadata),
+				Reference:     event.Reference,
+				Reason:        err.Error(),
 			}
-			_ = h.Repo.SaveOutboxEvent(ctx, tx, events.TopicDebitFailed, event.Reference, failEvent)
+
+			if err := h.Repo.SaveOutboxEvent(ctx, tx, events.TopicDebitFailed, event.Reference, failEvent); err != nil {
+				span.RecordError(err)
+				return err
+			}
+
 			return err
 		}
+		h.logger.Info("Debit request processed successfully")
 
 		acc, err := h.Repo.FindByIDTX(ctx, tx, event.FromAccID, event.FromAccNo)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
+		h.logger.Info("Saving debited data to outbox to publish later for debit completed")
 		err = h.Repo.SaveOutboxEvent(ctx, tx, events.TopicDebitCompleted,
 			event.Reference,
 			events.DebitCompletedEvent{
-				BaseEvent:        events.NewBaseEvent(ctx, "account-service"),
+				EventMetadata:    events.NewChildEvent(event.EventMetadata),
 				FromAccID:        event.FromAccID,
 				Reference:        event.Reference,
 				Amount:           event.Amount,
@@ -159,14 +202,16 @@ func (h *AccountConsumer) OnDebitRequested(ctx context.Context, msg []byte) erro
 			},
 		)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
+		h.logger.Info("Debited data saved and ready to be published")
 
 		return h.IdemStore.MarkEventProcessedTx(
 			ctx,
 			tx,
 			uuid.NewString(),
-			event.Reference,
+			eventID,
 			events.TopicDebitRequested,
 		)
 
@@ -174,60 +219,106 @@ func (h *AccountConsumer) OnDebitRequested(ctx context.Context, msg []byte) erro
 }
 
 func (h *AccountConsumer) OnCreditRequested(ctx context.Context, msg []byte) error {
-	h.logger.Info("CREDIT REQUESTED MESSAGE:", string(msg))
+	ctx, span := h.telemetry.Start(ctx, "AccountConsumer.OnCreditRequested")
+	defer span.End()
 
 	var event events.CreditRequestedEvent
 	if err := json.Unmarshal(msg, &event); err != nil {
+		span.RecordError(err)
 		return err
 	}
 
-	h.logger.Info("CREDIT REQUESTED EVENT:", event)
+	h.logger.WithFields(logrus.Fields{
+		"operation":  "OnCreditRequested",
+		"account_no": event.ToAccNo,
+		"amount":     event.Amount,
+	}).Info("CREDIT REQUESTED EVENT:", event)
 
 	input := &request.CreditRequest{
 		AccountNo: event.ToAccNo,
 		Amount:    event.Amount,
 	}
 
+	h.logger.Info("Before entering transaction")
+
+	eventID := fmt.Sprintf("%s:%s", event.Reference, events.TopicCreditRequested)
 	return h.Repo.WithTx(ctx, func(tx pgx.Tx) error {
-		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, event.Reference)
+		h.logger.Info("Entered transaction and about to check idempotency")
+		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, eventID)
 		if err != nil {
+			span.RecordError(err)
+			h.logger.WithError(err).Error("Failed to check idempotency")
 			return err
 		}
 		if processed {
 			return nil
 		}
+		h.logger.Info("Idempotency check passed")
 
-		if err := h.AccUseCase.Credit(ctx, tx, event.ToAccID, input); err != nil {
-			failEvent := events.CreditFailedEvent{
-				BaseEvent: events.NewBaseEvent(ctx, "account-service"),
-				Reference: event.Reference,
-				Reason:    err.Error(),
-			}
-			_ = h.Repo.SaveOutboxEvent(ctx, tx, events.TopicCreditFailed, event.Reference, failEvent)
-			return err
-		}
+		h.logger.Info("Before ConfirmAccountNo")
 
-		acc, err := h.Repo.FindByIDTX(ctx, tx, event.ToAccID, event.ToAccNo)
+		confirmAcc, err := h.Repo.ConfirmAccountNo(ctx, tx, event.ToAccNo)
 		if err != nil {
+			span.RecordError(err)
+			h.logger.WithError(err).Error("ConfirmAccountNo failed")
 			return err
 		}
+
+		h.logger.Info("After ConfirmAccountNo")
+
+		h.logger.WithFields(logrus.Fields{
+			"operation":            "OnCreditRequested",
+			"reference":            event.Reference,
+			"confirmed_account_id": confirmAcc.ID,
+		}).Info("Processing credit request")
+
+		h.logger.Info("Before Credit")
+
+		if err := h.AccUseCase.Credit(ctx, tx, confirmAcc.ID, input); err != nil {
+			span.RecordError(err)
+			h.logger.WithError(err).Error("Credit failed")
+			failEvent := events.CreditFailedEvent{
+				EventMetadata: events.NewChildEvent(event.EventMetadata),
+				Reference:     event.Reference,
+				Reason:        err.Error(),
+			}
+			if err := h.Repo.SaveOutboxEvent(ctx, tx, events.TopicCreditFailed, event.Reference, failEvent); err != nil {
+				span.RecordError(err)
+				return err
+			}
+			return err
+		}
+		h.logger.Info("After Credit")
+
+		h.logger.Info("Credit request processed successfully")
+
+		acc, err := h.Repo.FindByIDTX(ctx, tx, confirmAcc.ID, event.ToAccNo)
+		if err != nil {
+			span.RecordError(err)
+			return err
+		}
+
+		h.logger.Info("Saving credited data to outbox...")
 
 		err = h.Repo.SaveOutboxEvent(ctx, tx, events.TopicCreditCompleted, event.Reference, events.CreditCompletedEvent{
-			BaseEvent:      events.NewBaseEvent(ctx, "account-service"),
-			ToAccID:        event.ToAccID,
+			EventMetadata:  events.NewChildEvent(event.EventMetadata),
+			ToAccID:        confirmAcc.ID,
 			Reference:      event.Reference,
 			Amount:         event.Amount,
 			ToBalanceAfter: acc.Balance,
 			Timestamp:      time.Now().Unix(),
 		})
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
+
+		h.logger.Info("Saving credited data to outbox completed successfully")
 
 		return h.IdemStore.MarkEventProcessedTx(
 			ctx, tx,
 			uuid.NewString(),
-			event.Reference,
+			eventID,
 			events.TopicCreditRequested,
 		)
 	})
