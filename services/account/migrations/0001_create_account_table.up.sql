@@ -9,6 +9,7 @@ CACHE 100;
 CREATE TABLE IF NOT EXISTS accounts (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
+    email TEXT NOT NULL,
     account_no BIGINT NOT NULL DEFAULT nextval('account_number_seq'),
     balance BIGINT NOT NULL DEFAULT 0 CHECK (balance >= 0),
     account_type TEXT NOT NULL,
