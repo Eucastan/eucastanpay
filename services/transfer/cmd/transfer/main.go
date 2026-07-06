@@ -17,6 +17,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
 	"github.com/Eucastan/eucastanpay/common/pkg/middleware"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/transfer"
 	"github.com/Eucastan/eucastanpay/services/transfer/config"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/api"
@@ -29,6 +30,7 @@ import (
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/usecase/service"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/worker"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 )
 
@@ -41,14 +43,22 @@ func main() {
 	log := logger.New(cfg.LogLevel)
 	log.Info("Starting Transfer Service...")
 
+	tracer := otel.Tracer("transfer-service")
+	meter := otel.Meter("transfer-service")
+
+	tm, err := telemetry.New(tracer, meter, log)
+	if err != nil {
+		panic(err)
+	}
+
 	db := database.NewPostgresDB(cfg, log)
 	defer db.CloseDB()
 
-	transferRepo := postgres.NewTransferRepository(db.DB)
+	transferRepo := postgres.NewTransferRepository(db.DB, tm)
 	//redis := redis.NewRedisClient(cfg)
 
 	// Kafka init
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers)
+	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
 	defer publisher.Close()
 
 	appCtx, appCancel := context.WithCancel(context.Background())
@@ -57,8 +67,8 @@ func main() {
 	go worker.StartOutboxWorker(appCtx, db.DB, publisher, log)
 	idempotencyStore := idempotency.NewPostgresStore()
 
-	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "transfer-group", log)
-	transferConsumer := eventhandler.NewTransferConsumer(transferRepo, idempotencyStore, publisher, log)
+	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "transfer-group", tm, log)
+	transferConsumer := eventhandler.NewTransferConsumer(transferRepo, idempotencyStore, tm, publisher, log)
 
 	consumerInit.Register(events.TopicTransferInitiated,
 		consumer.RetryHandler(
@@ -66,6 +76,7 @@ func main() {
 			publisher,
 			events.TopicTransferInitiated,
 			events.TopicTransferDLQ,
+			tm,
 			3,
 		),
 	)
@@ -76,6 +87,7 @@ func main() {
 			publisher,
 			events.TopicDebitCompleted,
 			events.TopicTransferDLQ,
+			tm,
 			3,
 		),
 	)
@@ -86,6 +98,7 @@ func main() {
 			publisher,
 			events.TopicDebitFailed,
 			events.TopicTransferDLQ,
+			tm,
 			3,
 		),
 	)
@@ -96,6 +109,7 @@ func main() {
 			publisher,
 			events.TopicCreditCompleted,
 			events.TopicTransferDLQ,
+			tm,
 			3,
 		),
 	)
@@ -106,6 +120,7 @@ func main() {
 			publisher,
 			events.TopicCreditFailed,
 			events.TopicTransferDLQ,
+			tm,
 			3,
 		),
 	)
@@ -117,6 +132,7 @@ func main() {
 			publisher,
 			events.TopicDebitReverseCompleted,
 			events.TopicTransferDLQ,
+			tm,
 			3,
 		),
 	)
@@ -130,9 +146,9 @@ func main() {
 	}
 	defer allClients.Close()
 
-	transferUC := service.NewTransferUseCase(transferRepo, allClients, publisher, log)
-	transferHandler := handler.NewTransferHandler(transferUC)
-	go transferUC.RecoverStuckTransfers(context.Background())
+	transferUC := service.NewTransferUseCase(transferRepo, allClients, publisher, tm, log)
+	transferHandler := handler.NewTransferHandler(transferUC, tm)
+	// go transferUC.RecoverStuckTransfers(context.Background())
 
 	// Health check init
 	healthChecker := healthcheck.NewHealthChecker("transfer-service", cfg.Version, log)
@@ -142,14 +158,14 @@ func main() {
 
 	r := gin.Default()
 	mw := middleware.New(log, cfg.JWTSecret)
-	r.Use(mw.Logger(), mw.Recovery(), mw.Auth())
+	r.Use(mw.Logger(), mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
 
 	r.GET("/health", healthChecker.Health)
 	r.GET("/live", healthChecker.Liveness)
 	r.GET("/ready", healthChecker.Readiness)
 
-	api.NewRouter(r, transferHandler)
+	api.NewRouter(r, transferHandler, cfg)
 
 	httpSrv := &http.Server{
 		Addr:         ":" + cfg.HTTPPort,
