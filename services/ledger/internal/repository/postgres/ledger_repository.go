@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 	"encoding/json"
-	"github.com/Eucastan/eucastanpay/common/pkg/errors"
+	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -72,7 +72,7 @@ func (r *LedgerRepository) FindByID(ctx context.Context, id string) (*domain.Led
 		&entry.CreatedAt, &entry.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
-		return nil, errors.ErrLedgerNotFound
+		return nil, errmessage.ErrLedgerNotFound
 	}
 	return entry, err
 }
@@ -92,7 +92,7 @@ func (r *LedgerRepository) FindByReference(ctx context.Context, reference string
 		&entry.CreatedAt, &entry.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
-		return nil, errors.ErrLedgerNotFound
+		return nil, errmessage.ErrLedgerNotFound
 	}
 	return entry, err
 }

@@ -87,17 +87,17 @@ func (u *LedgerUseCase) TransactionEntry(
 
 func (u *LedgerUseCase) publishLedgerEvent(ctx context.Context, tx pgx.Tx, entry *domain.Ledger) error {
 	event := events.LedgerCreatedEvent{
-		BaseEvent:    events.NewBaseEvent(ctx, "ledger-service"),
-		LedgerID:     entry.ID,
-		Reference:    entry.Reference,
-		UserID:       "",
-		AccountID:    entry.AccountID,
-		Type:         string(entry.EntryType),
-		Amount:       entry.Amount,
-		Currency:     "NGN",
-		BalanceAfter: entry.BalanceAfter,
-		Description:  entry.Description,
-		Timestamp:    entry.CreatedAt.Unix(),
+		EventMetadata: events.NewChildEvent(events.NewRootEvent(ctx)),
+		LedgerID:      entry.ID,
+		Reference:     entry.Reference,
+		UserID:        "",
+		AccountID:     entry.AccountID,
+		Type:          string(entry.EntryType),
+		Amount:        entry.Amount,
+		Currency:      "NGN",
+		BalanceAfter:  entry.BalanceAfter,
+		Description:   entry.Description,
+		Timestamp:     entry.CreatedAt.Unix(),
 	}
 
 	return u.ledger.SaveOutboxEvent(ctx, tx, events.TopicLedgerCreated, entry.Reference, event)
@@ -131,7 +131,7 @@ func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) 
 
 		// Publish alert event via outbox
 		alertEvent := events.LedgerReconciliationAlertEvent{
-			BaseEvent:      events.NewBaseEvent(ctx, "ledger-service"),
+			EventMetadata:  events.NewChildEvent(events.NewRootEvent(ctx)),
 			AccountID:      accountID,
 			AccountBalance: result.AccountBalance,
 			LedgerBalance:  result.LedgerBalance,
