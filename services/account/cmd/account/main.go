@@ -17,6 +17,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
 	"github.com/Eucastan/eucastanpay/common/pkg/middleware"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/account"
 	"github.com/Eucastan/eucastanpay/services/account/config"
 	"github.com/Eucastan/eucastanpay/services/account/internal/api"
@@ -29,6 +30,8 @@ import (
 	"github.com/Eucastan/eucastanpay/services/account/internal/worker"
 
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 )
 
@@ -41,24 +44,32 @@ func main() {
 	log := logger.New(cfg.LogLevel)
 	log.Info("Starting Account Service...")
 
+	tracer := otel.Tracer("account-service")
+	meter := otel.Meter("account-service")
+
+	tm, err := telemetry.New(tracer, meter, log)
+	if err != nil {
+		log.WithError(err).Fatal("Failed to initialize telemetry")
+	}
+
 	db := database.NewPostgresDB(cfg, log)
 	defer db.CloseDB()
 
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers)
+	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
 	defer publisher.Close()
 
 	idempotencyStore := idempotency.NewPostgresStore()
-	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "account-service-group", log)
+	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "account-service-group", tm, log)
 
-	accRepo := postgres.NewAccountRepository(db.DB, log)
-	accUseCase := service.NewAccountUseCase(accRepo, log)
+	accRepo := postgres.NewAccountRepository(db.DB, tm, log)
+	accUseCase := service.NewAccountUseCase(accRepo, tm, log)
 
 	appCtx, appCancel := context.WithCancel(context.Background())
 	defer appCancel()
 
 	go worker.StartOutboxWorker(appCtx, db.DB, publisher, log)
 
-	accountConsumer := eventhandler.NewAccountConsumer(accRepo, accUseCase, idempotencyStore, publisher, log)
+	accountConsumer := eventhandler.NewAccountConsumer(accRepo, accUseCase, idempotencyStore, publisher, tm, log)
 
 	consumerInit.Register(events.TopicUserRegistered,
 		consumer.RetryHandler(
@@ -66,6 +77,7 @@ func main() {
 			publisher,
 			events.TopicUserRegistered,
 			events.TopicAccountDLQ,
+			tm,
 			3,
 		),
 	)
@@ -75,6 +87,7 @@ func main() {
 			publisher,
 			events.TopicDebitRequested,
 			events.TopicAccountDLQ,
+			tm,
 			3,
 		),
 	)
@@ -84,6 +97,7 @@ func main() {
 			publisher,
 			events.TopicCreditRequested,
 			events.TopicAccountDLQ,
+			tm,
 			3,
 		),
 	)
@@ -100,8 +114,10 @@ func main() {
 
 	r := gin.Default()
 	mw := middleware.New(log, cfg.JWTSecret)
-	r.Use(mw.Logger(), mw.Recovery())
+	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
+	r.Use(otelgin.Middleware("account-service"))
+	r.Use(mw.Logger(), mw.Auth())
 
 	r.GET("/health", healthChecker.Health)
 	r.GET("/live", healthChecker.Liveness)
