@@ -1,0 +1,533 @@
+basePath: /api/v1
+definitions:
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_request.CurrentStatusRequest:
+    properties:
+      status:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_request.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_request.KYCRequest:
+    properties:
+      id_number:
+        type: string
+      id_type:
+        enum:
+        - NIN
+        - passport
+        - drivers_license
+        type: string
+    required:
+    - id_number
+    - id_type
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_request.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_request.RegisterRequest:
+    properties:
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password_hash:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password_hash
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_request.ResetPasswordRequest:
+    properties:
+      confirm_pass:
+        minLength: 8
+        type: string
+      password:
+        minLength: 8
+        type: string
+      token:
+        type: string
+    required:
+    - confirm_pass
+    - password
+    - token
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_response.AuthResponse:
+    properties:
+      access_token:
+        type: string
+      message:
+        type: string
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.UserResponse'
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_response.KYCResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_response.LoginResponse:
+    properties:
+      message:
+        type: string
+      response:
+        $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.AuthResponse'
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_response.RefreshTokenResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_response.RegisterResponse:
+    properties:
+      message:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.UserResponse'
+    type: object
+  github_com_Eucastan_eucastanpay_services_user_internal_dto_response.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      email_verified:
+        type: boolean
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      status:
+        type: string
+    type: object
+host: localhost:8001
+info:
+  contact:
+    email: support@eucastanpay.com
+    name: Eucastan
+  description: Authentication and User Management Service for EucastanPay.
+  license:
+    name: MIT
+  title: EucastanPay User Service API
+  version: "1.0"
+paths:
+  /current-user/{user_id}:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: User Current Status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_request.CurrentStatusRequest'
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a user's account status
+      tags:
+      - Authentication
+  /forgot-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Forgot Password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_request.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      summary: Forgot Password
+      tags:
+      - Authentication
+  /kyc/{user_id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.KYCResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get KYC
+      tags:
+      - KYC
+  /kyc/{user_id}/approve:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Approved KYC
+      tags:
+      - KYC
+  /kyc/{user_id}/create:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: KYC Information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_request.KYCRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Submit KYC information
+      tags:
+      - KYC
+  /logout:
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout user
+      tags:
+      - Authentication
+  /logout-all:
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout user from all devices
+      tags:
+      - Authentication
+  /public/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns JWT tokens.
+      parameters:
+      - description: Login
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      summary: Login user
+      tags:
+      - Authentication
+  /public/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new EucastanPay user account.
+      parameters:
+      - description: User Registration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_request.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - Authentication
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.RefreshTokenResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Refresh Token
+      tags:
+      - Authentication
+  /reset-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Reset Password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_request.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      summary: Reset Password
+      tags:
+      - AUTH
+  /verify-email:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Verification Token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      summary: Verify User Email
+      tags:
+      - Authentication
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
