@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"context"
-	"encoding/json"
+
 	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
+	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -11,16 +13,24 @@ import (
 )
 
 type LedgerRepository struct {
-	DB *pgxpool.Pool
+	DB        *pgxpool.Pool
+	telemetry *telemetry.Telemetry
 }
 
-func NewLedgerRepository(db *pgxpool.Pool) *LedgerRepository {
-	return &LedgerRepository{DB: db}
+func NewLedgerRepository(db *pgxpool.Pool, telemetry *telemetry.Telemetry) *LedgerRepository {
+	return &LedgerRepository{
+		DB:        db,
+		telemetry: telemetry,
+	}
 }
 
 func (r *LedgerRepository) WithTx(ctx context.Context, fn func(tx pgx.Tx) error) error {
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.WithTx")
+	defer span.End()
+
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -33,6 +43,7 @@ func (r *LedgerRepository) WithTx(ctx context.Context, fn func(tx pgx.Tx) error)
 
 	if err = fn(tx); err != nil {
 		_ = tx.Rollback(ctx)
+		span.RecordError(err)
 		return err
 	}
 
@@ -40,6 +51,9 @@ func (r *LedgerRepository) WithTx(ctx context.Context, fn func(tx pgx.Tx) error)
 }
 
 func (r *LedgerRepository) CreateLedgerEntry(ctx context.Context, tx pgx.Tx, entry *domain.Ledger) error {
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.CreateLedgerEntry")
+	defer span.End()
+
 	query := `
         INSERT INTO ledgers (id, account_id, amount, entry_type, reference, balance_after, description)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -58,6 +72,9 @@ func (r *LedgerRepository) CreateLedgerEntry(ctx context.Context, tx pgx.Tx, ent
 }
 
 func (r *LedgerRepository) FindByID(ctx context.Context, id string) (*domain.Ledger, error) {
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.FindByID")
+	defer span.End()
+
 	query := `
         SELECT id, account_id, amount, entry_type, reference, balance_after, 
                description, created_at, updated_at 
@@ -72,12 +89,16 @@ func (r *LedgerRepository) FindByID(ctx context.Context, id string) (*domain.Led
 		&entry.CreatedAt, &entry.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		span.RecordError(err)
 		return nil, errmessage.ErrLedgerNotFound
 	}
 	return entry, err
 }
 
 func (r *LedgerRepository) FindByReference(ctx context.Context, reference string) (*domain.Ledger, error) {
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.FindByReference")
+	defer span.End()
+
 	query := `
         SELECT id, account_id, amount, entry_type, reference, balance_after, 
                description, created_at, updated_at 
@@ -92,12 +113,16 @@ func (r *LedgerRepository) FindByReference(ctx context.Context, reference string
 		&entry.CreatedAt, &entry.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		span.RecordError(err)
 		return nil, errmessage.ErrLedgerNotFound
 	}
 	return entry, err
 }
 
 func (r *LedgerRepository) FindAll(ctx context.Context) ([]domain.Ledger, error) {
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.FindAll")
+	defer span.End()
+
 	query := `
         SELECT id, account_id, amount, entry_type, reference, balance_after, 
                description, created_at, updated_at 
@@ -107,6 +132,7 @@ func (r *LedgerRepository) FindAll(ctx context.Context) ([]domain.Ledger, error)
 
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -115,6 +141,9 @@ func (r *LedgerRepository) FindAll(ctx context.Context) ([]domain.Ledger, error)
 }
 
 func (r *LedgerRepository) FindByEntryType(ctx context.Context, entryType string) ([]domain.Ledger, error) {
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.FindByEntryType")
+	defer span.End()
+
 	query := `
         SELECT id, account_id, amount, entry_type, reference, balance_after, 
                description, created_at, updated_at 
@@ -125,6 +154,7 @@ func (r *LedgerRepository) FindByEntryType(ctx context.Context, entryType string
 
 	rows, err := r.DB.Query(ctx, query, entryType)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -133,6 +163,9 @@ func (r *LedgerRepository) FindByEntryType(ctx context.Context, entryType string
 }
 
 func (r *LedgerRepository) SumByAccountID(ctx context.Context, accID string) (int64, error) {
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.SumByAccountID")
+	defer span.End()
+
 	query := `
         SELECT COALESCE(SUM(
             CASE 
@@ -146,18 +179,26 @@ func (r *LedgerRepository) SumByAccountID(ctx context.Context, accID string) (in
 	var balance int64
 	err := r.DB.QueryRow(ctx, query, accID).Scan(&balance)
 	if err != nil {
+		span.RecordError(err)
 		return 0, err
 	}
 	return balance, nil
 }
 
 func (r *LedgerRepository) SaveOutboxEvent(ctx context.Context, tx pgx.Tx, topic, key string, payload interface{}) error {
-	data, err := json.Marshal(payload)
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.SaveOutboxEvent")
+	defer span.End()
+
+	data, err := producer.Encode(payload)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
 	query := `INSERT INTO outbox (id, topic, key, payload) VALUES ($1, $2, $3, $4)`
-	_, err = tx.Exec(ctx, query, uuid.NewString(), topic, key, data)
-	return err
+	if _, err = tx.Exec(ctx, query, uuid.NewString(), topic, key, data); err != nil {
+		span.RecordError(err)
+		return err
+	}
+	return nil
 }

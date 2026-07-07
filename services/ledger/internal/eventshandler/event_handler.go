@@ -2,11 +2,12 @@ package eventshandler
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/Eucastan/eucastanpay/common/idempotency"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
+	"github.com/Eucastan/eucastanpay/common/pkg/kafka"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/repository"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/usecase"
 	"github.com/google/uuid"
@@ -17,6 +18,7 @@ import (
 type LedgerEventHandler struct {
 	Repo      repository.LedgerRepository
 	Ledger    usecase.LedgerUseCase
+	telemetry *telemetry.Telemetry
 	IdemStore idempotency.Store
 	Publisher *producer.Publisher
 	Log       *logrus.Logger
@@ -25,6 +27,7 @@ type LedgerEventHandler struct {
 func NewLedgerEventHandler(
 	repo repository.LedgerRepository,
 	ledger usecase.LedgerUseCase,
+	telemetry *telemetry.Telemetry,
 	IdemStore idempotency.Store,
 	publisher *producer.Publisher,
 	log *logrus.Logger) *LedgerEventHandler {
@@ -32,6 +35,7 @@ func NewLedgerEventHandler(
 	return &LedgerEventHandler{
 		Repo:      repo,
 		Ledger:    ledger,
+		telemetry: telemetry,
 		IdemStore: IdemStore,
 		Publisher: publisher,
 		Log:       log,
@@ -39,8 +43,12 @@ func NewLedgerEventHandler(
 }
 
 func (h *LedgerEventHandler) OnTransferCompleted(ctx context.Context, msg []byte) error {
-	var event events.TransferCompletedEvent
-	if err := json.Unmarshal(msg, &event); err != nil {
+	ctx, span := h.telemetry.Start(ctx, "LedgerEventHandler.OnTransferCompleted")
+	defer span.End()
+
+	event, err := kafka.Decode[events.TransferCompletedEvent](msg)
+	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -48,6 +56,7 @@ func (h *LedgerEventHandler) OnTransferCompleted(ctx context.Context, msg []byte
 	return h.Repo.WithTx(ctx, func(tx pgx.Tx) error {
 		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, eventID)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 		if processed {
@@ -65,6 +74,7 @@ func (h *LedgerEventHandler) OnTransferCompleted(ctx context.Context, msg []byte
 			event.ToBalanceAfter,
 		)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
