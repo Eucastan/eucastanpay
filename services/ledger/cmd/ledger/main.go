@@ -18,6 +18,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
 	"github.com/Eucastan/eucastanpay/common/pkg/middleware"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/ledger"
 	"github.com/Eucastan/eucastanpay/services/ledger/config"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/api"
@@ -29,6 +30,8 @@ import (
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/usecase/service"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/worker"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 )
 
@@ -41,10 +44,18 @@ func main() {
 	log := logger.New(cfg.LogLevel)
 	log.Info("Starting Ledger Service...")
 
+	tracer := otel.Tracer("ledger-service")
+	meter := otel.Meter("ledger-service")
+
+	tm, err := telemetry.New(tracer, meter, log)
+	if err != nil {
+		panic(err)
+	}
+
 	db := database.NewPostgresDB(cfg, log)
 	defer db.CloseDB()
 
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers)
+	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
 	defer publisher.Close()
 
 	accountConfig := clients.Config{
@@ -58,8 +69,8 @@ func main() {
 		log.WithError(err).Fatal("failed to connect gRPC clients")
 	}
 
-	ledgerRepo := postgres.NewLedgerRepository(db.DB)
-	ledgerUC := service.NewLedgerUseCase(ledgerRepo, clients, log)
+	ledgerRepo := postgres.NewLedgerRepository(db.DB, tm)
+	ledgerUC := service.NewLedgerUseCase(ledgerRepo, tm, clients, log)
 
 	appCtx, appCancel := context.WithCancel(context.Background())
 	defer appCancel()
@@ -67,8 +78,8 @@ func main() {
 	idemStore := idempotency.NewPostgresStore()
 	go worker.StartOutboxWorker(appCtx, db.DB, publisher, log)
 
-	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "ledger-group", log)
-	ledgerConsumer := eventshandler.NewLedgerEventHandler(ledgerRepo, ledgerUC, idemStore, publisher, log)
+	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "ledger-group", tm, log)
+	ledgerConsumer := eventshandler.NewLedgerEventHandler(ledgerRepo, ledgerUC, tm, idemStore, publisher, log)
 
 	consumerInit.Register(events.TopicTransferCompleted,
 		consumer.RetryHandler(
@@ -76,6 +87,7 @@ func main() {
 			publisher,
 			events.TopicTransferCompleted,
 			events.TopicLedgerDLQ,
+			tm,
 			3,
 		),
 	)
@@ -91,8 +103,10 @@ func main() {
 
 	r := gin.Default()
 	mw := middleware.New(log, cfg.JWTSecret)
-	r.Use(mw.Logger(), mw.Recovery())
+	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
+	r.Use(otelgin.Middleware("ledger-service"))
+	r.Use(mw.Logger())
 
 	r.GET("/health", healthChecker.Health)
 	r.GET("/live", healthChecker.Liveness)
