@@ -14,8 +14,8 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/consumer"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
-	"github.com/Eucastan/eucastanpay/common/pkg/metrics"
 	"github.com/Eucastan/eucastanpay/common/pkg/middleware"
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/audit/config"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/api"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/api/handler"
@@ -25,6 +25,8 @@ import (
 	"github.com/Eucastan/eucastanpay/services/audit/internal/repository/postgres"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/usecase/service"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/otel"
 )
 
 func main() {
@@ -36,15 +38,23 @@ func main() {
 	log := logger.New(cfg.LogLevel)
 	log.Info("Starting Audit Service...")
 
+	tracer := otel.Tracer("audit-service")
+	meter := otel.Meter("audit-service")
+
+	tm, err := telemetry.New(tracer, meter, log)
+	if err != nil {
+		panic(err)
+	}
+
 	db := database.NewPostgresDB(cfg, log)
 	defer db.CloseDB()
 
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers)
+	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
 	defer publisher.Close()
 
 	// Repositories & UseCases
-	auditRepo := postgres.NewAuditRepository(db.DB)
-	auditUC := service.NewAuditUseCase(auditRepo)
+	auditRepo := postgres.NewAuditRepository(db.DB, tm)
+	auditUC := service.NewAuditUseCase(auditRepo, tm)
 
 	// tracing
 	tracing.InitTracer("audit-service")
@@ -53,10 +63,10 @@ func main() {
 	defer appCancel()
 
 	// Kafka Consumer
-	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "audit-service-group", log)
+	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "audit-service-group", tm, log)
 	idempotencyStore := idempotency.NewPostgresStore()
 
-	auditConsumer := eventhandler.NewAuditConsumer(auditRepo, idempotencyStore, log)
+	auditConsumer := eventhandler.NewAuditConsumer(auditRepo, idempotencyStore, tm, log)
 
 	// Register multiple topics
 	topics := []string{
@@ -76,6 +86,7 @@ func main() {
 			publisher,
 			topic,
 			events.TopicAuditDLQ,
+			tm,
 			3,
 		))
 	}
@@ -86,10 +97,6 @@ func main() {
 	auditHandler := handler.NewAuditHandler(auditUC)
 	r := gin.Default()
 
-	// Metrics
-	metrics.InitMetrics()
-	r.Use(metrics.MetricsMiddleware())
-
 	// Health check init
 	healthChecker := healthcheck.NewHealthChecker("audit-service", cfg.Version, log)
 	healthChecker.SetDatabase(db.DB)
@@ -97,8 +104,10 @@ func main() {
 	// healthChecker.AddGRPCClient("account-service", allClients.ConnAccount)
 
 	mw := middleware.New(log, cfg.JWTSecret)
-	r.Use(mw.Logger(), mw.Recovery())
+	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
+	r.Use(otelgin.Middleware("audit-service"))
+	r.Use(mw.Logger())
 
 	r.GET("/health", healthChecker.Health)
 	r.GET("/ready", healthChecker.Readiness)
