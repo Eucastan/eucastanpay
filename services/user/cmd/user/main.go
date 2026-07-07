@@ -1,3 +1,21 @@
+// Package main User Service API
+//
+// @title           EucastanPay User Service API
+// @version         1.0
+// @description     Authentication and User Management Service for EucastanPay.
+//
+// @contact.name    Eucastan
+// @contact.email   support@eucastanpay.com
+//
+// @license.name    MIT
+//
+// @host localhost:8001
+// @BasePath /api/v1
+// @schemes http https
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 package main
 
 import (
@@ -16,6 +34,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/user"
 	"github.com/Eucastan/eucastanpay/services/user/config"
+	_ "github.com/Eucastan/eucastanpay/services/user/docs"
 	"github.com/Eucastan/eucastanpay/services/user/internal/api"
 	"github.com/Eucastan/eucastanpay/services/user/internal/api/handler"
 	"github.com/Eucastan/eucastanpay/services/user/internal/grpcserver"
@@ -26,6 +45,8 @@ import (
 	"github.com/Eucastan/eucastanpay/services/user/internal/usecase/service"
 	"github.com/Eucastan/eucastanpay/services/user/internal/worker"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
@@ -86,6 +107,8 @@ func main() {
 	// healthChecker.AddGRPCClient("account-service", allClients.ConnAccount)
 
 	r := gin.New()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	mw := middleware.New(log, cfg.JWTSecret)
 	r.Use(mw.Recovery(), mw.Logger())
 	r.Use(middleware.CorrelationMiddleware())
