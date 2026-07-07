@@ -2,7 +2,7 @@ package events
 
 // Events Struct
 type UserRegisteredEvent struct {
-	BaseEvent
+	EventMetadata
 	UserID    string `json:"id"`
 	Email     string `json:"email"`
 	FirstName string `json:"first_name"`
@@ -12,22 +12,24 @@ type UserRegisteredEvent struct {
 }
 
 type UserRegistrationFailedEvent struct {
-	BaseEvent
+	EventMetadata
 	UserID string `json:"id"`
 	Reason string `json:"reason"`
 }
 
 type UserKYCVerifiedEvent struct {
-	BaseEvent
+	EventMetadata
 	UserID    string `json:"user_id"`
+	Email     string `json:"email"`
 	KYCStatus string `json:"kyc_status"`
 	Timestamp int64  `json:"timestamp"`
 }
 
 type AccountCreatedEvent struct {
-	BaseEvent
+	EventMetadata
 	AccountID   string `json:"id"`
 	UserID      string `json:"user_id"`
+	Email       string `json:"email"`
 	AccountNo   int64  `json:"account_no"`
 	AccountType string `json:"account_type"`
 	Currency    string `json:"currency"`
@@ -37,6 +39,7 @@ type AccountCreatedEvent struct {
 type CreateAccRequestEvent struct {
 	AccountID   string `json:"id"`
 	UserID      string `json:"user_id"`
+	Email       string `json:"email"`
 	AccountNo   int64  `json:"account_no"`
 	AccountType string `json:"account_type"`
 	Currency    string `json:"currency"`
@@ -44,13 +47,15 @@ type CreateAccRequestEvent struct {
 }
 
 type CreateAccFailedEvent struct {
-	BaseEvent
+	EventMetadata
 	AccountID string `json:"id"`
+	UserID    string `json:"user_id"`
+	Email     string `json:"email"`
 	Reason    string `json:"reason"`
 }
 
 type DebitCompletedEvent struct {
-	BaseEvent
+	EventMetadata
 	FromAccID        string `json:"from_account_id"`
 	Reference        string `json:"reference"`
 	Amount           int64  `json:"amount"`
@@ -59,13 +64,13 @@ type DebitCompletedEvent struct {
 }
 
 type DebitFailedEvent struct {
-	BaseEvent
+	EventMetadata
 	Reference string `json:"reference"`
 	Reason    string `json:"reason"`
 }
 
 type ReverseDebitEvent struct {
-	BaseEvent
+	EventMetadata
 	Reference string `json:"reference"`
 	AccountID string `json:"account_id"`
 	AccountNo int64  `json:"account_no"`
@@ -73,7 +78,7 @@ type ReverseDebitEvent struct {
 }
 
 type CreditCompletedEvent struct {
-	BaseEvent
+	EventMetadata
 	ToAccID        string `json:"to_account_id"`
 	Reference      string `json:"reference"`
 	Amount         int64  `json:"amount"`
@@ -82,13 +87,13 @@ type CreditCompletedEvent struct {
 }
 
 type CreditFailedEvent struct {
-	BaseEvent
+	EventMetadata
 	Reference string `json:"reference"`
 	Reason    string `json:"reason"`
 }
 
 type CreditRequestedEvent struct {
-	BaseEvent
+	EventMetadata
 	Reference string `json:"reference"`
 	FromAccID string `json:"from_account_id"`
 	FromAccNo int64  `json:"from_account_no"`
@@ -98,7 +103,7 @@ type CreditRequestedEvent struct {
 }
 
 type DebitRequestedEvent struct {
-	BaseEvent
+	EventMetadata
 	Reference string `json:"reference"`
 	FromAccID string `json:"from_account_id"`
 	FromAccNo int64  `json:"from_account_no"`
@@ -108,7 +113,7 @@ type DebitRequestedEvent struct {
 }
 
 type TransferCompletedEvent struct {
-	BaseEvent
+	EventMetadata
 	TransferID       string `json:"transfer_id"`
 	Reference        string `json:"reference"`
 	UserID           string `json:"user_id"`
@@ -125,19 +130,19 @@ type TransferCompletedEvent struct {
 }
 
 type TransferInitiatedEvent struct {
-	BaseEvent
-	TransferID string
-	Reference  string
-	FromAccID  string
-	FromAccNo  int64
-	ToAccID    string
-	ToAccNo    int64
-	Amount     int64
-	Timestamp  int64
+	EventMetadata
+	TransferID string `json:"transfer_id"`
+	Reference  string `json:"reference"`
+	FromAccID  string `json:"from_account_id"`
+	FromAccNo  int64  `json:"from_account_no"`
+	ToAccID    string `json:"to_account_id"`
+	ToAccNo    int64  `json:"to_account_no"`
+	Amount     int64  `json:"amount"`
+	Timestamp  int64  `json:"timestamp"`
 }
 
 type TransferFailedEvent struct {
-	BaseEvent
+	EventMetadata
 	TransferID    string `json:"transfer_id"`
 	Reference     string `json:"reference"`
 	UserID        string `json:"user_id"`
@@ -147,7 +152,7 @@ type TransferFailedEvent struct {
 }
 
 type LedgerCreatedEvent struct {
-	BaseEvent
+	EventMetadata
 	LedgerID      string `json:"ledger_id"`
 	Reference     string `json:"reference"`
 	UserID        string `json:"user_id"`
@@ -162,7 +167,7 @@ type LedgerCreatedEvent struct {
 }
 
 type LedgerReconciliationAlertEvent struct {
-	BaseEvent
+	EventMetadata
 	AccountID      string `json:"account_id"`
 	AccountBalance int64  `json:"account_balance"`
 	LedgerBalance  int64  `json:"ledger_balance"`
@@ -171,7 +176,7 @@ type LedgerReconciliationAlertEvent struct {
 }
 
 type AdminActionEvent struct {
-	BaseEvent
+	EventMetadata
 	AdminID    string `json:"admin_id"`
 	Action     string `json:"action"`
 	TargetType string `json:"target_type"`
@@ -182,6 +187,7 @@ type AdminActionEvent struct {
 }
 
 type DLQEvent struct {
+	EventMetadata
 	OriginalTopic string `json:"original_topic"`
 	Error         string `json:"error"`
 	RetryCount    int    `json:"retry_count"`

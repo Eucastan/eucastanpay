@@ -40,9 +40,10 @@ const (
 	TopicLedgerReconciliationAlert = "ledger.reconciliation.alert"
 
 	// DLQ
-	TopicTransferDLQ = "transfer.dlq"
-	TopicAccountDLQ  = "account.dlq"
-	TopicAdminDLQ    = "admin.dlq"
-	TopicLedgerDLQ   = "ledger.dlq"
-	TopicAuditDLQ    = "audit.dlq"
+	TopicTransferDLQ     = "transfer.dlq"
+	TopicAccountDLQ      = "account.dlq"
+	TopicAdminDLQ        = "admin.dlq"
+	TopicLedgerDLQ       = "ledger.dlq"
+	TopicAuditDLQ        = "audit.dlq"
+	TopicNotificationDLQ = "notification.dlq"
 )

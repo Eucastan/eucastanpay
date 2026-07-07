@@ -5,33 +5,38 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type HandlerFunc func(ctx context.Context, msg []byte) error
 
 type Consumer struct {
-	brokers  []string
-	groupID  string
-	handlers map[string]HandlerFunc
-	readers  []*kafka.Reader
-	mu       sync.Mutex
-	wg       sync.WaitGroup
-	logger   *logrus.Logger
+	brokers   []string
+	groupID   string
+	handlers  map[string]HandlerFunc
+	readers   []*kafka.Reader
+	mu        sync.Mutex
+	wg        sync.WaitGroup
+	telemetry *telemetry.Telemetry
+	logger    *logrus.Logger
 }
 
-func NewConsumer(brokers []string, groupID string, logger *logrus.Logger) *Consumer {
+func NewConsumer(brokers []string, groupID string, telemetry *telemetry.Telemetry, logger *logrus.Logger) *Consumer {
 	if logger == nil {
 		logger = logrus.New()
 	}
 
 	return &Consumer{
-		brokers:  brokers,
-		groupID:  groupID,
-		handlers: make(map[string]HandlerFunc),
-		readers:  []*kafka.Reader{},
-		logger:   logger,
+		brokers:   brokers,
+		groupID:   groupID,
+		handlers:  make(map[string]HandlerFunc),
+		readers:   []*kafka.Reader{},
+		telemetry: telemetry,
+		logger:    logger,
 	}
 }
 
@@ -56,6 +61,9 @@ func (c *Consumer) consumeTopic(
 	topic string,
 	handler HandlerFunc,
 ) {
+	ctx, span := c.telemetry.Start(ctx, "Consumer.consumeTopic")
+	defer span.End()
+
 	reader := kafka.NewReader(
 		kafka.ReaderConfig{
 			Brokers:           c.brokers,
@@ -67,7 +75,6 @@ func (c *Consumer) consumeTopic(
 			CommitInterval:    0,
 			SessionTimeout:    30 * time.Second,
 			HeartbeatInterval: 3 * time.Second,
-			// StartOffset:       kafka.FirstOffset,
 		},
 	)
 	c.mu.Lock()
@@ -84,9 +91,11 @@ func (c *Consumer) consumeTopic(
 		default:
 		}
 
-		msg, err := reader.ReadMessage(ctx)
-		if err != nil {
+		msgCtx, span := c.telemetry.Start(ctx, "FetchMessage")
+		defer span.End()
 
+		msg, err := reader.FetchMessage(msgCtx)
+		if err != nil {
 			if ctx.Err() != nil {
 				return
 			}
@@ -95,9 +104,16 @@ func (c *Consumer) consumeTopic(
 			continue
 		}
 
+		carrier := propagation.MapCarrier{}
+		for _, h := range msg.Headers {
+			carrier[h.Key] = string(h.Value)
+		}
+
+		msgCtx = otel.GetTextMapPropagator().Extract(msgCtx, carrier)
 		c.logger.Infof("HANDLER START topic=%s key=%s", topic, string(msg.Key))
 
-		if err := handler(ctx, msg.Value); err != nil {
+		if err := handler(msgCtx, msg.Value); err != nil {
+			c.telemetry.RecordError(span, err)
 			c.logger.Errorf("HANDLER FAILED topic=%s err=%v payload=%s", topic, err, string(msg.Value))
 			continue
 		}
@@ -107,6 +123,7 @@ func (c *Consumer) consumeTopic(
 				return
 			}
 
+			c.telemetry.RecordError(span, err)
 			c.logger.Printf("commit error topic=%s err=%v\n", topic, err)
 		}
 	}

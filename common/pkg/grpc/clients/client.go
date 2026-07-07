@@ -49,19 +49,25 @@ func NewClients(cfg Config, log *logrus.Logger) (*Clients, error) {
 
 	connTransfer, err := newConnection(cfg.TransferServiceAddr, cfg)
 	if err != nil {
-		connTransfer.Close()
+		connUser.Close()
+		connAccount.Close()
 		return nil, fmt.Errorf("failed to connect to transfer service: %w", err)
 	}
 
 	connLedger, err := newConnection(cfg.LedgerServiceAddr, cfg)
 	if err != nil {
 		connUser.Close()
+		connAccount.Close()
+		connTransfer.Close()
 		return nil, fmt.Errorf("failed to connect to ledger service: %w", err)
 	}
 
 	connAudit, err := newConnection(cfg.AuditServiceAddr, cfg)
 	if err != nil {
 		connUser.Close()
+		connAccount.Close()
+		connTransfer.Close()
+		connLedger.Close()
 		return nil, fmt.Errorf("failed to connect to ledger service: %w", err)
 	}
 

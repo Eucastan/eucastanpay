@@ -6,6 +6,7 @@ import (
 
 var (
 	ErrTranferNotFound                    = errors.New("transfer not found")
+	ErrNothingUpdated                     = errors.New("no rows updated")
 	ErrPreviousTransferFailure            = errors.New("previous transfer failed, please retry with new key")
 	ErrCanNotTransferToSelf               = errors.New("cannot transfer to self")
 	ErrCannotReverseNonSuccessfulTransfer = errors.New("cannot reverse non successful transfer")

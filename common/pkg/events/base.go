@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type BaseEvent struct {
+type EventMetadata struct {
 	EventID       string `json:"event_id"`
 	CorrelationID string `json:"correlation_id"`
 	CausationID   string `json:"causation_id"` // who triggered it
@@ -15,12 +15,22 @@ type BaseEvent struct {
 	Timestamp     int64  `json:"timestamp"`
 }
 
-func NewBaseEvent(ctx context.Context, causationID string) BaseEvent {
-	return BaseEvent{
+func NewRootEvent(ctx context.Context) EventMetadata {
+	return EventMetadata{
 		EventID:       uuid.NewString(),
 		CorrelationID: getCorrelationID(ctx),
-		CausationID:   causationID,
+		CausationID:   "",
 		Version:       1,
+		Timestamp:     time.Now().Unix(),
+	}
+}
+
+func NewChildEvent(parent EventMetadata) EventMetadata {
+	return EventMetadata{
+		EventID:       uuid.NewString(),
+		CorrelationID: parent.CorrelationID,
+		CausationID:   parent.EventID,
+		Version:       parent.Version,
 		Timestamp:     time.Now().Unix(),
 	}
 }

@@ -70,14 +70,27 @@ func (h *HealthChecker) checkGRPCConnections(components map[string]Component) {
 	defer h.mu.RUnlock()
 
 	for name, conn := range h.grpcConns {
+		if conn == nil {
+			components["grpc_"+name] = Component{
+				Status: StatusUnhealthy,
+				Error:  "gRPC connection is nil",
+			}
+			continue
+		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		err := conn.Invoke(ctx, "/health", nil, nil)
 		cancel()
 
 		if err != nil {
-			components["grpc_"+name] = Component{Status: StatusDegraded, Error: err.Error()}
+			components["grpc_"+name] = Component{
+				Status: StatusDegraded,
+				Error:  err.Error(),
+			}
 		} else {
-			components["grpc_"+name] = Component{Status: StatusHealthy}
+			components["grpc_"+name] = Component{
+				Status: StatusHealthy,
+			}
 		}
 	}
 }

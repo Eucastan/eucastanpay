@@ -22,8 +22,9 @@ message Account {
 	int64  balance = 4;
 	string account_type = 5;
 	string currency = 6;
-	google.protobuf.Timestamp created_at = 7;
-	google.protobuf.Timestamp updated_at = 8;
+	string status = 7;
+	google.protobuf.Timestamp created_at = 8;
+	google.protobuf.Timestamp updated_at = 9;
 }
 
 message ListAccountsRequest {
@@ -62,7 +63,6 @@ message GetDebitResponse {
 }
 
 message GetUserAccountRequest {
-	string AccountId = 1;
     string user_id = 2;
 }
 
@@ -72,12 +72,15 @@ message GetBalanceRequest {
 }
 
 message GetAccountResponse {
-    string id = 1;
+    string account_id = 1;
 	string user_id = 2;
 	int64 account_no = 3;
 	int64 balance = 4;
 	string account_type = 5;
 	string currency = 6;
+	string status = 7;
+	google.protobuf.Timestamp created_at = 8;
+	google.protobuf.Timestamp updated_at = 9;
 }
 
 message ActionRequest {

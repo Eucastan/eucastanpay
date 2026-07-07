@@ -28,7 +28,13 @@ func AuthInterceptor(cfg string) grpc.UnaryServerInterceptor {
 			return nil, status.Error(codes.Unauthenticated, "missing authorization token")
 		}
 
-		token := strings.TrimPrefix(authHeader[0], "bearer")
+		const prefix = "Bearer "
+
+		if !strings.HasPrefix(authHeader[0], prefix) {
+			return nil, status.Error(codes.Unauthenticated, "invalid authorization header")
+		}
+
+		token := strings.TrimPrefix(authHeader[0], prefix)
 
 		claims, err := auth.ValidateToken(token, cfg)
 		if err != nil {

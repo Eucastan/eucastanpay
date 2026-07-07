@@ -2,34 +2,56 @@ package producer
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type Publisher struct {
-	writer *kafka.Writer
+	writer    *kafka.Writer
+	telemetry *telemetry.Telemetry
 }
 
-func NewPublisher(brokers []string) *Publisher {
+func NewPublisher(brokers []string, telemetry *telemetry.Telemetry) *Publisher {
 	return &Publisher{
 		writer: &kafka.Writer{
 			Addr:     kafka.TCP(brokers...),
 			Balancer: &kafka.LeastBytes{},
 			Async:    false, // Set true in high-throughput scenarios
 		},
+		telemetry: telemetry,
 	}
 }
 
 func (p *Publisher) Publish(ctx context.Context, topic string, key string, event interface{}) error {
-	value, err := json.Marshal(event)
+	ctx, span := p.telemetry.Start(ctx, "Publisher.Publish")
+	defer span.End()
+
+	carrier := propagation.MapCarrier{}
+	otel.GetTextMapPropagator().Inject(ctx, carrier)
+
+	var headers []kafka.Header
+
+	for k, v := range carrier {
+		headers = append(headers,
+			kafka.Header{
+				Key:   k,
+				Value: []byte(v),
+			})
+	}
+
+	value, err := Encode(event)
 	if err != nil {
+		p.telemetry.RecordError(span, err)
 		return err
 	}
 
 	if len(value) == 0 {
+		p.telemetry.RecordError(span, fmt.Errorf("empty kafka message for topic=%s key=%s", topic, key))
 		return fmt.Errorf("empty kafka message for topic=%s key=%s", topic, key)
 	}
 
@@ -37,12 +59,18 @@ func (p *Publisher) Publish(ctx context.Context, topic string, key string, event
 		fmt.Printf("[KAFKA] "+msg+"\n", args...)
 	})
 
-	return p.writer.WriteMessages(ctx, kafka.Message{
-		Topic: topic,
-		Key:   []byte(key),
-		Value: value,
-		Time:  time.Now(),
+	ctx, kafkaSpan := p.telemetry.Start(ctx, "Kafka.WriteMessages")
+	defer kafkaSpan.End()
+
+	err = p.writer.WriteMessages(ctx, kafka.Message{
+		Topic:   topic,
+		Key:     []byte(key),
+		Value:   value,
+		Time:    time.Now(),
+		Headers: headers,
 	})
+
+	return err
 }
 
 func (p *Publisher) Close() error {
