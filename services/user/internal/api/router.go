@@ -24,6 +24,7 @@ func NewRouter(r *gin.Engine, user *handler.UserHandler, kyc *handler.KYCHandler
 	auth.Use(middleware.Auth(cfg.JWTSecret))
 	{
 		auth.POST("/refresh", middleware.RequireRole("user"), user.RefreshToken)
+		auth.PUT("/current-user/:user_id", middleware.RequireRole("admin", "super_admin"), user.UserCurrentStaus)
 		auth.POST("/logout-all", middleware.RequireRole("user"), user.LogoutAllUsers)
 		auth.POST("/logout", middleware.RequireRole("user"), user.Logout)
 
