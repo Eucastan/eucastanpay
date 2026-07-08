@@ -15,14 +15,14 @@ func (h *HealthChecker) checkDatabase(components map[string]Component) {
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 	defer cancel()
 
-	// 1. Ping
+	// Ping
 	if err := h.db.Ping(ctx); err != nil {
 		h.logger.WithError(err).Error("Database ping failed")
 		components["database"] = Component{Status: StatusUnhealthy, Error: err.Error()}
 		return
 	}
 
-	// 2. Actual query test + pool stats
+	// Actual query test + pool stats
 	var one int
 	err := h.db.QueryRow(ctx, "SELECT 1").Scan(&one)
 	if err != nil {
