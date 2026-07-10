@@ -1,0 +1,191 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Notification Management Service for EucastanPay.",
+        "title": "EucastanPay Notification Service API",
+        "contact": {
+            "name": "Eucastan",
+            "email": "support@eucastanpay.com"
+        },
+        "license": {
+            "name": "MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8007",
+    "basePath": "/api/v1",
+    "paths": {
+        "/notifications": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "List Notifications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.NotificationResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_Eucastan_eucastanpay_services_notification_internal_domain.Channel": {
+            "type": "string",
+            "enum": [
+                "email",
+                "sms",
+                "push",
+                "in_app"
+            ],
+            "x-enum-varnames": [
+                "ChannelEmail",
+                "ChannelSMS",
+                "ChannelPush",
+                "ChannelInApp"
+            ]
+        },
+        "github_com_Eucastan_eucastanpay_services_notification_internal_domain.NotificationType": {
+            "type": "string",
+            "enum": [
+                "transaction",
+                "security",
+                "account",
+                "marketing",
+                "system"
+            ],
+            "x-enum-varnames": [
+                "NotificationTypeTransaction",
+                "NotificationTypeSecurity",
+                "NotificationTypeAccount",
+                "NotificationTypeMarketing",
+                "NotificationTypeSystem"
+            ]
+        },
+        "github_com_Eucastan_eucastanpay_services_notification_internal_domain.Priority": {
+            "type": "string",
+            "enum": [
+                "high",
+                "medium",
+                "low"
+            ],
+            "x-enum-varnames": [
+                "PriorityHigh",
+                "PriorityMedium",
+                "PriorityLow"
+            ]
+        },
+        "github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.NotificationResponse": {
+            "type": "object",
+            "properties": {
+                "channel": {
+                    "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_domain.Channel"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "priority": {
+                    "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_domain.Priority"
+                },
+                "reference": {
+                    "type": "string"
+                },
+                "scheduled_for": {
+                    "type": "string"
+                },
+                "sent_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_domain.NotificationType"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Enter: Bearer \u003cJWT\u003e",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

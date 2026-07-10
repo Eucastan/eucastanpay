@@ -1,0 +1,132 @@
+basePath: /api/v1
+definitions:
+  github_com_Eucastan_eucastanpay_services_notification_internal_domain.Channel:
+    enum:
+    - email
+    - sms
+    - push
+    - in_app
+    type: string
+    x-enum-varnames:
+    - ChannelEmail
+    - ChannelSMS
+    - ChannelPush
+    - ChannelInApp
+  github_com_Eucastan_eucastanpay_services_notification_internal_domain.NotificationType:
+    enum:
+    - transaction
+    - security
+    - account
+    - marketing
+    - system
+    type: string
+    x-enum-varnames:
+    - NotificationTypeTransaction
+    - NotificationTypeSecurity
+    - NotificationTypeAccount
+    - NotificationTypeMarketing
+    - NotificationTypeSystem
+  github_com_Eucastan_eucastanpay_services_notification_internal_domain.Priority:
+    enum:
+    - high
+    - medium
+    - low
+    type: string
+    x-enum-varnames:
+    - PriorityHigh
+    - PriorityMedium
+    - PriorityLow
+  github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.NotificationResponse:
+    properties:
+      channel:
+        $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_domain.Channel'
+      created_at:
+        type: string
+      id:
+        type: string
+      message:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      priority:
+        $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_domain.Priority'
+      reference:
+        type: string
+      scheduled_for:
+        type: string
+      sent_at:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_domain.NotificationType'
+      user_id:
+        type: string
+    type: object
+host: localhost:8007
+info:
+  contact:
+    email: support@eucastanpay.com
+    name: Eucastan
+  description: Notification Management Service for EucastanPay.
+  license:
+    name: MIT
+  title: EucastanPay Notification Service API
+  version: "1.0"
+paths:
+  /notifications:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.NotificationResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_notification_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List Notifications
+      tags:
+      - Notification
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: 'Enter: Bearer <JWT>'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
