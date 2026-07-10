@@ -1,0 +1,167 @@
+basePath: /api/v1
+definitions:
+  github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.AuditReadResponse:
+    properties:
+      account_id:
+        type: string
+      amount:
+        type: integer
+      causation_id:
+        type: string
+      correlation_id:
+        type: string
+      created_at:
+        type: string
+      event_type:
+        type: string
+      id:
+        type: string
+      payload:
+        items:
+          type: integer
+        type: array
+      reference:
+        type: string
+      service:
+        type: string
+      status:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ReadResponse:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.AuditReadResponse'
+        type: array
+    type: object
+host: localhost:8006
+info:
+  contact:
+    email: support@eucastanpay.com
+    name: Eucastan
+  description: Audit Service for EucastanPay.
+  license:
+    name: MIT
+  title: EucastanPay Audit Service API
+  version: "1.0"
+paths:
+  /audit/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Audit Read ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.AuditReadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get AuditRead by ID
+      tags:
+      - Audit
+  /audit/search:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event type
+        in: query
+        name: event_type
+        type: string
+      - description: Correlation ID
+        in: query
+        name: correlation_id
+        type: string
+      - description: Reference
+        in: query
+        name: reference
+        type: string
+      - description: Minimum amount
+        in: query
+        name: min_amount
+        type: integer
+      - description: Maximum amount
+        in: query
+        name: max_amount
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ReadResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Search AuditRead
+      tags:
+      - Audit
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: 'Enter: Bearer <JWT>'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
