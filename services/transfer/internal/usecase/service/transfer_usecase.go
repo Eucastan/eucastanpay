@@ -31,10 +31,8 @@ func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey s
 	case nil:
 		resp := response.ToTransferResponse(existing)
 		return &resp, nil
-
 	case errmessage.ErrTranferNotFound:
 		// continue creating transfer
-
 	default:
 		return nil, err
 	}
@@ -54,6 +52,7 @@ func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey s
 		Step:           domain.StepInitiated,
 		FromAccID:      input.FromAccID,
 		FromAccNo:      input.FromAccNo,
+		ToAccID:        input.ToAccID,
 		ToAccNo:        input.ToAccNo,
 		Amount:         input.Amount,
 		Description:    input.Description,
@@ -85,10 +84,12 @@ func (u *TransferUseCase) Transfer(ctx context.Context, userID string, idemKey s
 
 		transferInitiated := events.TransferInitiatedEvent{
 			EventMetadata: events.NewRootEvent(ctx),
+			UserID:        transfer.UserID,
 			TransferID:    transfer.ID,
 			Reference:     ref,
 			FromAccID:     transfer.FromAccID,
 			FromAccNo:     transfer.FromAccNo,
+			ToAccID:       transfer.ToAccID,
 			ToAccNo:       transfer.ToAccNo,
 			Amount:        transfer.Amount,
 			Timestamp:     time.Now().Unix(),

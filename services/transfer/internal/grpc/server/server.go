@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Eucastan/eucastanpay/common/proto/transfer"
+	"github.com/Eucastan/eucastanpay/services/transfer/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/usecase"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -33,7 +34,10 @@ func (s *TransferServiceServer) ReverseTransfer(ctx context.Context, req *transf
 }
 
 func (s *TransferServiceServer) ReconcileAccount(ctx context.Context, req *transfer.ReconcileAccountRequest) (*transfer.ReconcileAccountResponse, error) {
-	err := s.Transfer.ReconcileAccount(ctx, req.AccountId, req.AccountNo)
+	input := request.ReconciliationRequest{
+		AccountNo: req.AccountNo,
+	}
+	err := s.Transfer.ReconcileAccount(ctx, req.AccountId, &input)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "account reconciliation failed")
 	}

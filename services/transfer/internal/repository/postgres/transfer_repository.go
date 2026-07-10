@@ -60,16 +60,16 @@ func (r *TransferRepository) Create(ctx context.Context, tx pgx.Tx, t *domain.Tr
 
 	query := `
         INSERT INTO transfers (
-            id, user_id, reference, step, from_account_id, from_account_no, 
-            to_account_no, amount, description, idempotency_key, direction, 
-			status, mode, from_balance_after, to_balance_after, created_at
+            id, user_id, reference, step, from_account_id, from_account_no, to_account_id,
+            to_account_no, amount, description, idempotency_key, direction, status, mode, 
+			from_balance_after, to_balance_after, created_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
         RETURNING created_at, updated_at;
     `
 
 	err := tx.QueryRow(ctx, query,
-		t.ID, t.UserID, t.Reference, t.Step, t.FromAccID, t.FromAccNo,
+		t.ID, t.UserID, t.Reference, t.Step, t.FromAccID, t.FromAccNo, t.ToAccID,
 		t.ToAccNo, t.Amount, t.Description, t.IdempotencyKey, t.Direction, t.Status,
 		t.Mode, t.FromBalanceAfter, t.ToBalanceAfter, t.CreatedAt,
 	).Scan(&t.CreatedAt, &t.UpdatedAt)
@@ -94,7 +94,7 @@ func (r *TransferRepository) FindAll(ctx context.Context) ([]domain.Transfer, er
 	defer span.End()
 
 	query := `
-        SELECT id, user_id, reference, step, from_account_id, from_account_no,  
+        SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_id,  
                to_account_no, amount, description, idempotency_key, direction, status, 
                mode, reversal_ref, is_reversed, from_balance_after, to_balance_after, 
                created_at, updated_at
@@ -116,7 +116,7 @@ func (r *TransferRepository) FindByIdempotencyKey(ctx context.Context, idemKey s
 	ctx, span := r.telemetry.Start(ctx, "TransferRepository.FindByIdempotencyKey")
 	defer span.End()
 
-	query := `SELECT id, user_id, reference, step, from_account_id, from_account_no, 
+	query := `SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_id, 
                to_account_no, amount, description, idempotency_key, direction, status, 
                mode, reversal_ref, is_reversed, from_balance_after, to_balance_after, 
                created_at, updated_at
@@ -126,7 +126,7 @@ func (r *TransferRepository) FindByIdempotencyKey(ctx context.Context, idemKey s
 	transfer := &domain.Transfer{}
 	err := r.DB.QueryRow(ctx, query, idemKey).Scan(
 		&transfer.ID, &transfer.UserID, &transfer.Reference, &transfer.Step, &transfer.FromAccID,
-		&transfer.FromAccNo, &transfer.ToAccNo, &transfer.Amount,
+		&transfer.FromAccNo, &transfer.ToAccID, &transfer.ToAccNo, &transfer.Amount,
 		&transfer.Description, &transfer.IdempotencyKey, &transfer.Direction, &transfer.Status,
 		&transfer.Mode, &transfer.ReversalRef, &transfer.IsReversed, &transfer.FromBalanceAfter,
 		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
@@ -142,7 +142,7 @@ func (r *TransferRepository) FindByReference(ctx context.Context, tx pgx.Tx, ref
 	ctx, span := r.telemetry.Start(ctx, "TransferRepository.FindByReference")
 	defer span.End()
 
-	query := `SELECT id, user_id, reference, step, from_account_id, from_account_no,  
+	query := `SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_id,  
 		to_account_no, amount, description, idempotency_key, direction, status, 
 		mode, reversal_ref, is_reversed, from_balance_after, to_balance_after, 
 		created_at, updated_at
@@ -152,7 +152,7 @@ func (r *TransferRepository) FindByReference(ctx context.Context, tx pgx.Tx, ref
 	transfer := &domain.Transfer{}
 	err := tx.QueryRow(ctx, query, ref).Scan(
 		&transfer.ID, &transfer.UserID, &transfer.Reference, &transfer.Step, &transfer.FromAccID,
-		&transfer.FromAccNo, &transfer.ToAccNo, &transfer.Amount,
+		&transfer.FromAccNo, &transfer.ToAccID, &transfer.ToAccNo, &transfer.Amount,
 		&transfer.Description, &transfer.IdempotencyKey, &transfer.Direction, &transfer.Status,
 		&transfer.Mode, &transfer.ReversalRef, &transfer.IsReversed, &transfer.FromBalanceAfter,
 		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
@@ -168,7 +168,7 @@ func (r *TransferRepository) FindByReferenceNoTx(ctx context.Context, reference 
 	ctx, span := r.telemetry.Start(ctx, "TransferRepository.FindByReferenceNoTx")
 	defer span.End()
 
-	query := `SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_no, 
+	query := `SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_id, to_account_no, 
 		amount, description, idempotency_key, direction, status, mode, reversal_ref, 
 		is_reversed, from_balance_after, to_balance_after, created_at, updated_at
 	    FROM transfers 
@@ -177,7 +177,7 @@ func (r *TransferRepository) FindByReferenceNoTx(ctx context.Context, reference 
 	transfer := &domain.Transfer{}
 	err := r.DB.QueryRow(ctx, query, reference).Scan(
 		&transfer.ID, &transfer.UserID, &transfer.Reference, &transfer.Step, &transfer.FromAccID,
-		&transfer.FromAccNo, &transfer.ToAccNo, &transfer.Amount,
+		&transfer.FromAccNo, &transfer.ToAccID, &transfer.ToAccNo, &transfer.Amount,
 		&transfer.Description, &transfer.IdempotencyKey, &transfer.Direction, &transfer.Status,
 		&transfer.Mode, &transfer.ReversalRef, &transfer.IsReversed, &transfer.FromBalanceAfter,
 		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
@@ -195,7 +195,7 @@ func (r *TransferRepository) FindByID(ctx context.Context, id string) (*domain.T
 	ctx, span := r.telemetry.Start(ctx, "TransferRepository.FindByID")
 	defer span.End()
 
-	query := `SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_no, 
+	query := `SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_id, to_account_no, 
 		amount, description, idempotency_key, direction, status, mode, reversal_ref, 
 		is_reversed, from_balance_after, to_balance_after, created_at, updated_at
         FROM transfers 
@@ -204,7 +204,7 @@ func (r *TransferRepository) FindByID(ctx context.Context, id string) (*domain.T
 	transfer := &domain.Transfer{}
 	err := r.DB.QueryRow(ctx, query, id).Scan(
 		&transfer.ID, &transfer.UserID, &transfer.Reference, &transfer.Step, &transfer.FromAccID,
-		&transfer.FromAccNo, &transfer.ToAccNo, &transfer.Amount,
+		&transfer.FromAccNo, &transfer.ToAccID, &transfer.ToAccNo, &transfer.Amount,
 		&transfer.Description, &transfer.IdempotencyKey, &transfer.Direction, &transfer.Status,
 		&transfer.Mode, &transfer.ReversalRef, &transfer.IsReversed, &transfer.FromBalanceAfter,
 		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
@@ -305,7 +305,7 @@ func (r *TransferRepository) MarkAsReversed(ctx context.Context, tx pgx.Tx, ref 
 	  SET is_reversed = TRUE, status = $2, updated_at = NOW() 
 	  WHERE reference = $1 AND is_reversed = FALSE
 	`
-	cmd, err := tx.Exec(ctx, query, ref, domain.TransferStatusReverse)
+	cmd, err := tx.Exec(ctx, query, ref, domain.TransferStatusReversed)
 	if err != nil {
 		span.RecordError(err)
 		return err
@@ -364,7 +364,7 @@ func (r *TransferRepository) FindStuckTransfers(ctx context.Context, timeout tim
 	defer span.End()
 
 	query := `
-		SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_no, 
+		SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_id, to_account_no, 
 			amount, description, idempotency_key, direction, status, mode, reversal_ref,
 			is_reversed, recovery_count, from_balance_after, to_balance_after, created_at, updated_at
 		FROM transfers

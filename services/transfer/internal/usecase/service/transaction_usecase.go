@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
@@ -48,20 +49,9 @@ func (u *TransferUseCase) GetAllTransfers(ctx context.Context) ([]response.Trans
 		return nil, err
 	}
 
-	var resp []response.TransferResponse
+	resp := make([]response.TransferResponse, 0, len(acc))
 	for _, v := range acc {
-		resp = append(resp, response.TransferResponse{
-			ID:          v.ID,
-			Reference:   v.Reference,
-			FromAccID:   v.FromAccID,
-			FromAccNo:   v.FromAccNo,
-			ToAccNo:     v.ToAccNo,
-			Amount:      v.Amount,
-			Description: v.Description,
-			Direction:   string(v.Direction),
-			Status:      string(v.Status),
-			CreatedAt:   v.CreatedAt,
-		})
+		resp = append(resp, response.ToTransferResponse(&v))
 	}
 
 	return resp, err
@@ -98,7 +88,7 @@ func (u *TransferUseCase) TransferFromUser(
 
 	u.telemetry.Count(ctx, 1)
 
-	account, err := u.Account.GetUserAccount(ctx, &account.GetUserAccountRequest{
+	acc, err := u.Account.GetUserAccount(ctx, &account.GetUserAccountRequest{
 		UserId: userID,
 	})
 	if err != nil {
@@ -107,13 +97,23 @@ func (u *TransferUseCase) TransferFromUser(
 		return nil, err
 	}
 
-	if account.UserId != userID {
+	confirm, err := u.Account.ResolveAccount(ctx, &account.ConfirmAccountRequest{
+		FromAccountNo: acc.AccountNo,
+		ToAccountNo:   input.ToAccNo,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if acc.UserId != userID {
 		return nil, errmessage.ErrUserNotOwner
 	}
 
 	identity := &request.TransactionIdentity{
-		FromAccID:   account.AccountId,
-		FromAccNo:   account.AccountNo,
+		FromAccID:   acc.AccountId,
+		FromAccNo:   acc.AccountNo,
+		ToAccID:     confirm.ToAccountId,
 		ToAccNo:     input.ToAccNo,
 		Amount:      input.Amount,
 		Description: input.Description,
@@ -160,16 +160,19 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalR
 		}
 
 		// Create reversal transfer
+		desc := fmt.Sprintf("Reversal of %s from %d to %d", originalRef, original.ToAccNo, original.FromAccNo)
 		reversalRef := uuid.NewString()
 		reversal = &domain.Transfer{
 			ID:             uuid.NewString(),
 			UserID:         userID,
 			Reference:      reversalRef,
 			Step:           domain.StepInitiated,
+			FromAccID:      original.ToAccID,
 			FromAccNo:      original.ToAccNo,
+			ToAccID:        original.FromAccID,
 			ToAccNo:        original.FromAccNo,
 			Amount:         original.Amount,
-			Description:    "Reversal of " + originalRef,
+			Description:    desc,
 			IdempotencyKey: idemKey,
 			Direction:      domain.ReverseDir,
 			Status:         domain.TransferStatusPending,
@@ -190,15 +193,19 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalR
 		}
 
 		// Publish reversal event to start saga
-		reverseEvent := events.ReverseDebitEvent{
+		reverseEvent := events.ReverseInitiatedEvent{
 			EventMetadata: events.NewRootEvent(ctx),
+			UserID:        reversal.UserID,
+			TransferID:    reversal.ID,
 			Reference:     reversalRef,
-			AccountID:     reversal.FromAccID,
-			AccountNo:     reversal.FromAccNo,
+			FromAccID:     reversal.FromAccID,
+			FromAccNo:     reversal.FromAccNo,
+			ToAccID:       reversal.ToAccID,
+			ToAccNo:       reversal.ToAccNo,
 			Amount:        reversal.Amount,
 		}
 
-		return u.TX.SaveOutboxEvent(ctx, tx, events.TopicDebitReverse, reversalRef, reverseEvent)
+		return u.TX.SaveOutboxEvent(ctx, tx, events.TopicReverseInitiated, reversalRef, reverseEvent)
 	})
 
 	if err != nil {
@@ -215,9 +222,9 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalR
 func (u *TransferUseCase) ReconcileAccount(
 	ctx context.Context,
 	accID string,
-	accNo int64,
+	input *request.ReconciliationRequest,
 ) error {
-	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.ReconciliationAccount")
+	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.ReconcileAccount")
 	defer span.End()
 
 	logger := u.log.WithField("account_id", accID)
@@ -225,7 +232,7 @@ func (u *TransferUseCase) ReconcileAccount(
 	// Get balance from Account Service
 	_, err := u.Account.GetBalance(ctx, &account.GetBalanceRequest{
 		Id:        accID,
-		AccountNo: accNo,
+		AccountNo: input.AccountNo,
 	})
 
 	if err != nil {

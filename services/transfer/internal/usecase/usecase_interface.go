@@ -13,5 +13,5 @@ type TransferUseCase interface {
 	Transfer(ctx context.Context, userID string, idemKey string, input *request.TransactionIdentity) (*response.TransferResponse, error)
 	TransferFromUser(ctx context.Context, userID string, idemKey string, input *request.TransferRequest) (*response.TransferResponse, error)
 	ReverseTransfer(ctx context.Context, userID, originalRef, idemKey string) (*response.TransferResponse, error)
-	ReconcileAccount(ctx context.Context, accID string, accNo int64) error
+	ReconcileAccount(ctx context.Context, accID string, input *request.ReconciliationRequest) error
 }

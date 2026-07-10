@@ -6,12 +6,26 @@ import (
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/domain"
 )
 
+type UserTransferResponse struct {
+	Message string           `json:"message"`
+	Data    TransferResponse `json:"data"`
+}
+
+type MessageResponse struct {
+	Message string `json:"message"`
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 type TransferResponse struct {
 	ID               string    `json:"id"`
 	Reference        string    `json:"reference"`
 	Step             string    `json:"step"`
 	FromAccID        string    `json:"from_account_id"`
 	FromAccNo        int64     `json:"from_account_no"`
+	ToAccID          string    `json:"to_account_id"`
 	ToAccNo          int64     `json:"to_account_no"`
 	Amount           int64     `json:"amount"`
 	Description      string    `json:"description"`
@@ -33,6 +47,7 @@ func ToTransferResponse(t *domain.Transfer) TransferResponse {
 		Step:             string(t.Step),
 		FromAccID:        t.FromAccID,
 		FromAccNo:        t.FromAccNo,
+		ToAccID:          t.ToAccID,
 		ToAccNo:          t.ToAccNo,
 		Amount:           t.Amount,
 		Description:      t.Description,
