@@ -1,3 +1,21 @@
+// Package main Account Service API
+//
+// @title           EucastanPay Account Service API
+// @version         1.0
+// @description     Authentication and Account Management Service for EucastanPay.
+//
+// @contact.name    Eucastan
+// @contact.email   support@eucastanpay.com
+//
+// @license.name    MIT
+//
+// @host localhost:8002
+// @BasePath /api/v1
+// @schemes http https
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 package main
 
 import (
@@ -20,6 +38,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/account"
 	"github.com/Eucastan/eucastanpay/services/account/config"
+	_ "github.com/Eucastan/eucastanpay/services/account/docs"
 	"github.com/Eucastan/eucastanpay/services/account/internal/api"
 	"github.com/Eucastan/eucastanpay/services/account/internal/api/handler"
 	"github.com/Eucastan/eucastanpay/services/account/internal/eventhandler"
@@ -30,6 +49,8 @@ import (
 	"github.com/Eucastan/eucastanpay/services/account/internal/worker"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
@@ -73,7 +94,7 @@ func main() {
 
 	consumerInit.Register(events.TopicUserRegistered,
 		consumer.RetryHandler(
-			accountConsumer.OnUserRegistration,
+			accountConsumer.OnCreateAccountRequest,
 			publisher,
 			events.TopicUserRegistered,
 			events.TopicAccountDLQ,
@@ -113,6 +134,8 @@ func main() {
 	// healthChecker.AddGRPCClient("account-service", allClients.ConnAccount)
 
 	r := gin.Default()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	mw := middleware.New(log, cfg.JWTSecret)
 	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
