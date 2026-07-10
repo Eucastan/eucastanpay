@@ -1,7 +1,8 @@
 
 -- +goose Up
 CREATE TABLE IF NOT EXISTS ledgers (
-    id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
     account_id TEXT NOT NULL,
     amount BIGINT NOT NULL CHECK (amount > 0),
     entry_type TEXT NOT NULL,  
