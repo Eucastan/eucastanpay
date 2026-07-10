@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name TEXT,
     last_name TEXT,
     password_hash TEXT NOT NULL,
-    date_of_birth DATE,
+    date_of_birth TEXT,
     role TEXT DEFAULT 'user',
     status TEXT DEFAULT 'pending',
     email_verified BOOLEAN DEFAULT FALSE,
