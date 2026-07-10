@@ -1,3 +1,22 @@
+// Package main Audit Service API
+//
+// @title           EucastanPay Audit Service API
+// @version         1.0
+// @description     Audit Service for EucastanPay.
+//
+// @contact.name    Eucastan
+// @contact.email   support@eucastanpay.com
+//
+// @license.name    MIT
+//
+// @host localhost:8006
+// @BasePath /api/v1
+// @schemes http https
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter: Bearer <JWT>
 package main
 
 import (
@@ -17,14 +36,16 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/middleware"
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/audit/config"
+	_ "github.com/Eucastan/eucastanpay/services/audit/docs"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/api"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/api/handler"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/eventhandler"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/infra/database"
-	"github.com/Eucastan/eucastanpay/services/audit/internal/infra/tracing"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/repository/postgres"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/usecase/service"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"
 )
@@ -56,9 +77,6 @@ func main() {
 	auditRepo := postgres.NewAuditRepository(db.DB, tm)
 	auditUC := service.NewAuditUseCase(auditRepo, tm)
 
-	// tracing
-	tracing.InitTracer("audit-service")
-
 	appCtx, appCancel := context.WithCancel(context.Background())
 	defer appCancel()
 
@@ -70,7 +88,16 @@ func main() {
 
 	// Register multiple topics
 	topics := []string{
+		events.TopicUserRegistered,
+		events.TopicUserRegistrationFailed,
+		events.TopicUserKYCCreated,
+		events.TopicUserKYCVerified,
+		events.TopicAccountCreated,
+		events.TopicCreateAccFailed,
+		events.TopicDepositAccount,
+		events.TopicWithdrawal,
 		events.TopicTransferInitiated,
+		events.TopicReverseInitiated,
 		events.TopicTransferCompleted,
 		events.TopicTransferFailed,
 		events.TopicDebitCompleted,
@@ -96,6 +123,7 @@ func main() {
 	// HTTP Server
 	auditHandler := handler.NewAuditHandler(auditUC)
 	r := gin.Default()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Health check init
 	healthChecker := healthcheck.NewHealthChecker("audit-service", cfg.Version, log)
