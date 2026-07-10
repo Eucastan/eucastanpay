@@ -6,8 +6,32 @@ import (
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/domain"
 )
 
+type ReconciliationResult struct {
+	AccountID      string    `json:"account_id"`
+	AccountBalance int64     `json:"account_balance"`
+	LedgerBalance  int64     `json:"ledger_balance"`
+	Difference     int64     `json:"difference"`
+	Status         string    `json:"status"` // "ok" or "discrepancy"
+	Reason         string    `json:"reason,omitempty"`
+	ReconciledAt   time.Time `json:"reconciled_at"`
+}
+
+type ReconciliationResultResponse struct {
+	Data ReconciliationResult `json:"data"`
+}
+
+type AccountBalanceResponse struct {
+	AccountID string `json:"account_id"`
+	Balance   int64  `json:"balance"`
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 type LedgerResponse struct {
 	ID           string    `json:"id"`
+	UserID       string    `json:"user_id"`
 	AccountID    string    `json:"account_id"`
 	Amount       int64     `json:"amount"`
 	EntryType    string    `json:"entry_type"`
@@ -21,6 +45,7 @@ type LedgerResponse struct {
 func ToLedgerResponse(ledger *domain.Ledger) *LedgerResponse {
 	return &LedgerResponse{
 		ID:           ledger.ID,
+		UserID:       ledger.UserID,
 		AccountID:    ledger.AccountID,
 		Amount:       ledger.Amount,
 		EntryType:    string(ledger.EntryType),
@@ -33,11 +58,12 @@ func ToLedgerResponse(ledger *domain.Ledger) *LedgerResponse {
 }
 
 func ToListLedgerResponse(ledger []domain.Ledger) []LedgerResponse {
-	var lists []LedgerResponse
+	lists := make([]LedgerResponse, 0, len(ledger))
 
 	for _, v := range ledger {
 		lists = append(lists, LedgerResponse{
 			ID:           v.ID,
+			UserID:       v.UserID,
 			AccountID:    v.AccountID,
 			Amount:       v.Amount,
 			EntryType:    string(v.EntryType),

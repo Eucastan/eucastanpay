@@ -9,8 +9,8 @@ import (
 )
 
 type LedgerUseCase interface {
-	TransactionEntry(ctx context.Context, tx pgx.Tx, fromAccID string, toAccID string, amount int64, reference string, fromBalAfter int64, toBalAfter int64) error
-	ReconcileAccount(ctx context.Context, accountID string) (*request.ReconciliationResult, error)
+	CreateEntries(ctx context.Context, tx pgx.Tx, userID string, fromAccID string, toAccID string, amount int64, reference string, fromBalAfter int64, toBalAfter int64) error
+	ReconcileAccount(ctx context.Context, accountID string) (*response.ReconciliationResult, error)
 	GetTransactionEntry(ctx context.Context, id string) (*response.LedgerResponse, error)
 	GetAllLedgers(ctx context.Context) ([]response.LedgerResponse, error)
 	GetTransactionByEntryType(ctx context.Context, input *request.EntryTypeRequest) ([]response.LedgerResponse, error)

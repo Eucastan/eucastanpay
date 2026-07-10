@@ -55,13 +55,14 @@ func (r *LedgerRepository) CreateLedgerEntry(ctx context.Context, tx pgx.Tx, ent
 	defer span.End()
 
 	query := `
-        INSERT INTO ledgers (id, account_id, amount, entry_type, reference, balance_after, description)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO ledgers (id, user_id, account_id, amount, entry_type, reference, balance_after, description)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING id, created_at, updated_at;
     `
 
 	return tx.QueryRow(ctx, query,
 		entry.ID,
+		entry.UserID,
 		entry.AccountID,
 		entry.Amount,
 		entry.EntryType,
@@ -76,7 +77,7 @@ func (r *LedgerRepository) FindByID(ctx context.Context, id string) (*domain.Led
 	defer span.End()
 
 	query := `
-        SELECT id, account_id, amount, entry_type, reference, balance_after, 
+        SELECT id, user_id, account_id, amount, entry_type, reference, balance_after, 
                description, created_at, updated_at 
         FROM ledgers 
         WHERE id = $1
@@ -84,7 +85,7 @@ func (r *LedgerRepository) FindByID(ctx context.Context, id string) (*domain.Led
 
 	entry := &domain.Ledger{}
 	err := r.DB.QueryRow(ctx, query, id).Scan(
-		&entry.ID, &entry.AccountID, &entry.Amount, &entry.EntryType,
+		&entry.ID, &entry.UserID, &entry.AccountID, &entry.Amount, &entry.EntryType,
 		&entry.Reference, &entry.BalanceAfter, &entry.Description,
 		&entry.CreatedAt, &entry.UpdatedAt,
 	)
@@ -100,7 +101,7 @@ func (r *LedgerRepository) FindByReference(ctx context.Context, reference string
 	defer span.End()
 
 	query := `
-        SELECT id, account_id, amount, entry_type, reference, balance_after, 
+        SELECT id, user_id, account_id, amount, entry_type, reference, balance_after, 
                description, created_at, updated_at 
         FROM ledgers 
         WHERE id = $1
@@ -108,7 +109,7 @@ func (r *LedgerRepository) FindByReference(ctx context.Context, reference string
 
 	entry := &domain.Ledger{}
 	err := r.DB.QueryRow(ctx, query, reference).Scan(
-		&entry.ID, &entry.AccountID, &entry.Amount, &entry.EntryType,
+		&entry.ID, &entry.UserID, &entry.AccountID, &entry.Amount, &entry.EntryType,
 		&entry.Reference, &entry.BalanceAfter, &entry.Description,
 		&entry.CreatedAt, &entry.UpdatedAt,
 	)
@@ -124,7 +125,7 @@ func (r *LedgerRepository) FindAll(ctx context.Context) ([]domain.Ledger, error)
 	defer span.End()
 
 	query := `
-        SELECT id, account_id, amount, entry_type, reference, balance_after, 
+        SELECT id, user_id, account_id, amount, entry_type, reference, balance_after, 
                description, created_at, updated_at 
         FROM ledgers 
         ORDER BY created_at DESC
@@ -145,7 +146,7 @@ func (r *LedgerRepository) FindByEntryType(ctx context.Context, entryType string
 	defer span.End()
 
 	query := `
-        SELECT id, account_id, amount, entry_type, reference, balance_after, 
+        SELECT id, user_id, account_id, amount, entry_type, reference, balance_after, 
                description, created_at, updated_at 
         FROM ledgers 
         WHERE entry_type = $1 

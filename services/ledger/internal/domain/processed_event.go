@@ -5,8 +5,8 @@ import (
 )
 
 type ProcessedEvent struct {
-	ID          string    `json:"id"`
-	EventID     string    `json:"event_id"`
-	Topic       string    `json:"topic"`
-	ProcessedAt time.Time `json:"processed_at"`
+	ID          string    `db:"id" json:"id"`
+	EventID     string    `db:"event_id" json:"event_id"`
+	Topic       string    `db:"topic" json:"topic"`
+	ProcessedAt time.Time `db:"processed_at" json:"processed_at"`
 }

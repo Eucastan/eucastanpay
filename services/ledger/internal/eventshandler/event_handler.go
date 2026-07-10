@@ -2,12 +2,15 @@ package eventshandler
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/Eucastan/eucastanpay/common/idempotency"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
+	"github.com/Eucastan/eucastanpay/services/ledger/internal/domain"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/repository"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/usecase"
 	"github.com/google/uuid"
@@ -60,12 +63,13 @@ func (h *LedgerEventHandler) OnTransferCompleted(ctx context.Context, msg []byte
 			return err
 		}
 		if processed {
-			return nil
+			return events.ErrProcessed
 		}
 
-		err = h.Ledger.TransactionEntry(
+		err = h.Ledger.CreateEntries(
 			ctx,
 			tx,
+			event.UserID,
 			event.FromAccID,
 			event.ToAccID,
 			event.Amount,
@@ -79,6 +83,106 @@ func (h *LedgerEventHandler) OnTransferCompleted(ctx context.Context, msg []byte
 		}
 
 		return h.IdemStore.MarkEventProcessedTx(ctx, tx, uuid.NewString(), eventID, events.TopicTransferCompleted)
+	})
+
+}
+
+func (h *LedgerEventHandler) OnAccountDeposit(ctx context.Context, msg []byte) error {
+	ctx, span := h.telemetry.Start(ctx, "LedgerEventHandler.OnAccountDeposit")
+	defer span.End()
+
+	event, err := kafka.Decode[events.DepositAccountEvent](msg)
+	if err != nil {
+		span.RecordError(err)
+		return err
+	}
+
+	eventID := fmt.Sprintf("%s:%s", event.Reference, events.TopicDepositAccount)
+	return h.Repo.WithTx(ctx, func(tx pgx.Tx) error {
+		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, eventID)
+		if err != nil {
+			span.RecordError(err)
+			return err
+		}
+		if processed {
+			return events.ErrProcessed
+		}
+
+		err = h.Repo.CreateLedgerEntry(
+			ctx,
+			tx,
+			&domain.Ledger{
+				ID:           uuid.NewString(),
+				UserID:       event.UserID,
+				AccountID:    event.AccountID,
+				Amount:       event.Amount,
+				EntryType:    domain.LedgerEntryType("credit"),
+				Reference:    event.Reference,
+				BalanceAfter: event.BalanceAfter,
+				Description:  "Cash Deposited",
+				CreatedAt:    time.Now(),
+			},
+		)
+
+		if err != nil {
+			span.RecordError(err)
+			return err
+		}
+
+		return h.IdemStore.MarkEventProcessedTx(
+			ctx, tx, uuid.NewString(),
+			eventID, events.TopicDepositAccount,
+		)
+	})
+
+}
+
+func (h *LedgerEventHandler) OnCasWithdraw(ctx context.Context, msg []byte) error {
+	ctx, span := h.telemetry.Start(ctx, "LedgerEventHandler.OnCasWithdraw")
+	defer span.End()
+
+	event, err := kafka.Decode[events.WithdrawalEvent](msg)
+	if err != nil {
+		span.RecordError(err)
+		return err
+	}
+
+	eventID := fmt.Sprintf("%s:%s", event.Reference, events.TopicWithdrawal)
+	return h.Repo.WithTx(ctx, func(tx pgx.Tx) error {
+		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, eventID)
+		if err != nil {
+			span.RecordError(err)
+			return err
+		}
+		if processed {
+			return events.ErrProcessed
+		}
+
+		err = h.Repo.CreateLedgerEntry(
+			ctx,
+			tx,
+			&domain.Ledger{
+				ID:           uuid.NewString(),
+				UserID:       event.UserID,
+				AccountID:    event.AccountID,
+				Amount:       event.Amount,
+				EntryType:    domain.LedgerEntryType("debit"),
+				Reference:    event.Reference,
+				BalanceAfter: event.BalanceAfter,
+				Description:  "Cash Withdraw",
+				CreatedAt:    time.Now(),
+			},
+		)
+
+		if err != nil {
+			span.RecordError(err)
+			return err
+		}
+
+		return h.IdemStore.MarkEventProcessedTx(
+			ctx, tx, uuid.NewString(),
+			eventID, events.TopicWithdrawal,
+		)
 	})
 
 }

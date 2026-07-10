@@ -34,9 +34,10 @@ func NewLedgerUseCase(ledger repository.LedgerRepository, telemetry *telemetry.T
 	}
 }
 
-func (u *LedgerUseCase) TransactionEntry(
+func (u *LedgerUseCase) CreateEntries(
 	ctx context.Context,
 	tx pgx.Tx,
+	userID string,
 	fromAccID string,
 	toAccID string,
 	amount int64,
@@ -50,6 +51,7 @@ func (u *LedgerUseCase) TransactionEntry(
 	// Debit Entry
 	debit := &domain.Ledger{
 		ID:           uuid.NewString(),
+		UserID: userID,
 		AccountID:    fromAccID,
 		Amount:       amount,
 		EntryType:    domain.DebitEntry,
@@ -67,6 +69,7 @@ func (u *LedgerUseCase) TransactionEntry(
 	// Credit Entry
 	credit := &domain.Ledger{
 		ID:           uuid.NewString(),
+		UserID: userID,
 		AccountID:    toAccID,
 		Amount:       amount,
 		EntryType:    domain.CreditEntry,
@@ -102,7 +105,7 @@ func (u *LedgerUseCase) publishLedgerEvent(ctx context.Context, tx pgx.Tx, entry
 		EventMetadata: events.NewChildEvent(events.NewRootEvent(ctx)),
 		LedgerID:      entry.ID,
 		Reference:     entry.Reference,
-		UserID:        "",
+		UserID:        entry.UserID,
 		AccountID:     entry.AccountID,
 		Type:          string(entry.EntryType),
 		Amount:        entry.Amount,
@@ -115,11 +118,11 @@ func (u *LedgerUseCase) publishLedgerEvent(ctx context.Context, tx pgx.Tx, entry
 	return u.ledger.SaveOutboxEvent(ctx, tx, events.TopicLedgerCreated, entry.Reference, event)
 }
 
-func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) (*request.ReconciliationResult, error) {
+func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) (*response.ReconciliationResult, error) {
 	ctx, span := u.telemetry.Start(ctx, "LedgerUseCase.ReconcileAccount")
 	defer span.End()
 
-	result := &request.ReconciliationResult{
+	result := &response.ReconciliationResult{
 		AccountID:    accountID,
 		ReconciledAt: time.Now(),
 		Status:       "ok",
@@ -188,12 +191,7 @@ func (u *LedgerUseCase) GetAllLedgers(ctx context.Context) ([]response.LedgerRes
 		return nil, err
 	}
 
-	resp := make([]response.LedgerResponse, 0, len(ledgers))
-	for _, ledger := range ledgers {
-		resp = append(resp, *response.ToLedgerResponse(&ledger))
-	}
-
-	return resp, err
+	return response.ToListLedgerResponse(ledgers), nil
 }
 
 func (u *LedgerUseCase) GetTransactionByEntryType(ctx context.Context, input *request.EntryTypeRequest) ([]response.LedgerResponse, error) {

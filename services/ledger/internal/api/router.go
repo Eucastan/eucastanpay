@@ -8,11 +8,12 @@ import (
 )
 
 func NewRouter(r *gin.Engine, h *handler.LedgerHandler, cfg *config.Config) {
-	v1 := r.Group("/api/v1")
-	v1.Use(middleware.Auth(cfg.JWTSecret))
+	auth := r.Group("/api/v1")
+	auth.Use(middleware.Auth(cfg.JWTSecret))
 	{
-		v1.GET("/ledgers/:id", h.GetLedger)
-		v1.GET("/ledgers/entry_type", h.GetLedgerByEntry)
-		v1.GET("/accounts/:account_id/balance", h.GetAccountBalance)
+		auth.GET("/ledgers", middleware.RequireRole("user", "super_admin"), h.GetAllLedgers)
+		auth.GET("/ledgers/:id", middleware.RequireRole("user", "super_admin"), h.GetLedger)
+		auth.GET("/accounts/:account_id/balance", middleware.RequireRole("user", "super_admin"), h.GetAccountBalance)
+		auth.GET("/accounts/:account_id/reconcile", middleware.RequireRole("user", "super_admin"), h.ReconciliationResult)
 	}
 }
