@@ -1,3 +1,22 @@
+// Package main Ledger Service API
+//
+// @title           EucastanPay Ledger Service API
+// @version         1.0
+// @description     Authentication and Ledger Entry Service for EucastanPay.
+//
+// @contact.name    Eucastan
+// @contact.email   support@eucastanpay.com
+//
+// @license.name    MIT
+//
+// @host localhost:8003
+// @BasePath /api/v1
+// @schemes http https
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter: Bearer <JWT>
 package main
 
 import (
@@ -21,6 +40,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/ledger"
 	"github.com/Eucastan/eucastanpay/services/ledger/config"
+	_ "github.com/Eucastan/eucastanpay/services/ledger/docs"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/api"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/api/handler"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/eventshandler"
@@ -30,6 +50,8 @@ import (
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/usecase/service"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/worker"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
@@ -92,6 +114,28 @@ func main() {
 		),
 	)
 
+	consumerInit.Register(events.TopicDepositAccount,
+		consumer.RetryHandler(
+			ledgerConsumer.OnAccountDeposit,
+			publisher,
+			events.TopicDepositAccount,
+			events.TopicLedgerDLQ,
+			tm,
+			3,
+		),
+	)
+
+	consumerInit.Register(events.TopicWithdrawal,
+		consumer.RetryHandler(
+			ledgerConsumer.OnCasWithdraw,
+			publisher,
+			events.TopicWithdrawal,
+			events.TopicLedgerDLQ,
+			tm,
+			3,
+		),
+	)
+
 	consumerInit.Start(appCtx)
 	ledgerHandler := handler.NewLedgerHandler(ledgerUC)
 
@@ -102,6 +146,8 @@ func main() {
 	healthChecker.AddGRPCClient("account-service", clients.ConnAccount)
 
 	r := gin.Default()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	mw := middleware.New(log, cfg.JWTSecret)
 	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
