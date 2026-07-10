@@ -10,6 +10,7 @@ service AccountService {
     rpc Credit(GetCreditRequest) returns (GetCreditResponse);
     rpc Debit(GetDebitRequest) returns (GetDebitResponse);
     rpc GetUserAccount(GetUserAccountRequest) returns (GetAccountResponse);
+	rpc ResolveAccount(ConfirmAccountRequest) returns (ConfirmAccountResponse);
     rpc GetBalance(GetBalanceRequest) returns (GetAccountResponse);
     rpc GetAllAccounts(ListAccountsRequest) returns (ListAccountsResponse);
 	rpc ActionOnAccount(ActionRequest) returns (ActionResponse);
@@ -25,6 +26,24 @@ message Account {
 	string status = 7;
 	google.protobuf.Timestamp created_at = 8;
 	google.protobuf.Timestamp updated_at = 9;
+}
+
+message ConfirmAccountRequest {
+	int64 from_account_no = 1;
+	int64 to_account_no = 2;
+}
+
+message ConfirmAccountResponse {
+	string from_account_id = 1;
+	string to_account_id = 2;
+	string from_user_id = 3;
+	string to_user_id = 4;
+	string from_email = 5;
+	string to_email = 6;
+	int64 from_balance = 7;
+	int64 to_balance = 8;
+	string from_status = 9;
+	string to_status = 10;
 }
 
 message ListAccountsRequest {
