@@ -52,13 +52,13 @@ func (u *KYCUseCase) CreateKYC(ctx context.Context, userID string, input *reques
 
 	return u.Kyc.WithTX(ctx, func(tx pgx.Tx) error {
 
-		kycEvent := events.UserKYCVerifiedEvent{
+		kycEvent := events.KYCCreatedEvent{
 			UserID:    kyc.UserID,
 			KYCStatus: string(kyc.Status),
 			Timestamp: time.Now().Unix(),
 		}
 
-		return u.Kyc.SaveOutboxEvent(ctx, tx, events.TopicUserKYCVerified, kyc.ID, kycEvent)
+		return u.Kyc.SaveOutboxEvent(ctx, tx, events.TopicUserKYCCreated, kyc.ID, kycEvent)
 	})
 }
 
@@ -92,5 +92,18 @@ func (u *KYCUseCase) ApproveKYC(ctx context.Context, userID string) error {
 	kyc.Status = domain.StatusApproved
 	kyc.VerifiedAt = &now
 
-	return u.Kyc.Update(ctx, kyc)
+	if err := u.Kyc.Update(ctx, kyc); err != nil {
+		return err
+	}
+
+	return u.Kyc.WithTX(ctx, func(tx pgx.Tx) error {
+
+		kycEvent := events.UserKYCVerifiedEvent{
+			UserID:    kyc.UserID,
+			KYCStatus: string(kyc.Status),
+			Timestamp: time.Now().Unix(),
+		}
+
+		return u.Kyc.SaveOutboxEvent(ctx, tx, events.TopicUserKYCVerified, kyc.ID, kycEvent)
+	})
 }

@@ -16,13 +16,13 @@ type LoginCredentials struct {
 }
 
 type Token struct {
-	ID        string      `json:"id"`
-	UserID    string      `json:"user_id"`
-	Token     string      `json:"token"`
-	TokenType TypeOfToken `json:"token_type"`
-	ExpiredAt time.Time
-	Revoked   bool `json:"revoked"`
-	CreatedAt time.Time
+	ID        string      `db:"id" json:"id"`
+	UserID    string      `db:"user_id" json:"user_id"`
+	Token     string      `db:"token" json:"token"`
+	TokenType TypeOfToken `db:"token_type" json:"token_type"`
+	ExpiredAt time.Time   `db:"expired_at" json:"expire_at"`
+	Revoked   bool        `db:"revoked" json:"revoked"`
+	CreatedAt time.Time   `db:"created_at" json:"created_at"`
 
-	ParentID *string `json:"parent_id"`
+	ParentID *string `db:"parent_id" json:"parent_id"`
 }

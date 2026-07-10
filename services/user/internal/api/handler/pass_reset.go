@@ -49,7 +49,7 @@ func (h *UserHandler) ForgotPassword(c *gin.Context) {
 // ResetPassword godoc
 //
 // @Summary Reset Password
-// @Tags AUTH
+// @Tags Authentication
 //
 // @Accept json
 // @Produce json

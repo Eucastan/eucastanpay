@@ -14,17 +14,21 @@ func NewRouter(r *gin.Engine, user *handler.UserHandler, kyc *handler.KYCHandler
 	{
 		public.POST("/register", user.RegisterUser)
 		public.POST("/verify-email", user.VerifyUserEmail)
+
 		public.POST("/forgot-password", user.ForgotPassword)
 		public.POST("/reset-password", user.ResetPassword)
 
 		public.POST("/login", user.LoginUser)
+		public.POST("/refresh", user.RefreshToken)
 	}
 
 	auth := r.Group("api/v1")
 	auth.Use(middleware.Auth(cfg.JWTSecret))
 	{
-		auth.POST("/refresh", middleware.RequireRole("user"), user.RefreshToken)
-		auth.PUT("/current-user/:user_id", middleware.RequireRole("admin", "super_admin"), user.UserCurrentStaus)
+		auth.GET("/users", middleware.RequireRole("super_admin", "admin", "user"), user.GetAllUsers)
+		auth.GET("/user", middleware.RequireRole("super_admin", "admin", "user"), user.GetUser)
+
+		auth.PUT("/users/:user_id/status", middleware.RequireRole("admin", "super_admin"), user.UserCurrentStaus)
 		auth.POST("/logout-all", middleware.RequireRole("user"), user.LogoutAllUsers)
 		auth.POST("/logout", middleware.RequireRole("user"), user.Logout)
 

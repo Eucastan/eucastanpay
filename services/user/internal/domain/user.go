@@ -14,16 +14,16 @@ const (
 )
 
 type User struct {
-	ID            string     `json:"id"`
-	Email         string     `json:"email"`
-	Phone         string     `json:"phone"`
-	FirstName     string     `json:"first_name"`
-	LastName      string     `json:"last_name"`
-	Password      string     `json:"-"`
-	DateOfBirth   time.Time  `json:"date_of_birth" binding:"omitempty"`
-	Role          string     `json:"role"`
-	Status        UserStatus `json:"status"`
-	EmailVerified bool       `json:"email_verified"`
-	CreatedAt     time.Time  `json:"created_at"`
-	UpdatedAt     time.Time  `json:"updated_at"`
+	ID            string     `db:"id" json:"id"`
+	Email         string     `db:"email" json:"email"`
+	Phone         string     `db:"phone" json:"phone"`
+	FirstName     string     `db:"first_name" json:"first_name"`
+	LastName      string     `db:"last_name" json:"last_name"`
+	Password      string     `db:"-" json:"-"`
+	DateOfBirth   string     `db:"date_of_birth" json:"date_of_birth,omitempty"`
+	Role          string     `db:"role" json:"role"`
+	Status        UserStatus `db:"status" json:"status"`
+	EmailVerified bool       `db:"email_verified" json:"email_verified"`
+	CreatedAt     time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt     time.Time  `db:"updated_at" json:"updated_at"`
 }

@@ -12,8 +12,6 @@ import (
 // @Summary Refresh Token
 // @Tags Authentication
 //
-// @Security BearerAuth
-//
 // @Accept json
 // @Produce json
 //

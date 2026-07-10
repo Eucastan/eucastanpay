@@ -40,7 +40,7 @@ func NewUserHandler(user usecase.UserUseCaseInterface) *UserHandler {
 // @Failure 403 {object} response.ErrorResponse
 // @Failure 500 {object} response.ErrorResponse
 //
-// @Router /current-user/{user_id} [put]
+// @Router /users/{user_id}/status [put]
 func (h *UserHandler) UserCurrentStaus(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -61,4 +61,83 @@ func (h *UserHandler) UserCurrentStaus(c *gin.Context) {
 	c.JSON(http.StatusOK, response.MessageResponse{
 		Message: msg,
 	})
+}
+
+// GetAllUsers godoc
+//
+// @Summary List All Users
+// @Tags User
+//
+// @Security BearerAuth
+//
+// @Accept json
+// @Produce json
+//
+// @Success 200 {array} response.UserResponse
+//
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 403 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+//
+// @Router /users [get]
+func (h *UserHandler) GetAllUsers(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	users, err := h.User.GetAllUsers(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
+// GetUser godoc
+//
+// @Summary Get User
+// @Tags User
+//
+// @Security BearerAuth
+//
+// @Accept json
+// @Produce json
+//
+// @Success 200 {object} response.UserResponse
+//
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 401 {object} response.ErrorResponse
+// @Failure 403 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+//
+// @Router /user [get]
+func (h *UserHandler) GetUser(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	userId, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, response.ErrorResponse{
+			Error: "user ID not found in context",
+		})
+		return
+	}
+
+	userID, ok := userId.(string)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, response.ErrorResponse{
+			Error: "invalid user ID format",
+		})
+		return
+	}
+
+	user, err := h.User.GetUserByID(ctx, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }
