@@ -1,3 +1,22 @@
+// Package main Transfer Service API
+//
+// @title           EucastanPay Transfer Service API
+// @version         1.0
+// @description     Authentication and Transfer Management Service for EucastanPay.
+//
+// @contact.name    Eucastan
+// @contact.email   support@eucastanpay.com
+//
+// @license.name    MIT
+//
+// @host localhost:8004
+// @BasePath /api/v1
+// @schemes http https
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter: Bearer <JWT>
 package main
 
 import (
@@ -20,6 +39,7 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/transfer"
 	"github.com/Eucastan/eucastanpay/services/transfer/config"
+	_ "github.com/Eucastan/eucastanpay/services/transfer/docs"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/api"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/api/handler"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/eventhandler"
@@ -30,6 +50,8 @@ import (
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/usecase/service"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/worker"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 )
@@ -70,7 +92,8 @@ func main() {
 	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "transfer-group", tm, log)
 	transferConsumer := eventhandler.NewTransferConsumer(transferRepo, idempotencyStore, tm, publisher, log)
 
-	consumerInit.Register(events.TopicTransferInitiated,
+	consumerInit.Register(
+		events.TopicTransferInitiated,
 		consumer.RetryHandler(
 			transferConsumer.OnTransferInitiated,
 			publisher,
@@ -81,7 +104,20 @@ func main() {
 		),
 	)
 
-	consumerInit.Register(events.TopicDebitCompleted,
+	consumerInit.Register(
+		events.TopicReverseInitiated,
+		consumer.RetryHandler(
+			transferConsumer.OnReverseInitiated,
+			publisher,
+			events.TopicReverseInitiated,
+			events.TopicTransferDLQ,
+			tm,
+			3,
+		),
+	)
+
+	consumerInit.Register(
+		events.TopicDebitCompleted,
 		consumer.RetryHandler(
 			transferConsumer.OnDebitCompleted,
 			publisher,
@@ -92,7 +128,8 @@ func main() {
 		),
 	)
 
-	consumerInit.Register(events.TopicDebitFailed,
+	consumerInit.Register(
+		events.TopicDebitFailed,
 		consumer.RetryHandler(
 			transferConsumer.OnDebitFailed,
 			publisher,
@@ -103,7 +140,8 @@ func main() {
 		),
 	)
 
-	consumerInit.Register(events.TopicCreditCompleted,
+	consumerInit.Register(
+		events.TopicCreditCompleted,
 		consumer.RetryHandler(
 			transferConsumer.OnCreditCompleted,
 			publisher,
@@ -114,23 +152,12 @@ func main() {
 		),
 	)
 
-	consumerInit.Register(events.TopicCreditFailed,
+	consumerInit.Register(
+		events.TopicCreditFailed,
 		consumer.RetryHandler(
 			transferConsumer.OnCreditFailed,
 			publisher,
 			events.TopicCreditFailed,
-			events.TopicTransferDLQ,
-			tm,
-			3,
-		),
-	)
-
-	consumerInit.Register(
-		events.TopicDebitReverseCompleted,
-		consumer.RetryHandler(
-			transferConsumer.OnDebitReverseCompleted,
-			publisher,
-			events.TopicDebitReverseCompleted,
 			events.TopicTransferDLQ,
 			tm,
 			3,
@@ -157,9 +184,12 @@ func main() {
 	healthChecker.AddGRPCClient("account-service", allClients.ConnAccount)
 
 	r := gin.Default()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	mw := middleware.New(log, cfg.JWTSecret)
-	r.Use(mw.Logger(), mw.Recovery())
+	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
+	r.Use(mw.Logger())
 
 	r.GET("/health", healthChecker.Health)
 	r.GET("/live", healthChecker.Liveness)
