@@ -3,24 +3,26 @@ package events
 const (
 	// User Events
 	TopicUserRegistered  = "user.registered"
+	TopicUserKYCCreated  = "user.kyc.created"
 	TopicUserKYCVerified = "user.kyc.verified"
 
 	// Account Events
 	TopicAccountCreated   = "account.created"
 	TopicCreateAccRequest = "create.account.request"
+	TopicDepositAccount   = "deposit.account"
+	TopicWithdrawal       = "withdraw.debit"
 
 	// Transfer Events
-	TopicTransferInitiated     = "transfer.initiated"
-	TopicDebitRequested        = "debit.requested"
-	TopicDebitCompleted        = "debit.completed"
-	TopicCreditRequested       = "credit.requested"
-	TopicCreditCompleted       = "credit.completed"
-	TopicTransferCompleted     = "transfer.completed"
-	TopicTransferRetry         = "transfer.retry"
-	TopicLedgerCreated         = "ledger.created"
-	TopicAuditCreated          = "audit.created"
-	TopicDebitReverse          = "reverse.debit"
-	TopicDebitReverseCompleted = "reverse.debit.completed"
+	TopicTransferInitiated = "transfer.initiated"
+	TopicReverseInitiated  = "reverse.initiated"
+	TopicDebitRequested    = "debit.requested"
+	TopicDebitCompleted    = "debit.completed"
+	TopicCreditRequested   = "credit.requested"
+	TopicCreditCompleted   = "credit.completed"
+	TopicTransferCompleted = "transfer.completed"
+	TopicTransferRetry     = "transfer.retry"
+	TopicLedgerCreated     = "ledger.created"
+	TopicAuditCreated      = "audit.created"
 
 	// Admin events
 	TopicAdminActionTaken     = "admin.action.taken"

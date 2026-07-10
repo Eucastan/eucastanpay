@@ -92,7 +92,6 @@ func (c *Consumer) consumeTopic(
 		}
 
 		msgCtx, span := c.telemetry.Start(ctx, "FetchMessage")
-		defer span.End()
 
 		msg, err := reader.FetchMessage(msgCtx)
 		if err != nil {
@@ -103,6 +102,8 @@ func (c *Consumer) consumeTopic(
 			c.logger.Printf("fetch error topic=%s err=%v\n", topic, err)
 			continue
 		}
+
+		defer span.End()
 
 		carrier := propagation.MapCarrier{}
 		for _, h := range msg.Headers {
