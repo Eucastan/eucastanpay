@@ -86,6 +86,26 @@ func (s *AccountServiceServer) GetUserAccount(ctx context.Context, req *account.
 	}, nil
 }
 
+func (s AccountServiceServer) ResolveAccount(ctx context.Context, req *account.ConfirmAccountRequest) (*account.ConfirmAccountResponse, error) {
+	resp, err := s.ACC.ConfirmSenderAndReceiver(ctx, req.FromAccountNo, req.ToAccountNo)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &account.ConfirmAccountResponse{
+		FromAccountId: resp.FromAccID,
+		ToAccountId:   resp.ToAccID,
+		FromUserId:    resp.FromUserID,
+		ToUserId:      resp.ToUserID,
+		FromEmail:     resp.FromEmail,
+		ToEmail:       resp.ToEmail,
+		FromBalance:   resp.FromBalance,
+		ToBalance:     resp.ToBalance,
+		FromStatus:    resp.FromStatus,
+		ToStatus:      resp.ToStatus,
+	}, nil
+}
+
 func (s *AccountServiceServer) GetBalance(ctx context.Context, req *account.GetBalanceRequest) (*account.GetAccountResponse, error) {
 
 	userID, ok := ctx.Value("user_id").(string)

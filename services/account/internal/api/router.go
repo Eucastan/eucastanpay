@@ -8,10 +8,13 @@ import (
 )
 
 func NewRouter(r *gin.Engine, h *handler.AccountHandler, cfg *config.Config) {
-	r.Use(middleware.Auth(cfg.JWTSecret))
-	v1 := r.Group("/api/v1")
+
+	auth := r.Group("/api/v1")
 	{
-		v1.POST("/account", middleware.RequireRole("user", "super_admin", "admin"), h.OpenAccount)
-		v1.GET("/account/:id/balance", h.GetBalance)
+		auth.POST("/account", middleware.RequireRole("user", "super_admin", "admin"), h.OpenAccount)
+		auth.GET("/account/:id", h.GetUserAccount)
+		auth.GET("/account/:id/balance", h.GetBalance)
+		auth.PUT("/account/:id/pay-in", h.InitiatePayIn)
+		auth.PUT("/account/:id/withdraw", h.WithDrawal)
 	}
 }

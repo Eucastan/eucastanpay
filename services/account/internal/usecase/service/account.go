@@ -128,12 +128,14 @@ func (u *AccountUseCase) CreateAccount(
 
 		if err := u.ACC.Create(ctx, tx, account); err != nil {
 			span.RecordError(err)
+
 			u.logger.WithError(err).WithFields(logrus.Fields{
 				"user_id":      userID,
 				"email":        email,
 				"account_id":   account.UserID,
 				"account_type": account.AccountType,
 			}).Error("failed to create account")
+
 			return err
 		}
 
@@ -184,6 +186,169 @@ func (u *AccountUseCase) CreateAccount(
 
 	resp := response.ToAccountResponse(&a)
 	return resp, nil
+}
+
+func (u *AccountUseCase) DepositAccount(ctx context.Context, accID string, input *request.DepositRequest) error {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.DepositAccount")
+	defer span.End()
+
+	u.logger.WithFields(logrus.Fields{
+		"account_id": accID,
+		"account_no": input.AccountNo,
+	}).Info("initiating credit operation")
+
+	return u.ACC.WithTx(ctx, func(tx pgx.Tx) error {
+		u.logger.Info("Before LockAccount")
+
+		acc, err := u.ACC.LockAccount(ctx, tx, accID, input.AccountNo)
+		if err != nil {
+
+			span.RecordError(err)
+
+			u.logger.WithError(err).WithFields(logrus.Fields{
+				"user_id":    acc.UserID,
+				"account_id": accID,
+			}).Error("failed credit operation locking")
+
+			return err
+		}
+
+		u.logger.Info("Before IsActive")
+
+		isActive, err := u.ACC.IsActive(ctx, tx, accID, acc.UserID)
+		if err != nil {
+			span.RecordError(err)
+			return err
+		}
+
+		if !isActive {
+			return errmessage.ErrNotEligibleForOperation
+		}
+
+		if acc.Status == domain.CloseAccount || acc.Status == domain.FreezeAccount {
+			return errmessage.ErrNotEligibleForOperation
+		}
+
+		u.logger.Info("Before UpdateBalance")
+
+		if err := u.ACC.UpdateBalance(ctx, tx, accID, input.Amount, true); err != nil {
+			span.RecordError(err)
+			return err
+		}
+
+		u.logger.Info("After UpdateBalance")
+
+		bal, err := u.ACC.FindByIDTX(ctx, tx, accID, input.AccountNo)
+		if err != nil {
+			return err
+		}
+
+		eventKey := fmt.Sprintf("Deposit:%s", acc.UserID)
+		err = u.ACC.SaveOutboxEvent(ctx, tx, events.TopicDepositAccount, eventKey,
+			events.DepositAccountEvent{
+				AccountID:    accID,
+				UserID:       acc.UserID,
+				Amount:       input.Amount,
+				AccountNo:    input.AccountNo,
+				AccountType:  string(acc.AccountType),
+				Reference:    uuid.NewString(), // for ledger service record
+				BalanceAfter: bal.Balance,
+				Currency:     input.Currency,
+				Timestamp:    time.Now().Unix(),
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		u.logger.WithFields(logrus.Fields{
+			"user_id":    acc.UserID,
+			"account_no": input.AccountNo,
+			"amount":     input.Amount,
+		}).Info("account credited successfully")
+
+		return nil
+	})
+}
+
+func (u *AccountUseCase) WithDrawal(ctx context.Context, accID string, input *request.DepositRequest) error {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.WithDrawal")
+	defer span.End()
+
+	u.logger.WithFields(logrus.Fields{
+		"account_id": accID,
+		"account_no": input.AccountNo,
+	}).Info("initiating debit operation")
+
+	return u.ACC.WithTx(ctx, func(tx pgx.Tx) error {
+		acc, err := u.ACC.LockAccount(ctx, tx, accID, input.AccountNo)
+		if err != nil {
+			span.RecordError(err)
+			u.logger.WithError(err).WithFields(logrus.Fields{
+				"account_id": accID,
+				"user_id":    acc.UserID,
+				"account_no": input.AccountNo,
+			}).Error("failed debit operation locking")
+
+			return err
+		}
+
+		isActive, err := u.ACC.IsActive(ctx, tx, accID, acc.UserID)
+		if err != nil {
+			span.RecordError(err)
+			return err
+		}
+
+		if !isActive {
+			return errmessage.ErrNotEligibleForOperation
+		}
+
+		if acc.Status == domain.CloseAccount || acc.Status == domain.FreezeAccount {
+			return errmessage.ErrNotEligibleForOperation
+		}
+
+		if acc.Balance < input.Amount {
+			return errmessage.ErrInsufficientAmount
+		}
+
+		if err := u.ACC.UpdateBalance(ctx, tx, accID, input.Amount, false); err != nil {
+			span.RecordError(err)
+			return err
+		}
+
+		bal, err := u.ACC.FindByIDTX(ctx, tx, accID, input.AccountNo)
+		if err != nil {
+			return err
+		}
+
+		eventKey := fmt.Sprintf("withdrawal:%s", acc.UserID)
+		err = u.ACC.SaveOutboxEvent(ctx, tx, events.TopicWithdrawal, eventKey,
+			events.DepositAccountEvent{
+				AccountID:    accID,
+				UserID:       acc.UserID,
+				Amount:       input.Amount,
+				AccountNo:    input.AccountNo,
+				AccountType:  string(acc.AccountType),
+				Reference:    uuid.NewString(), // for ledger service
+				BalanceAfter: bal.Balance,
+				Currency:     input.Currency,
+				Timestamp:    time.Now().Unix(),
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		u.logger.WithFields(logrus.Fields{
+			"account_id": accID,
+			"user_id":    acc.UserID,
+			"account_no": input.AccountNo,
+			"amount":     input.Amount,
+		}).Info("account debited successfully")
+
+		return nil
+	})
+
 }
 
 func (u *AccountUseCase) Credit(ctx context.Context, tx pgx.Tx, accID string, input *request.CreditRequest) error {
@@ -326,6 +491,36 @@ func (u *AccountUseCase) GetByUserID(ctx context.Context, userID string) (*respo
 	resp := response.ToAccountResponse(acc)
 
 	return resp, nil
+}
+
+func (u *AccountUseCase) ConfirmSenderAndReceiver(
+	ctx context.Context,
+	fromAccNo int64,
+	toAccNo int64,
+) (*response.ConfirmAccountResponse, error) {
+
+	var resp response.ConfirmAccountResponse
+
+	err := u.ACC.WithTx(ctx, func(tx pgx.Tx) error {
+		from, err := u.ACC.ConfirmAccountNo(ctx, tx, fromAccNo)
+		if err != nil {
+			return err
+		}
+
+		to, err := u.ACC.ConfirmAccountNo(ctx, tx, toAccNo)
+		if err != nil {
+			return err
+		}
+
+		resp = *response.ToConfirmAccountResponse(from, to)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
 }
 
 func (u *AccountUseCase) GetByAccountIDAndUserID(ctx context.Context, accID, userID string) (*response.AccountResponse, error) {
