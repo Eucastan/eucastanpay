@@ -152,50 +152,6 @@ info:
   title: EucastanPay User Service API
   version: "1.0"
 paths:
-  /current-user/{user_id}:
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: User Current Status
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_request.CurrentStatusRequest'
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update a user's account status
-      tags:
-      - Authentication
   /forgot-password:
     post:
       consumes:
@@ -460,8 +416,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
-      security:
-      - BearerAuth: []
       summary: Refresh Token
       tags:
       - Authentication
@@ -493,7 +447,113 @@ paths:
             $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
       summary: Reset Password
       tags:
-      - AUTH
+      - Authentication
+  /user:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get User
+      tags:
+      - User
+  /users:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.UserResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List All Users
+      tags:
+      - User
+  /users/{user_id}/status:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: User Current Status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_request.CurrentStatusRequest'
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_user_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a user's account status
+      tags:
+      - Authentication
   /verify-email:
     post:
       consumes:
