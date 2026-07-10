@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS transfers(
     step VARCHAR(50),
     from_account_id TEXT NOT NULL,
     from_account_no BIGINT NOT NULL,
+    to_account_id TEXT NOT NULL,
     to_account_no BIGINT NOT NULL,
     amount BIGINT NOT NULL CHECK (amount > 0),
     description TEXT,
@@ -20,10 +21,6 @@ CREATE TABLE IF NOT EXISTS transfers(
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
-ALTER TABLE transfers
-ADD COLUMN recovery_count INT DEFAULT 0,
-ADD COLUMN last_recovery_at TIMESTAMP;
 
 CREATE INDEX idx_transfer_reference ON transfers(reference);
 CREATE INDEX idx_transfer_from_account ON transfers(from_account_id);
