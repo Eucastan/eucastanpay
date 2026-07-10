@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
-	"github.com/Eucastan/eucastanpay/services/audit/internal/domain"
+	"github.com/Eucastan/eucastanpay/services/audit/internal/dto/response"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/repository"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/repository/postgres"
 )
@@ -21,7 +21,7 @@ func NewAuditUseCase(repo repository.AuditRepository, telemetry *telemetry.Telem
 	}
 }
 
-func (u *AuditUseCase) Search(ctx context.Context, f postgres.Filter) ([]domain.AuditRead, error) {
+func (u *AuditUseCase) Search(ctx context.Context, f postgres.Filter) ([]response.AuditReadResponse, error) {
 	ctx, span := u.telemetry.Start(ctx, "AuditUseCase.Search")
 	defer span.End()
 
@@ -31,18 +31,23 @@ func (u *AuditUseCase) Search(ctx context.Context, f postgres.Filter) ([]domain.
 		return nil, err
 	}
 
-	return data, nil
+	resp := make([]response.AuditReadResponse, 0, len(data))
+	for _, read := range data {
+		resp = append(resp, *response.ToAuditReadResponse(&read))
+	}
+
+	return resp, nil
 }
 
-func (u *AuditUseCase) GetAuditReadByID(ctx context.Context, id string) (*domain.AuditRead, error) {
+func (u *AuditUseCase) GetAuditReadByID(ctx context.Context, id string) (*response.AuditReadResponse, error) {
 	ctx, span := u.telemetry.Start(ctx, "AuditUseCase.GetAuditReadByID")
 	defer span.End()
 
-	auditLog, err := u.Repo.FindByID(ctx, id)
+	auditRead, err := u.Repo.FindByID(ctx, id)
 	if err != nil {
 		span.RecordError(err)
 		return nil, err
 	}
 
-	return auditLog, nil
+	return response.ToAuditReadResponse(auditRead), nil
 }

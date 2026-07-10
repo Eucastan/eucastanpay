@@ -1,9 +1,9 @@
 package eventhandler
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
-	"encoding/json"
 
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/domain"
@@ -22,7 +22,7 @@ func transformToRead(topic string, payload map[string]interface{}) *domain.Audit
 	}
 
 	payloadJSON, _ := json.Marshal(payload)
-    read.Payload = payloadJSON
+	read.Payload = payloadJSON
 
 	switch topic {
 	case events.TopicUserRegistered:
@@ -30,13 +30,25 @@ func transformToRead(topic string, payload map[string]interface{}) *domain.Audit
 		read.Reference = getString(payload, "id")
 		read.Status = "SUCCESS"
 
-	case events.TopicAccountCreated:
+	case events.TopicUserKYCCreated, events.TopicUserKYCVerified:
+		read.UserID = getString(payload, "user_id")
+		read.Reference = getString(payload, "id")
+		read.Status = "SUCCESS"
+
+	case events.TopicAccountCreated, events.TopicCreateAccFailed:
 		read.AccountID = getString(payload, "id")
 		read.UserID = getString(payload, "user_id")
 		read.Reference = getString(payload, "id")
 		read.Status = "SUCCESS"
 
-	case events.TopicTransferInitiated, events.TopicTransferCompleted:
+	case events.TopicDepositAccount, events.TopicWithdrawal:
+		read.Reference = getString(payload, "reference")
+		read.UserID = getString(payload, "user_id")
+		read.AccountID = getString(payload, "account_id")
+		read.Amount = getInt64(payload, "amount")
+		read.Status = "SUCCESS"
+
+	case events.TopicTransferInitiated, events.TopicReverseInitiated, events.TopicTransferCompleted:
 		read.Reference = getString(payload, "reference")
 		read.UserID = getString(payload, "user_id")
 		read.AccountID = getString(payload, "from_account_id")
@@ -92,7 +104,11 @@ func getServiceFromTopic(topic string) string {
 	switch {
 	case topic == events.TopicUserRegistered || topic == events.TopicUserRegistrationFailed:
 		return "user-service"
+	case topic == events.TopicUserKYCCreated || topic == events.TopicUserKYCVerified:
+		return "user-service"
 	case topic == events.TopicAccountCreated || topic == events.TopicCreateAccFailed:
+		return "account-service"
+	case topic == events.TopicDepositAccount || topic == events.TopicWithdrawal:
 		return "account-service"
 	case contains(topic, "transfer"):
 		return "transfer-service"
