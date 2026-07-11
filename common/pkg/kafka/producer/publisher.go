@@ -2,8 +2,11 @@ package producer
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"time"
+
+	"github.com/segmentio/kafka-go/sasl/plain"
 
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/segmentio/kafka-go"
@@ -16,12 +19,23 @@ type Publisher struct {
 	telemetry *telemetry.Telemetry
 }
 
-func NewPublisher(brokers []string, telemetry *telemetry.Telemetry) *Publisher {
+func NewPublisher(brokers []string, username, password string, telemetry *telemetry.Telemetry) *Publisher {
+	mechanism := plain.Mechanism{
+		Username: username,
+		Password: password,
+	}
+
+	transport := &kafka.Transport{
+		SASL: mechanism,
+		TLS:  &tls.Config{},
+	}
+
 	return &Publisher{
 		writer: &kafka.Writer{
-			Addr:     kafka.TCP(brokers...),
-			Balancer: &kafka.LeastBytes{},
-			Async:    false, // Set true in high-throughput scenarios
+			Addr:      kafka.TCP(brokers...),
+			Transport: transport,
+			Balancer:  &kafka.LeastBytes{},
+			Async:     false,
 		},
 		telemetry: telemetry,
 	}

@@ -2,8 +2,11 @@ package consumer
 
 import (
 	"context"
+	"crypto/tls"
 	"sync"
 	"time"
+
+	"github.com/segmentio/kafka-go/sasl/plain"
 
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/segmentio/kafka-go"
@@ -16,6 +19,8 @@ type HandlerFunc func(ctx context.Context, msg []byte) error
 
 type Consumer struct {
 	brokers   []string
+	username  string
+	password  string
 	groupID   string
 	handlers  map[string]HandlerFunc
 	readers   []*kafka.Reader
@@ -25,13 +30,15 @@ type Consumer struct {
 	logger    *logrus.Logger
 }
 
-func NewConsumer(brokers []string, groupID string, telemetry *telemetry.Telemetry, logger *logrus.Logger) *Consumer {
+func NewConsumer(brokers []string, username, password string, groupID string, telemetry *telemetry.Telemetry, logger *logrus.Logger) *Consumer {
 	if logger == nil {
 		logger = logrus.New()
 	}
 
 	return &Consumer{
 		brokers:   brokers,
+		username:  username,
+		password:  password,
 		groupID:   groupID,
 		handlers:  make(map[string]HandlerFunc),
 		readers:   []*kafka.Reader{},
@@ -64,11 +71,24 @@ func (c *Consumer) consumeTopic(
 	ctx, span := c.telemetry.Start(ctx, "Consumer.consumeTopic")
 	defer span.End()
 
+	mechanism := plain.Mechanism{
+		Username: c.username,
+		Password: c.password,
+	}
+
+	dialer := &kafka.Dialer{
+		Timeout:       10 * time.Second,
+		DualStack:     true,
+		SASLMechanism: mechanism,
+		TLS:           &tls.Config{},
+	}
+
 	reader := kafka.NewReader(
 		kafka.ReaderConfig{
 			Brokers:           c.brokers,
 			GroupID:           c.groupID,
 			Topic:             topic,
+			Dialer:            dialer,
 			MinBytes:          1,
 			MaxBytes:          10e6,
 			MaxWait:           time.Second,
@@ -95,6 +115,7 @@ func (c *Consumer) consumeTopic(
 
 		msg, err := reader.FetchMessage(msgCtx)
 		if err != nil {
+			span.End()
 			if ctx.Err() != nil {
 				return
 			}
@@ -102,8 +123,6 @@ func (c *Consumer) consumeTopic(
 			c.logger.Printf("fetch error topic=%s err=%v\n", topic, err)
 			continue
 		}
-
-		defer span.End()
 
 		carrier := propagation.MapCarrier{}
 		for _, h := range msg.Headers {
@@ -115,18 +134,21 @@ func (c *Consumer) consumeTopic(
 
 		if err := handler(msgCtx, msg.Value); err != nil {
 			c.telemetry.RecordError(span, err)
+			span.End()
 			c.logger.Errorf("HANDLER FAILED topic=%s err=%v payload=%s", topic, err, string(msg.Value))
 			continue
 		}
 
 		if err := reader.CommitMessages(ctx, msg); err != nil {
 			if ctx.Err() != nil {
+				span.End()
 				return
 			}
 
 			c.telemetry.RecordError(span, err)
 			c.logger.Printf("commit error topic=%s err=%v\n", topic, err)
 		}
+		span.End()
 	}
 }
 
