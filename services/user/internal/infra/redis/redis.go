@@ -35,6 +35,8 @@ func NewRedisClient(cfg *config.Config, log *logrus.Logger) *RedisClient {
 		ContextTimeoutEnabled: true,
 	}
 
+	log.Infof("Connecting to Redis at %s", cfg.Redis.Addr)
+
 	client := redis.NewClient(opts)
 
 	// Test connection
