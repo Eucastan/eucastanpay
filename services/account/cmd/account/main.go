@@ -76,11 +76,17 @@ func main() {
 	db := database.NewPostgresDB(cfg, log)
 	defer db.CloseDB()
 
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
+	publisher := producer.NewPublisher(
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, tm,
+	)
 	defer publisher.Close()
 
 	idempotencyStore := idempotency.NewPostgresStore()
-	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "account-service-group", tm, log)
+	consumerInit := consumer.NewConsumer(
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, "account-service-group", tm, log,
+	)
 
 	accRepo := postgres.NewAccountRepository(db.DB, tm, log)
 	accUseCase := service.NewAccountUseCase(accRepo, tm, log)
