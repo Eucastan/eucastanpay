@@ -77,7 +77,10 @@ func main() {
 	redis := redis.NewRedisClient(cfg, log)
 	defer redis.Close()
 
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
+	publisher := producer.NewPublisher(
+		cfg.Kafka.Brokers, cfg.Kafka.Password,
+		cfg.Kafka.Password, tm,
+	)
 	defer publisher.Close()
 
 	authRepo := postgres.NewAuthRepository(db.DB, tm)
