@@ -80,7 +80,10 @@ func main() {
 	//redis := redis.NewRedisClient(cfg)
 
 	// Kafka init
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
+	publisher := producer.NewPublisher(
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, tm,
+	)
 	defer publisher.Close()
 
 	appCtx, appCancel := context.WithCancel(context.Background())
@@ -89,7 +92,10 @@ func main() {
 	go worker.StartOutboxWorker(appCtx, db.DB, publisher, log)
 	idempotencyStore := idempotency.NewPostgresStore()
 
-	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "transfer-group", tm, log)
+	consumerInit := consumer.NewConsumer(
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, "transfer-group", tm, log,
+	)
 	transferConsumer := eventhandler.NewTransferConsumer(transferRepo, idempotencyStore, tm, publisher, log)
 
 	consumerInit.Register(
