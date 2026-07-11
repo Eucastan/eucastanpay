@@ -32,6 +32,8 @@ func ToCfg() *Config {
 				viper.GetString("KAFKA_BROKERS"),
 				",",
 			),
+			Username: viper.GetString("KAFKA_USERNAME"),
+			Password: viper.GetString("KAFKA_PASSWORD"),
 		},
 	}
 

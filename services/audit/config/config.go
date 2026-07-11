@@ -30,7 +30,9 @@ type Redis struct {
 }
 
 type KafkaConfig struct {
-	Brokers []string `mapstructure:"KAFKA_BROKERS"`
+	Brokers  []string `mapstructure:"KAFKA_BROKERS"`
+	Username string   `mapstructure:"KAFKA_USERNAME"`
+	Password string   `mapstructure:"KAFKA_PASSWORD"`
 }
 
 func Load() (*Config, error) {
