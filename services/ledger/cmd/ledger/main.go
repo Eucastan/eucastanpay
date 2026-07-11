@@ -77,7 +77,10 @@ func main() {
 	db := database.NewPostgresDB(cfg, log)
 	defer db.CloseDB()
 
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
+	publisher := producer.NewPublisher(
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, tm,
+	)
 	defer publisher.Close()
 
 	accountConfig := clients.Config{
@@ -100,7 +103,10 @@ func main() {
 	idemStore := idempotency.NewPostgresStore()
 	go worker.StartOutboxWorker(appCtx, db.DB, publisher, log)
 
-	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "ledger-group", tm, log)
+	consumerInit := consumer.NewConsumer(
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, "ledger-group", tm, log,
+	)
 	ledgerConsumer := eventshandler.NewLedgerEventHandler(ledgerRepo, ledgerUC, tm, idemStore, publisher, log)
 
 	consumerInit.Register(events.TopicTransferCompleted,
