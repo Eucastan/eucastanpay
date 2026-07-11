@@ -70,7 +70,10 @@ func main() {
 	db := database.NewPostgresDB(cfg, log)
 	defer db.CloseDB()
 
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
+	publisher := producer.NewPublisher(
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, tm,
+	)
 	defer publisher.Close()
 
 	// Repositories & UseCases
@@ -81,7 +84,10 @@ func main() {
 	defer appCancel()
 
 	// Kafka Consumer
-	consumerInit := consumer.NewConsumer(cfg.Kafka.Brokers, "audit-service-group", tm, log)
+	consumerInit := consumer.NewConsumer(
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, "audit-service-group", tm, log,
+	)
 	idempotencyStore := idempotency.NewPostgresStore()
 
 	auditConsumer := eventhandler.NewAuditConsumer(auditRepo, idempotencyStore, tm, log)
