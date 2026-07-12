@@ -141,7 +141,7 @@ definitions:
       status:
         type: string
     type: object
-host: localhost:8001
+host: eucastanpay.onrender.com
 info:
   contact:
     email: support@eucastanpay.com
