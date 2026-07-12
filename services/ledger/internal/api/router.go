@@ -9,7 +9,7 @@ import (
 
 func NewRouter(r *gin.Engine, h *handler.LedgerHandler, cfg *config.Config) {
 	auth := r.Group("/api/v1")
-	auth.Use(middleware.Auth(cfg.JWTSecret))
+	auth.Use(middleware.Auth(cfg.SharedCfg.JWTSecret))
 	{
 		auth.GET("/ledgers", middleware.RequireRole("user", "super_admin"), h.GetAllLedgers)
 		auth.GET("/ledgers/:id", middleware.RequireRole("user", "super_admin"), h.GetLedger)
