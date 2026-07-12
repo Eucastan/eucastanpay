@@ -11,7 +11,7 @@
 //
 // @host eucastanpay.onrender.com
 // @BasePath /api/v1
-// @schemes http https
+// @schemes https http
 //
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -71,8 +71,8 @@ func main() {
 	defer db.CloseDB()
 
 	publisher := producer.NewPublisher(
-		cfg.Kafka.Brokers, cfg.Kafka.Username,
-		cfg.Kafka.Password, tm,
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
+		cfg.SharedCfg.Kafka.Password, tm,
 	)
 	defer publisher.Close()
 
@@ -85,8 +85,8 @@ func main() {
 
 	// Kafka Consumer
 	consumerInit := consumer.NewConsumer(
-		cfg.Kafka.Brokers, cfg.Kafka.Username,
-		cfg.Kafka.Password, "audit-service-group", tm, log,
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
+		cfg.SharedCfg.Kafka.Password, "audit-service-group", tm, log,
 	)
 	idempotencyStore := idempotency.NewPostgresStore()
 
@@ -137,7 +137,7 @@ func main() {
 	healthChecker.SetKafkaProducer(publisher)
 	// healthChecker.AddGRPCClient("account-service", allClients.ConnAccount)
 
-	mw := middleware.New(log, cfg.JWTSecret)
+	mw := middleware.New(log, cfg.SharedCfg.JWTSecret)
 	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
 	r.Use(otelgin.Middleware("audit-service"))

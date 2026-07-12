@@ -9,7 +9,7 @@ import (
 
 func NewRouter(r *gin.Engine, h *handler.AuditHandler, cfg *config.Config) {
 	auth := r.Group("/api/v1")
-	auth.Use(middleware.Auth(cfg.JWTSecret))
+	auth.Use(middleware.Auth(cfg.SharedCfg.JWTSecret))
 	{
 		auth.GET("/audit/search", middleware.RequireRole("user", "admin", "super_admin"), h.SearchAuditLogs)
 		auth.GET("/audit/:id", middleware.RequireRole("user", "admin", "super_admin"), h.GetAuditRead)
