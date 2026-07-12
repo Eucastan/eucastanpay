@@ -16,7 +16,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8003",
+    "host": "eucastanpay.onrender.com",
     "basePath": "/api/v1",
     "paths": {
         "/accounts/{account_id}/balance": {
@@ -339,6 +339,9 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
                     "type": "string"
                 }
             }
