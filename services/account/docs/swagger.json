@@ -16,7 +16,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8002",
+    "host": "eucastanpay.onrender.com",
     "basePath": "/api/v1",
     "paths": {
         "/account": {

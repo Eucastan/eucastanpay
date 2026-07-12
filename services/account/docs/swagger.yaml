@@ -63,7 +63,7 @@ definitions:
       message:
         type: string
     type: object
-host: localhost:8002
+host: eucastanpay.onrender.com
 info:
   contact:
     email: support@eucastanpay.com
