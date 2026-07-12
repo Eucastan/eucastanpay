@@ -57,7 +57,7 @@ func main() {
 		panic(err)
 	}
 
-	log := logger.New(cfg.LogLevel)
+	log := logger.New(cfg.SharedCfg.LogLevel)
 	log.Info("Starting Notification Service...")
 
 	tracer := otel.Tracer("notification-service")
