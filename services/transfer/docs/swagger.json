@@ -16,7 +16,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8004",
+    "host": "eucastanpay.onrender.com",
     "basePath": "/api/v1",
     "paths": {
         "/account/{account_id}/reconcile": {
@@ -468,6 +468,9 @@
                     "type": "string"
                 },
                 "step": {
+                    "type": "string"
+                },
+                "to_account_id": {
                     "type": "string"
                 },
                 "to_account_no": {

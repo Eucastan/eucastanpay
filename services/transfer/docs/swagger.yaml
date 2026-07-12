@@ -66,6 +66,8 @@ definitions:
         type: string
       step:
         type: string
+      to_account_id:
+        type: string
       to_account_no:
         type: integer
       to_balance_after:
@@ -81,7 +83,7 @@ definitions:
       message:
         type: string
     type: object
-host: localhost:8004
+host: eucastanpay.onrender.com
 info:
   contact:
     email: support@eucastanpay.com
