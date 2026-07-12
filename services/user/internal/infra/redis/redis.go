@@ -16,9 +16,9 @@ type RedisClient struct {
 
 func NewRedisClient(cfg *config.Config, log *logrus.Logger) *RedisClient {
 	opts := &redis.Options{
-		Addr:            cfg.Redis.Addr,
-		Password:        cfg.Redis.Password,
-		DB:              cfg.Redis.DB,
+		Addr:            cfg.SharedCfg.Redis.Addr,
+		Password:        cfg.SharedCfg.Redis.Password,
+		DB:              cfg.SharedCfg.Redis.DB,
 		MaxRetries:      5,
 		MinRetryBackoff: 100 * time.Millisecond,
 		MaxRetryBackoff: 2 * time.Second,
@@ -35,7 +35,7 @@ func NewRedisClient(cfg *config.Config, log *logrus.Logger) *RedisClient {
 		ContextTimeoutEnabled: true,
 	}
 
-	log.Infof("Connecting to Redis at %s", cfg.Redis.Addr)
+	log.Infof("Connecting to Redis at %s", cfg.SharedCfg.Redis.Addr)
 
 	client := redis.NewClient(opts)
 

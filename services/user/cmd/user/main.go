@@ -11,7 +11,7 @@
 //
 // @host eucastanpay.onrender.com
 // @BasePath /api/v1
-// @schemes http https
+// @schemes https http
 //
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -58,7 +58,7 @@ func main() {
 		panic(err)
 	}
 
-	log := logger.New(cfg.LogLevel)
+	log := logger.New(cfg.SharedCfg.LogLevel)
 	log.Info("Starting User service...")
 
 	tracer := otel.Tracer("user-service")
@@ -78,8 +78,8 @@ func main() {
 	defer redis.Close()
 
 	publisher := producer.NewPublisher(
-		cfg.Kafka.Brokers, cfg.Kafka.Password,
-		cfg.Kafka.Password, tm,
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Password,
+		cfg.SharedCfg.Kafka.Password, tm,
 	)
 	defer publisher.Close()
 
@@ -112,7 +112,7 @@ func main() {
 	r := gin.New()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	mw := middleware.New(log, cfg.JWTSecret)
+	mw := middleware.New(log, cfg.SharedCfg.JWTSecret)
 	r.Use(mw.Recovery(), mw.Logger())
 	r.Use(middleware.CorrelationMiddleware())
 	r.Use(otelgin.Middleware("notification-service"))

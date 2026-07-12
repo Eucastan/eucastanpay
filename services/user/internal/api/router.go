@@ -23,7 +23,7 @@ func NewRouter(r *gin.Engine, user *handler.UserHandler, kyc *handler.KYCHandler
 	}
 
 	auth := r.Group("api/v1")
-	auth.Use(middleware.Auth(cfg.JWTSecret))
+	auth.Use(middleware.Auth(cfg.SharedCfg.JWTSecret))
 	{
 		auth.GET("/users", middleware.RequireRole("super_admin", "admin", "user"), user.GetAllUsers)
 		auth.GET("/user", middleware.RequireRole("super_admin", "admin", "user"), user.GetUser)

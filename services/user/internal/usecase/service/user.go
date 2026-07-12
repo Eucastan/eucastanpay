@@ -87,7 +87,7 @@ func (u *UserUseCase) Register(ctx context.Context, input *request.RegisterReque
 		return nil, err
 	}
 
-	token, err := auth.GenerateAccessToken(user.ID, user.Email, string(domain.EmailToken), u.cfg.JWTSecret)
+	token, err := auth.GenerateAccessToken(user.ID, user.Email, string(domain.EmailToken), u.cfg.SharedCfg.JWTSecret)
 	if err != nil {
 		span.RecordError(err)
 		return nil, err
@@ -125,7 +125,7 @@ func (u *UserUseCase) VerifyEmail(ctx context.Context, token string) error {
 	ctx, span := u.telemetry.Start(ctx, "UserUseCase.VerifyEmail")
 	defer span.End()
 
-	claims, err := auth.ValidateToken(token, u.cfg.JWTSecret)
+	claims, err := auth.ValidateToken(token, u.cfg.SharedCfg.JWTSecret)
 	if err != nil {
 		span.RecordError(err)
 		return err
@@ -177,13 +177,13 @@ func (u *UserUseCase) Login(ctx context.Context, input *request.LoginRequest) (*
 		return nil, errmessage.ErrPasswordNotConfirmed
 	}
 
-	accessToken, err := auth.GenerateAccessToken(user.ID, user.Email, user.Role, u.cfg.JWTSecret)
+	accessToken, err := auth.GenerateAccessToken(user.ID, user.Email, user.Role, u.cfg.SharedCfg.JWTSecret)
 	if err != nil {
 		span.RecordError(err)
 		return nil, err
 	}
 
-	refreshToken, err := auth.RefreshToken(user.ID, user.Email, user.Role, u.cfg.JWTSecret)
+	refreshToken, err := auth.RefreshToken(user.ID, user.Email, user.Role, u.cfg.SharedCfg.JWTSecret)
 	if err != nil {
 		span.RecordError(err)
 		return nil, err
@@ -308,7 +308,7 @@ func (u *UserUseCase) RefreshToken(ctx context.Context, oldToken string) (string
 	ctx, span := u.telemetry.Start(ctx, "UserUseCase.RefreshToken")
 	defer span.End()
 
-	_, err := auth.ValidateToken(oldToken, u.cfg.JWTSecret)
+	_, err := auth.ValidateToken(oldToken, u.cfg.SharedCfg.JWTSecret)
 	if err != nil {
 		span.RecordError(err)
 		return "", "", err
@@ -348,7 +348,7 @@ func (u *UserUseCase) RefreshToken(ctx context.Context, oldToken string) (string
 		user.ID,
 		user.Email,
 		user.Role,
-		u.cfg.JWTSecret,
+		u.cfg.SharedCfg.JWTSecret,
 	)
 	if err != nil {
 		span.RecordError(err)
@@ -372,7 +372,7 @@ func (u *UserUseCase) RefreshToken(ctx context.Context, oldToken string) (string
 
 	// Generate new access token
 	newAccess, err := auth.GenerateAccessToken(
-		user.ID, user.Email, user.Role, u.cfg.JWTSecret,
+		user.ID, user.Email, user.Role, u.cfg.SharedCfg.JWTSecret,
 	)
 	if err != nil {
 		span.RecordError(err)
@@ -407,7 +407,7 @@ func (u *UserUseCase) ForgotPassword(ctx context.Context, input *request.ForgotP
 		return nil
 	}
 
-	resetToken, err := auth.GenerateAccessToken(exists.ID, exists.Email, exists.Role, u.cfg.JWTSecret)
+	resetToken, err := auth.GenerateAccessToken(exists.ID, exists.Email, exists.Role, u.cfg.SharedCfg.JWTSecret)
 	if err != nil {
 		span.RecordError(err)
 		return err
@@ -436,7 +436,7 @@ func (u *UserUseCase) ResetPassword(ctx context.Context, req *request.ResetPassw
 	ctx, span := u.telemetry.Start(ctx, "UserUseCase.ResetPassword")
 	defer span.End()
 
-	claims, err := auth.ValidateToken(req.Token, u.cfg.JWTSecret)
+	claims, err := auth.ValidateToken(req.Token, u.cfg.SharedCfg.JWTSecret)
 	if err != nil {
 		span.RecordError(err)
 		return err
