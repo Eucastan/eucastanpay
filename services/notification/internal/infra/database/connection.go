@@ -68,13 +68,7 @@ func runMigrations(db *sql.DB, cfg *config.Config) error {
 		return err
 	}
 
-	_, err := db.Exec(fmt.Sprintf(`
-	CREATE SCHEMA IF NOT EXISTS %s;
-	SET search_path TO %s;
-	`,
-		cfg.SharedCfg.Schema,
-		cfg.SharedCfg.Schema,
-	))
+	_, err := db.Exec(fmt.Sprintf(`CREATE SCHEMA IF NOT EXISTS %s;`, cfg.SharedCfg.Schema))
 	if err != nil {
 		return err
 	}
