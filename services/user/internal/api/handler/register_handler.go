@@ -56,6 +56,10 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 		User: response.UserResponse{
 			ID:        user.ID,
 			Email:     user.Email,
+			Phone:     user.Phone,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Status:    user.Status,
 			CreatedAt: user.CreatedAt,
 		},
 	})
