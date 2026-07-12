@@ -9,7 +9,7 @@
 //
 // @license.name    MIT
 //
-// @host localhost:8006
+// @host eucastanpay.onrender.com
 // @BasePath /api/v1
 // @schemes http https
 //
