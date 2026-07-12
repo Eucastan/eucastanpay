@@ -8,31 +8,18 @@ import (
 )
 
 type Config struct {
-	Dsn         string
-	JWTSecret   string
-	HTTPPort    string
-	GRPCPort    string
-	ServiceName string
-	Version     string
-	Redis       Redis `mapstructure:",squash"`
-	EmailAPIKey string
-	AppEmail    string
-	FromName    string
-	Kafka       KafkaConfig
-	LogLevel    string
-	GinMode     string
-}
-
-type Redis struct {
-	Addr     string `mapstructure:"REDIS_ADDR"`
-	Password string `mapstructure:"REDIS_PASSWORD"`
-	DB       int    `mapstructure:"REDIS_DB"`
-}
-
-type KafkaConfig struct {
-	Brokers  []string `mapstructure:"KAFKA_BROKERS"`
-	Username string   `mapstructure:"KAFKA_USERNAME"`
-	Password string   `mapstructure:"KAFKA_PASSWORD"`
+	HTTPPort        string `mapstructure:"HTTP_PORT"`
+	GRPCPort        string `mapstructure:"GRPC_PORT"`
+	LedgerGRPCPort  string `mapstructure:"LEDGER_GRPC_PORT"`
+	AccountGRPCPort string `mapstructure:"ACCOUNT_GRPC_PORT"`
+	UserGRPCPort    string `mapstructure:"USER_GRPC_PORT"`
+	ServiceName     string `mapstructure:"SERVICE_NAME"`
+	Version         string `mapstructure:"VERSION"`
+	EmailAPIKey     string `mapstructure:"EMAIL_API_KEY"`
+	AppEmail        string `mapstructure:"APP_EMAIL"`
+	FromName        string `mapstructure:"FROM_NAME"`
+	LogLevel        string `mapstructure:"LOG_LEVEL"`
+	SharedCfg       commonconfig.SharedCfg
 }
 
 func Load() (*Config, error) {
@@ -42,10 +29,10 @@ func Load() (*Config, error) {
 
 	brokers := viper.GetString("KAFKA_BROKERS")
 	if brokers != "" {
-		cfg.Kafka.Brokers = strings.Split(brokers, ",")
+		cfg.SharedCfg.Kafka.Brokers = strings.Split(brokers, ",")
 	}
 
-	if err := commonconfig.RequireString("DSN", cfg.Dsn); err != nil {
+	if err := commonconfig.RequireString("DSN", cfg.SharedCfg.Dsn); err != nil {
 		return nil, err
 	}
 
@@ -57,7 +44,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	if err := commonconfig.RequireMinLength("JWT_SECRET", cfg.JWTSecret, 32); err != nil {
+	if err := commonconfig.RequireMinLength("JWT_SECRET", cfg.SharedCfg.JWTSecret, 32); err != nil {
 		return nil, err
 	}
 

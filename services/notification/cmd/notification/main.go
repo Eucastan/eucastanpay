@@ -11,7 +11,7 @@
 //
 // @host eucastanpay.onrender.com
 // @BasePath /api/v1
-// @schemes http https
+// @schemes https http
 //
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -74,13 +74,13 @@ func main() {
 	emailProvider := provider.NewEmailProvider(cfg)
 
 	publisher := producer.NewPublisher(
-		cfg.Kafka.Brokers, cfg.Kafka.Username,
-		cfg.Kafka.Password, tm,
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
+		cfg.SharedCfg.Kafka.Password, tm,
 	)
 
 	consumerInit := consumer.NewConsumer(
-		cfg.Kafka.Brokers, cfg.Kafka.Username,
-		cfg.Kafka.Password, "notification-service-group",
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
+		cfg.SharedCfg.Kafka.Password, "notification-service-group",
 		tm, log,
 	)
 
@@ -210,7 +210,7 @@ func main() {
 	r.GET("/live", healthChecker.Liveness)
 	r.GET("/ready", healthChecker.Readiness)
 
-	mw := middleware.New(log, cfg.JWTSecret)
+	mw := middleware.New(log, cfg.SharedCfg.JWTSecret)
 	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
 	r.Use(otelgin.Middleware("notification-service"))
