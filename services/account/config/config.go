@@ -16,7 +16,6 @@ type Config struct {
 	EmailAPIKey string `mapstructure:"EMAIL_API_KEY"`
 	AppEmail    string `mapstructure:"APP_EMAIL"`
 	FromName    string `mapstructure:"FROM_NAME"`
-	LogLevel    string `mapstructure:"LOG_LEVEL"`
 	SharedCfg   commonconfig.SharedCfg
 }
 
