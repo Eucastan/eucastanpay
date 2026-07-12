@@ -28,7 +28,7 @@ type KafkaConfig struct {
 
 func ValidateSchema(schema string) error {
 	switch schema {
-	case "user",
+	case "identity",
 		"account",
 		"ledger",
 		"transfer",
