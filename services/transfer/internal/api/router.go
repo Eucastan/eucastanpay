@@ -9,7 +9,7 @@ import (
 
 func NewRouter(r *gin.Engine, h *handler.TransferHandler, cfg *config.Config) {
 	auth := r.Group("/api/v1")
-	auth.Use(middleware.Auth(cfg.JWTSecret))
+	auth.Use(middleware.Auth(cfg.SharedCfg.JWTSecret))
 	{
 		auth.POST("/transfers", middleware.RequireRole("user", "super_admin"), h.TransferFromUser)
 		auth.POST("/transfers/:reference", middleware.RequireRole("user", "super_admin"), h.ReverseTransfer)

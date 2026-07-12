@@ -11,7 +11,7 @@
 //
 // @host eucastanpay.onrender.com
 // @BasePath /api/v1
-// @schemes http https
+// @schemes https http
 //
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -81,8 +81,8 @@ func main() {
 
 	// Kafka init
 	publisher := producer.NewPublisher(
-		cfg.Kafka.Brokers, cfg.Kafka.Username,
-		cfg.Kafka.Password, tm,
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
+		cfg.SharedCfg.Kafka.Password, tm,
 	)
 	defer publisher.Close()
 
@@ -93,8 +93,8 @@ func main() {
 	idempotencyStore := idempotency.NewPostgresStore()
 
 	consumerInit := consumer.NewConsumer(
-		cfg.Kafka.Brokers, cfg.Kafka.Username,
-		cfg.Kafka.Password, "transfer-group", tm, log,
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
+		cfg.SharedCfg.Kafka.Password, "transfer-group", tm, log,
 	)
 	transferConsumer := eventhandler.NewTransferConsumer(transferRepo, idempotencyStore, tm, publisher, log)
 
@@ -192,7 +192,7 @@ func main() {
 	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	mw := middleware.New(log, cfg.JWTSecret)
+	mw := middleware.New(log, cfg.SharedCfg.JWTSecret)
 	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
 	r.Use(mw.Logger())
@@ -216,7 +216,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(interceptor.AuthInterceptor(cfg.JWTSecret)),
+		grpc.UnaryInterceptor(interceptor.AuthInterceptor(cfg.SharedCfg.JWTSecret)),
 	)
 	srv := server.NewTransferServiceServer(transferUC)
 	transfer.RegisterTransferServiceServer(grpcServer, srv)
