@@ -73,9 +73,14 @@ func main() {
 
 	emailProvider := provider.NewEmailProvider(cfg)
 
-	publisher := producer.NewPublisher(cfg.Kafka.Brokers, tm)
+	publisher := producer.NewPublisher(
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, tm,
+	)
+
 	consumerInit := consumer.NewConsumer(
-		cfg.Kafka.Brokers, "notification-service-group",
+		cfg.Kafka.Brokers, cfg.Kafka.Username,
+		cfg.Kafka.Password, "notification-service-group",
 		tm, log,
 	)
 
