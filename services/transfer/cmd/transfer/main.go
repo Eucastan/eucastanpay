@@ -62,7 +62,7 @@ func main() {
 		panic(err)
 	}
 
-	log := logger.New(cfg.LogLevel)
+	log := logger.New(cfg.SharedCfg.LogLevel)
 	log.Info("Starting Transfer Service...")
 
 	tracer := otel.Tracer("transfer-service")
