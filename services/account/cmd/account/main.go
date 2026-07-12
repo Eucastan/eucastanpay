@@ -11,7 +11,7 @@
 //
 // @host eucastanpay.onrender.com
 // @BasePath /api/v1
-// @schemes http https
+// @schemes https http
 //
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -77,15 +77,15 @@ func main() {
 	defer db.CloseDB()
 
 	publisher := producer.NewPublisher(
-		cfg.Kafka.Brokers, cfg.Kafka.Username,
-		cfg.Kafka.Password, tm,
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
+		cfg.SharedCfg.Kafka.Password, tm,
 	)
 	defer publisher.Close()
 
 	idempotencyStore := idempotency.NewPostgresStore()
 	consumerInit := consumer.NewConsumer(
-		cfg.Kafka.Brokers, cfg.Kafka.Username,
-		cfg.Kafka.Password, "account-service-group", tm, log,
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
+		cfg.SharedCfg.Kafka.Password, "account-service-group", tm, log,
 	)
 
 	accRepo := postgres.NewAccountRepository(db.DB, tm, log)
@@ -142,7 +142,7 @@ func main() {
 	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	mw := middleware.New(log, cfg.JWTSecret)
+	mw := middleware.New(log, cfg.SharedCfg.JWTSecret)
 	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
 	r.Use(otelgin.Middleware("account-service"))
@@ -168,7 +168,7 @@ func main() {
 	defer listenAddr.Close()
 
 	grpcSrv := grpc.NewServer(
-		grpc.UnaryInterceptor(interceptor.AuthInterceptor(cfg.JWTSecret)),
+		grpc.UnaryInterceptor(interceptor.AuthInterceptor(cfg.SharedCfg.JWTSecret)),
 	)
 	srv := grpcserver.NewAccountServiceServer(accUseCase, accRepo)
 	account.RegisterAccountServiceServer(grpcSrv, srv)

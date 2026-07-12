@@ -9,30 +9,15 @@ import (
 )
 
 type Config struct {
-	Dsn         string `mapstructure:"DSN"`
-	JWTSecret   string `mapstructure:"JWT_SECRET"`
 	HTTPPort    string `mapstructure:"HTTP_PORT"`
 	GRPCPort    string `mapstructure:"GRPC_PORT"`
 	ServiceName string `mapstructure:"SERVICE_NAME"`
 	Version     string `mapstructure:"VERSION"`
-	Redis       Redis  `mapstructure:",squash"`
 	EmailAPIKey string `mapstructure:"EMAIL_API_KEY"`
 	AppEmail    string `mapstructure:"APP_EMAIL"`
 	FromName    string `mapstructure:"FROM_NAME"`
-	Kafka       KafkaConfig
 	LogLevel    string `mapstructure:"LOG_LEVEL"`
-}
-
-type Redis struct {
-	Addr     string `mapstructure:"REDIS_ADDR"`
-	Password string `mapstructure:"REDIS_PASSWORD"`
-	DB       int    `mapstructure:"REDIS_DB"`
-}
-
-type KafkaConfig struct {
-	Brokers  []string `mapstructure:"KAFKA_BROKERS"`
-	Username string   `mapstructure:"KAFKA_USERNAME"`
-	Password string   `mapstructure:"KAFKA_PASSWORD"`
+	SharedCfg   commonconfig.SharedCfg
 }
 
 func Load() (*Config, error) {
@@ -42,14 +27,14 @@ func Load() (*Config, error) {
 
 	cfg := ToCfg()
 
-	println("cfg.Dsn =", cfg.Dsn)
+	println("cfg.Dsn =", cfg.SharedCfg.Dsn)
 
 	brokers := viper.GetString("KAFKA_BROKERS")
 	if brokers != "" {
-		cfg.Kafka.Brokers = strings.Split(brokers, ",")
+		cfg.SharedCfg.Kafka.Brokers = strings.Split(brokers, ",")
 	}
 
-	if err := commonconfig.RequireString("DSN", cfg.Dsn); err != nil {
+	if err := commonconfig.RequireString("DSN", cfg.SharedCfg.Dsn); err != nil {
 		return nil, err
 	}
 
@@ -61,7 +46,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	if err := commonconfig.RequireMinLength("JWT_SECRET", cfg.JWTSecret, 32); err != nil {
+	if err := commonconfig.RequireMinLength("JWT_SECRET", cfg.SharedCfg.JWTSecret, 32); err != nil {
 		return nil, err
 	}
 
