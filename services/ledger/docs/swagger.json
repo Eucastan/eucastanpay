@@ -1,6 +1,5 @@
 {
     "schemes": [
-        "http",
         "https"
     ],
     "swagger": "2.0",
@@ -16,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "eucastanpay.onrender.com",
+    "host": "ledger-zaji.onrender.com",
     "basePath": "/api/v1",
     "paths": {
         "/accounts/{account_id}/balance": {

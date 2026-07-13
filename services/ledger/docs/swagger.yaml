@@ -58,7 +58,7 @@ definitions:
       data:
         $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_ledger_internal_dto_response.ReconciliationResult'
     type: object
-host: eucastanpay.onrender.com
+host: ledger-zaji.onrender.com
 info:
   contact:
     email: support@eucastanpay.com
@@ -243,7 +243,6 @@ paths:
       tags:
       - Ledger
 schemes:
-- http
 - https
 securityDefinitions:
   BearerAuth:
