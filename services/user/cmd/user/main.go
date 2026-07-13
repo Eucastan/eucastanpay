@@ -115,7 +115,7 @@ func main() {
 	mw := middleware.New(log, cfg.SharedCfg.JWTSecret)
 	r.Use(mw.Recovery(), mw.Logger())
 	r.Use(middleware.CorrelationMiddleware())
-	r.Use(otelgin.Middleware("notification-service"))
+	r.Use(otelgin.Middleware("user-service"))
 
 	r.GET("/health", healthChecker.Health)
 	r.GET("/live", healthChecker.Liveness)
