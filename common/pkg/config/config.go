@@ -34,6 +34,7 @@ func ValidateSchema(schema string) error {
 		"transfer",
 		"audit",
 		"payment",
+		"notification",
 		"admin":
 		return nil
 	default:
