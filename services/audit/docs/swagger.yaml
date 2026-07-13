@@ -43,7 +43,7 @@ definitions:
           $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_audit_internal_dto_response.AuditReadResponse'
         type: array
     type: object
-host: localhost:8006
+host: audit-g2j6.onrender.com
 info:
   contact:
     email: support@eucastanpay.com
@@ -156,7 +156,6 @@ paths:
       tags:
       - Audit
 schemes:
-- http
 - https
 securityDefinitions:
   BearerAuth:

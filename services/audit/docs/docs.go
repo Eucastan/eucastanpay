@@ -261,9 +261,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8006",
+	Host:             "audit-g2j6.onrender.com",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"http", "https"},
+	Schemes:          []string{"https"},
 	Title:            "EucastanPay Audit Service API",
 	Description:      "Audit Service for EucastanPay.",
 	InfoInstanceName: "swagger",
