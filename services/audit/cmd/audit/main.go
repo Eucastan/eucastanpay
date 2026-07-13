@@ -56,7 +56,7 @@ func main() {
 		panic("Failed to load config: " + err.Error())
 	}
 
-	log := logger.New(cfg.LogLevel)
+	log := logger.New(cfg.SharedCfg.LogLevel)
 	log.Info("Starting Audit Service...")
 
 	tracer := otel.Tracer("audit-service")
