@@ -142,15 +142,15 @@ func main() {
 	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	r.GET("/health", healthChecker.Health)
+	r.GET("/live", healthChecker.Liveness)
+	r.GET("/ready", healthChecker.Readiness)
+
 	mw := middleware.New(log, cfg.SharedCfg.JWTSecret)
 	r.Use(mw.Recovery())
 	r.Use(middleware.CorrelationMiddleware())
 	r.Use(otelgin.Middleware("account-service"))
 	r.Use(mw.Logger(), mw.Auth())
-
-	r.GET("/health", healthChecker.Health)
-	r.GET("/live", healthChecker.Liveness)
-	r.GET("/ready", healthChecker.Readiness)
 
 	api.NewRouter(r, accHandler, cfg)
 
