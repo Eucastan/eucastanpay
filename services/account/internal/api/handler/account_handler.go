@@ -223,3 +223,36 @@ func (h *AccountHandler) GetUserAccount(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
+
+// GetAllUsersAccount godoc
+//
+// @Summary Get Account Details for all users
+// @Tags Account
+//
+// @Security BearerAuth
+//
+// @Accept json
+// @Produce json
+//
+// @Success 200 {array} response.AccountResponse
+//
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 401 {object} response.ErrorResponse
+// @Failure 403 {object} response.ErrorResponse
+// @Failure 404 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+//
+// @Router /accounts [get]
+func (h *AccountHandler) GetAllUsersAccount(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	resp, err := h.AccUC.GetAllAccount(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
