@@ -1,6 +1,5 @@
 {
     "schemes": [
-        "http",
         "https"
     ],
     "swagger": "2.0",
@@ -16,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "eucastanpay.onrender.com",
+    "host": "transfer-sby1.onrender.com",
     "basePath": "/api/v1",
     "paths": {
         "/account/{account_id}/reconcile": {

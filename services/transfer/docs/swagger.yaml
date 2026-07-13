@@ -83,7 +83,7 @@ definitions:
       message:
         type: string
     type: object
-host: eucastanpay.onrender.com
+host: transfer-sby1.onrender.com
 info:
   contact:
     email: support@eucastanpay.com
@@ -320,7 +320,6 @@ paths:
       tags:
       - Transfer
 schemes:
-- http
 - https
 securityDefinitions:
   BearerAuth:
