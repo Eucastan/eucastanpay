@@ -294,9 +294,47 @@ paths:
       summary: Withdrawing Cash from account
       tags:
       - Account
+  /accounts:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_account_internal_dto_response.AccountResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_account_internal_dto_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_account_internal_dto_response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_account_internal_dto_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_account_internal_dto_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_account_internal_dto_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Account Details for all users
+      tags:
+      - Account
 schemes:
-- http
 - https
+- http
 securityDefinitions:
   BearerAuth:
     in: header
