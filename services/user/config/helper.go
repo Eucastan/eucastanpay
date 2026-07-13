@@ -40,6 +40,9 @@ func ToCfg() *Config {
 	}
 
 	fmt.Println("Assigned DSN:", cfg.SharedCfg.Dsn)
+	fmt.Println("BROKERS:", cfg.SharedCfg.Kafka.Brokers)
+	fmt.Println("USERNAME:", cfg.SharedCfg.Kafka.Username)
+	fmt.Println("PASSWORD LENGTH:", len(cfg.SharedCfg.Kafka.Password))
 
 	return cfg
 }
