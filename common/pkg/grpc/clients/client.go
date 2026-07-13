@@ -1,11 +1,13 @@
 package clients
 
 import (
+	"crypto/tls"
 	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/Eucastan/eucastanpay/common/proto/account"
@@ -29,45 +31,37 @@ type Clients struct {
 	ConnAudit    *grpc.ClientConn
 }
 
-// var log *logrus.Logger
-
 func NewClients(cfg Config, log *logrus.Logger) (*Clients, error) {
 	if cfg.Timeout == 0 {
 		cfg.Timeout = 5 * time.Second
 	}
 
-	connUser, err := newConnection(cfg.UserServiceAddr, cfg)
+	connUser, err := newConnection(cfg.UserServiceAddr, cfg, log)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to user service: %w", err)
 	}
 
-	connAccount, err := newConnection(cfg.AccountServiceAddr, cfg)
+	connAccount, err := newConnection(cfg.AccountServiceAddr, cfg, log)
 	if err != nil {
-		connUser.Close()
+		cleanup(connUser)
 		return nil, fmt.Errorf("failed to connect to account service: %w", err)
 	}
 
-	connTransfer, err := newConnection(cfg.TransferServiceAddr, cfg)
+	connTransfer, err := newConnection(cfg.TransferServiceAddr, cfg, log)
 	if err != nil {
-		connUser.Close()
-		connAccount.Close()
+		cleanup(connUser, connAccount)
 		return nil, fmt.Errorf("failed to connect to transfer service: %w", err)
 	}
 
-	connLedger, err := newConnection(cfg.LedgerServiceAddr, cfg)
+	connLedger, err := newConnection(cfg.LedgerServiceAddr, cfg, log)
 	if err != nil {
-		connUser.Close()
-		connAccount.Close()
-		connTransfer.Close()
+		cleanup(connUser, connAccount, connTransfer)
 		return nil, fmt.Errorf("failed to connect to ledger service: %w", err)
 	}
 
-	connAudit, err := newConnection(cfg.AuditServiceAddr, cfg)
+	connAudit, err := newConnection(cfg.AuditServiceAddr, cfg, log)
 	if err != nil {
-		connUser.Close()
-		connAccount.Close()
-		connTransfer.Close()
-		connLedger.Close()
+		cleanup(connUser, connAccount, connTransfer, connLedger)
 		return nil, fmt.Errorf("failed to connect to ledger service: %w", err)
 	}
 
@@ -87,7 +81,7 @@ func NewClients(cfg Config, log *logrus.Logger) (*Clients, error) {
 	}, nil
 }
 
-func newConnection(target string, cfg Config) (*grpc.ClientConn, error) {
+func newConnection(target string, cfg Config, log *logrus.Logger) (*grpc.ClientConn, error) {
 	opts := []grpc.DialOption{
 		grpc.WithDefaultCallOptions(
 			grpc.MaxCallRecvMsgSize(10 * 1024 * 1024),
@@ -96,16 +90,28 @@ func newConnection(target string, cfg Config) (*grpc.ClientConn, error) {
 
 	if cfg.Insecure {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
 	}
 
+	log.Infof("Connecting to %s", target)
 	conn, err := grpc.NewClient(target, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("gRPC client failed: %w", err)
 	}
 
+	log.Infof("Connected to %s", target)
+
 	return conn, nil
 }
 
+func cleanup(conns ...*grpc.ClientConn) {
+	for _, c := range conns {
+		if c != nil {
+			c.Close()
+		}
+	}
+}
 func (c *Clients) Close() error {
 	if c.ConnUser != nil {
 		c.ConnUser.Close()
