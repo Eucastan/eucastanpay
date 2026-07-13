@@ -78,7 +78,7 @@ func main() {
 	defer redis.Close()
 
 	publisher := producer.NewPublisher(
-		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Password,
+		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
 		cfg.SharedCfg.Kafka.Password, tm,
 	)
 	defer publisher.Close()
