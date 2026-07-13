@@ -9,9 +9,9 @@
 //
 // @license.name    MIT
 //
-// @host eucastanpay.onrender.com
+// @host audit-g2j6.onrender.com
 // @BasePath /api/v1
-// @schemes https http
+// @schemes https
 //
 // @securityDefinitions.apikey BearerAuth
 // @in header
