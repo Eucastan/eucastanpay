@@ -20,6 +20,11 @@ type Publisher struct {
 }
 
 func NewPublisher(brokers []string, username, password string, telemetry *telemetry.Telemetry) *Publisher {
+
+	fmt.Println("BROKERS:", brokers)
+	fmt.Println("USERNAME:", username)
+	fmt.Println("PASSWORD LENGTH:", len(password))
+
 	mechanism := plain.Mechanism{
 		Username: username,
 		Password: password,
