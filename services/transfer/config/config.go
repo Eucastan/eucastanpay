@@ -9,10 +9,10 @@ import (
 
 type Config struct {
 	HTTPPort        string `mapstructure:"HTTP_PORT"`
-	GRPCPort        string `mapstructure:"GRPC_PORT"`
-	LedgerGRPCPort  string `mapstructure:"LEDGER_GRPC_PORT"`
-	AccountGRPCPort string `mapstructure:"ACCOUNT_GRPC_PORT"`
-	UserGRPCPort    string `mapstructure:"USER_GRPC_PORT"`
+	GRPCADDR        string `mapstructure:"GRPC_ADDR"`
+	LedgerGRPCADDR  string `mapstructure:"LEDGER_GRPC_ADDR"`
+	AccountGRPCADDR string `mapstructure:"ACCOUNT_GRPC_ADDR"`
+	UserGRPCADDR    string `mapstructure:"USER_GRPC_ADDR"`
 	ServiceName     string `mapstructure:"SERVICE_NAME"`
 	Version         string `mapstructure:"VERSION"`
 	EmailAPIKey     string `mapstructure:"EMAIL_API_KEY"`
@@ -40,7 +40,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	if err := commonconfig.RequireString("GRPC_PORT", cfg.GRPCPort); err != nil {
+	if err := commonconfig.RequireString("GRPC_PORT", cfg.GRPCADDR); err != nil {
 		return nil, err
 	}
 

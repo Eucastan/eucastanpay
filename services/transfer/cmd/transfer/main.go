@@ -210,7 +210,7 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 	}
 
-	listenAddr, err := net.Listen("tcp", ":"+cfg.GRPCPort)
+	listenAddr, err := net.Listen("tcp", ":"+cfg.GRPCADDR)
 	if err != nil {
 		log.WithError(err).Error("failed to connect to gRPC server")
 	}
@@ -230,7 +230,7 @@ func main() {
 	log.Infof("Transfer Service started successfully on port %s", cfg.HTTPPort)
 
 	go func() {
-		log.Infof("gRPC server listening on %s", cfg.GRPCPort)
+		log.Infof("gRPC server listening on %s", cfg.GRPCADDR)
 		if err := grpcServer.Serve(listenAddr); err != nil {
 			log.WithError(err).Error("gRPC server error")
 		}

@@ -11,13 +11,16 @@ func ToCfg() *Config {
 	fmt.Println("ToCfg DSN:", viper.GetString("DSN"))
 
 	cfg := &Config{
-		HTTPPort:    viper.GetString("HTTP_PORT"),
-		GRPCPort:    viper.GetString("GRPC_PORT"),
-		ServiceName: viper.GetString("SERVICE_NAME"),
-		Version:     viper.GetString("VERSION"),
-		EmailAPIKey: viper.GetString("EMAIL_API_KEY"),
-		AppEmail:    viper.GetString("APP_EMAIL"),
-		FromName:    viper.GetString("FROM_NAME"),
+		HTTPPort:        viper.GetString("HTTP_PORT"),
+		GRPCADDR:        viper.GetString("GRPC_ADDR"),
+		LedgerGRPCADDR:  viper.GetString("LEDGER_GRPC_ADDR"),
+		AccountGRPCADDR: viper.GetString("ACCOUNT_GRPC_ADDR"),
+		UserGRPCADDR:    viper.GetString("USER_GRPC_ADDR"),
+		ServiceName:     viper.GetString("SERVICE_NAME"),
+		Version:         viper.GetString("VERSION"),
+		EmailAPIKey:     viper.GetString("EMAIL_API_KEY"),
+		AppEmail:        viper.GetString("APP_EMAIL"),
+		FromName:        viper.GetString("FROM_NAME"),
 		SharedCfg: commonconfig.SharedCfg{
 			Dsn:       viper.GetString("DSN"),
 			Schema:    viper.GetString("SCHEMA"),
