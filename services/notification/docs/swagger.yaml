@@ -71,7 +71,7 @@ definitions:
       user_id:
         type: string
     type: object
-host: eucastanpay.onrender.com
+host: notification-xvaz.onrender.com
 info:
   contact:
     email: support@eucastanpay.com
@@ -121,7 +121,6 @@ paths:
       tags:
       - Notification
 schemes:
-- http
 - https
 securityDefinitions:
   BearerAuth:
