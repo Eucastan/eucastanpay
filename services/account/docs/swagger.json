@@ -1,7 +1,6 @@
 {
     "schemes": [
-        "https",
-        "http"
+        "https"
     ],
     "swagger": "2.0",
     "info": {
@@ -16,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "eucastanpay.onrender.com",
+    "host": "account-y0no.onrender.com",
     "basePath": "/api/v1",
     "paths": {
         "/account": {
