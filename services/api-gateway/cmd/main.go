@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/Eucastan/eucastanpay/services/gateway/internal/bootstrap"
+	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/bootstrap"
 )
 
 func main() {
