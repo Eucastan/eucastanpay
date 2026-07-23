@@ -1,8 +1,10 @@
 package config
 
 import (
-	commonconfig "github.com/Eucastan/eucastanpay/common/pkg/config"
 	"strings"
+	"time"
+
+	commonconfig "github.com/Eucastan/eucastanpay/common/pkg/config"
 
 	"github.com/spf13/viper"
 )
@@ -17,6 +19,7 @@ type Config struct {
 	AppEmail        string `mapstructure:"APP_EMAIL"`
 	FromName        string `mapstructure:"FROM_NAME"`
 	LogLevel        string `mapstructure:"LOG_LEVEL"`
+	ShutdownTimeout time.Duration
 	SharedCfg       commonconfig.SharedCfg
 }
 

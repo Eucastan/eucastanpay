@@ -10,4 +10,5 @@ import (
 type AuditUseCase interface {
 	Search(ctx context.Context, f postgres.Filter) ([]response.AuditReadResponse, error)
 	GetAuditReadByID(ctx context.Context, id string) (*response.AuditReadResponse, error)
+	GetAllAuditReads(ctx context.Context) ([]response.AuditReadResponse, error)
 }

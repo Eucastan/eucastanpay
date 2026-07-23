@@ -169,6 +169,57 @@ func (r *AuditRepository) Search(ctx context.Context, f Filter) ([]domain.AuditR
 	return result, nil
 }
 
+func (r *AuditRepository) FindAllAuditRead(ctx context.Context) ([]domain.AuditRead, error) {
+	ctx, span := r.telemetry.Start(ctx, "AuditRepository.FindAllAuditRead")
+	defer span.End()
+
+	query := `
+        SELECT id, event_type, service, correlation_id, causation_id, reference, 
+		  account_id, user_id, amount, status, payload, created_at 
+        FROM audit_read
+        ORDER BY created_at DESC
+	`
+	rows, err := r.DB.Query(ctx, query)
+	if err != nil {
+		span.RecordError(err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var result []domain.AuditRead
+
+	for rows.Next() {
+		var a domain.AuditRead
+
+		err := rows.Scan(
+			&a.ID,
+			&a.EventType,
+			&a.Service,
+			&a.CorrelationID,
+			&a.CausationID,
+			&a.Reference,
+			&a.AccountID,
+			&a.UserID,
+			&a.Amount,
+			&a.Status,
+			&a.Payload,
+			&a.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, a)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (r *AuditRepository) FindByID(ctx context.Context, id string) (*domain.AuditRead, error) {
 	ctx, span := r.telemetry.Start(ctx, "AuditRepository.FindByID")
 	defer span.End()

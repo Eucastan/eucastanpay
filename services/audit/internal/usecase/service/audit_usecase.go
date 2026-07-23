@@ -51,3 +51,21 @@ func (u *AuditUseCase) GetAuditReadByID(ctx context.Context, id string) (*respon
 
 	return response.ToAuditReadResponse(auditRead), nil
 }
+
+func (u *AuditUseCase) GetAllAuditReads(ctx context.Context) ([]response.AuditReadResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "AuditUseCase.GetAllAuditReads")
+	defer span.End()
+
+	reads, err := u.Repo.FindAllAuditRead(ctx)
+	if err != nil {
+		span.RecordError(err)
+		return nil, err
+	}
+
+	resp := make([]response.AuditReadResponse, 0, len(reads))
+	for _, read := range reads {
+		resp = append(resp, *response.ToAuditReadResponse(&read))
+	}
+
+	return resp, nil
+}

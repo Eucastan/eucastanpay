@@ -14,4 +14,5 @@ type AuditRepository interface {
 	InsertRead(ctx context.Context, tx pgx.Tx, read *domain.AuditRead) error
 	Search(ctx context.Context, f postgres.Filter) ([]domain.AuditRead, error)
 	FindByID(ctx context.Context, id string) (*domain.AuditRead, error)
+	FindAllAuditRead(ctx context.Context) ([]domain.AuditRead, error)
 }

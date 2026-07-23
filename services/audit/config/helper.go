@@ -2,9 +2,11 @@ package config
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	commonconfig "github.com/Eucastan/eucastanpay/common/pkg/config"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 func ToCfg() *Config {
@@ -37,6 +39,7 @@ func ToCfg() *Config {
 			},
 			LogLevel: viper.GetString("LOG_LEVEL"),
 		},
+		ShutdownTimeout: 15 * time.Second,
 	}
 
 	fmt.Println("Assigned DSN:", cfg.SharedCfg.Dsn)
