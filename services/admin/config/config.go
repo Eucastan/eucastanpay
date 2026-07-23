@@ -1,7 +1,11 @@
 package config
 
 import (
-	"errors"
+	"strings"
+	"time"
+
+	commonconfig "github.com/Eucastan/eucastanpay/common/pkg/config"
+
 	"github.com/spf13/viper"
 )
 
@@ -22,6 +26,8 @@ type Config struct {
 	FromName         string `mapstructure:"FROM_NAME"`
 	Kafka            KafkaConfig
 	LogLevel         string `mapstructure:"LOG_LEVEL"`
+	ShutdownTimeout  time.Duration
+	SharedCfg        commonconfig.SharedCfg
 }
 
 type Redis struct {
@@ -30,25 +36,37 @@ type Redis struct {
 	DB       int    `mapstructure:"REDIS_DB"`
 }
 
-type KafkaConfig struct{ Brokers []string }
+type KafkaConfig struct {
+	Brokers  []string `mapstructure:"KAFKA_BROKERS"`
+	Username string   `mapstructure:"KAFKA_USERNAME"`
+	Password string   `mapstructure:"KAFKA_PASSWORD"`
+}
 
 func Load() (*Config, error) {
-	viper.SetConfigFile(".env")
-	viper.AutomaticEnv()
+	commonconfig.Init()
 
-	err := viper.ReadInConfig()
-	if err != nil {
+	cfg := ToCfg()
+
+	brokers := viper.GetString("KAFKA_BROKERS")
+	if brokers != "" {
+		cfg.Kafka.Brokers = strings.Split(brokers, ",")
+	}
+
+	if err := commonconfig.RequireString("DSN", cfg.Dsn); err != nil {
 		return nil, err
 	}
 
-	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
+	if err := commonconfig.RequireString("HTTP_PORT", cfg.HTTPPort); err != nil {
 		return nil, err
 	}
 
-	if len(cfg.JWTSecret) < 32 {
-		return nil, errors.New("invalid JWT Secret")
+	if err := commonconfig.RequireString("GRPC_PORT", cfg.GRPCPort); err != nil {
+		return nil, err
 	}
 
-	return &cfg, nil
+	if err := commonconfig.RequireMinLength("JWT_SECRET", cfg.JWTSecret, 32); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
 }
