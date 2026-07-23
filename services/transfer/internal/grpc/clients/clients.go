@@ -3,20 +3,16 @@ package clients
 import (
 	"time"
 
-	"github.com/Eucastan/eucastanpay/common/pkg/grpc/clients"
+	"github.com/Eucastan/eucastanpay/common/pkg/grpc"
 	"github.com/Eucastan/eucastanpay/services/transfer/config"
-	"github.com/sirupsen/logrus"
 )
 
-func Init(cfg *config.Config, log *logrus.Logger) (*clients.Clients, error) {
-	clientCfg := clients.Config{
-		UserServiceAddr:    cfg.UserGRPCADDR,
-		AccountServiceAddr: cfg.AccountGRPCADDR,
-		LedgerServiceAddr:  cfg.LedgerGRPCADDR,
-		Timeout:            5 * time.Second,
-		MaxRetries:         3,
-		Insecure:           true,
+func Init(cfg *config.Config) grpc.ServiceConfig {
+	return grpc.ServiceConfig{
+		Name:     "account",
+		Address:  cfg.AccountGRPCADDR,
+		Insecure: true,
+		Timeout:  5 * time.Second,
+		Retries:  3,
 	}
-
-	return clients.NewClients(clientCfg, log)
 }

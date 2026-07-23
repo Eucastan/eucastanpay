@@ -191,6 +191,31 @@ func (r *TransferRepository) FindByReferenceNoTx(ctx context.Context, reference 
 	return transfer, nil
 }
 
+func (r *TransferRepository) FindByUserID(ctx context.Context, userID string) (*domain.Transfer, error) {
+	ctx, span := r.telemetry.Start(ctx, "TransferRepository.FindByUserID")
+	defer span.End()
+
+	query := `SELECT id, user_id, reference, step, from_account_id, from_account_no, to_account_id, to_account_no, 
+		amount, description, idempotency_key, direction, status, mode, reversal_ref, 
+		is_reversed, from_balance_after, to_balance_after, created_at, updated_at
+        FROM transfers 
+        WHERE user_id = $1`
+
+	transfer := &domain.Transfer{}
+	err := r.DB.QueryRow(ctx, query, userID).Scan(
+		&transfer.ID, &transfer.UserID, &transfer.Reference, &transfer.Step, &transfer.FromAccID,
+		&transfer.FromAccNo, &transfer.ToAccID, &transfer.ToAccNo, &transfer.Amount,
+		&transfer.Description, &transfer.IdempotencyKey, &transfer.Direction, &transfer.Status,
+		&transfer.Mode, &transfer.ReversalRef, &transfer.IsReversed, &transfer.FromBalanceAfter,
+		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
+	)
+	if err == pgx.ErrNoRows {
+		span.RecordError(err)
+		return nil, errmessage.ErrTranferNotFound
+	}
+	return transfer, err
+}
+
 func (r *TransferRepository) FindByID(ctx context.Context, id string) (*domain.Transfer, error) {
 	ctx, span := r.telemetry.Start(ctx, "TransferRepository.FindByID")
 	defer span.End()

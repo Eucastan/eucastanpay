@@ -7,6 +7,7 @@ import (
 
 	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
+	"github.com/Eucastan/eucastanpay/common/pkg/grpc"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpc/clients"
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
@@ -23,16 +24,16 @@ import (
 
 type TransferUseCase struct {
 	TX repository.TransferRepository
-	*clients.Clients
+	*grpc.Manager
 	Publisher *producer.Publisher
 	telemetry *telemetry.Telemetry
 	log       *logrus.Logger
 }
 
-func NewTransferUseCase(tx repository.TransferRepository, cl *clients.Clients, publisher *producer.Publisher, telemetry *telemetry.Telemetry, log *logrus.Logger) *TransferUseCase {
+func NewTransferUseCase(tx repository.TransferRepository, m *grpc.Manager, publisher *producer.Publisher, telemetry *telemetry.Telemetry, log *logrus.Logger) *TransferUseCase {
 	return &TransferUseCase{
 		TX:        tx,
-		Clients:   cl,
+		Manager:   m,
 		Publisher: publisher,
 		telemetry: telemetry,
 		log:       log,
@@ -55,6 +56,26 @@ func (u *TransferUseCase) GetAllTransfers(ctx context.Context) ([]response.Trans
 	}
 
 	return resp, err
+}
+
+func (u *TransferUseCase) GetByUserID(ctx context.Context, userID string) (*response.TransferResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.GetByUserID")
+	defer span.End()
+
+	logger := u.log.WithFields(logrus.Fields{
+		"operation": "GetByUserID",
+		"user_id":   userID,
+	})
+
+	transfer, err := u.TX.FindByID(ctx, userID)
+	if err != nil {
+		span.RecordError(err)
+		logger.WithError(err).Error("failed to transaction")
+		return nil, err
+	}
+
+	resp := response.ToTransferResponse(transfer)
+	return &resp, nil
 }
 
 func (u *TransferUseCase) GetByID(ctx context.Context, id string) (*response.TransferResponse, error) {
@@ -88,7 +109,9 @@ func (u *TransferUseCase) TransferFromUser(
 
 	u.telemetry.Count(ctx, 1)
 
-	acc, err := u.Account.GetUserAccount(ctx, &account.GetUserAccountRequest{
+	a := clients.Account(u.Manager)
+
+	acc, err := a.GetUserAccount(ctx, &account.GetUserAccountRequest{
 		UserId: userID,
 	})
 	if err != nil {
@@ -97,7 +120,7 @@ func (u *TransferUseCase) TransferFromUser(
 		return nil, err
 	}
 
-	confirm, err := u.Account.ResolveAccount(ctx, &account.ConfirmAccountRequest{
+	confirm, err := a.ResolveAccount(ctx, &account.ConfirmAccountRequest{
 		FromAccountNo: acc.AccountNo,
 		ToAccountNo:   input.ToAccNo,
 	})
@@ -229,9 +252,9 @@ func (u *TransferUseCase) ReconcileAccount(
 
 	logger := u.log.WithField("account_id", accID)
 
-	// Get balance from Account Service
-	_, err := u.Account.GetBalance(ctx, &account.GetBalanceRequest{
-		Id:        accID,
+	a := clients.Account(u.Manager)
+	_, err := a.ReconcileBalance(ctx, &account.BalanceRequest{
+		AccountId: accID,
 		AccountNo: input.AccountNo,
 	})
 
@@ -240,8 +263,8 @@ func (u *TransferUseCase) ReconcileAccount(
 		return err
 	}
 
-	// Get balance from Ledger Service
-	_, err = u.Ledger.ReconcileAccount(ctx, &ledger.ReconcileAccountRequest{AccountId: accID})
+	ledg := clients.Ledger(u.Manager)
+	_, err = ledg.ReconcileAccount(ctx, &ledger.ReconcileAccountRequest{AccountId: accID})
 	if err != nil {
 		logger.WithError(err).Error("failed to fetch ledger balance")
 		return err

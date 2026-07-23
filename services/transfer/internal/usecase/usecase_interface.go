@@ -9,6 +9,7 @@ import (
 
 type TransferUseCase interface {
 	GetAllTransfers(ctx context.Context) ([]response.TransferResponse, error)
+	GetByUserID(ctx context.Context, userID string) (*response.TransferResponse, error)
 	GetByID(ctx context.Context, id string) (*response.TransferResponse, error)
 	Transfer(ctx context.Context, userID string, idemKey string, input *request.TransactionIdentity) (*response.TransferResponse, error)
 	TransferFromUser(ctx context.Context, userID string, idemKey string, input *request.TransferRequest) (*response.TransferResponse, error)
