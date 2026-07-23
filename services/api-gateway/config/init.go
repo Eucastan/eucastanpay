@@ -26,6 +26,10 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	if err := commonconfig.RequireString("ADMIN_GRPC_ADDR", cfg.AdminGRPCAddr); err != nil {
+		return nil, err
+	}
+
 	if err := commonconfig.RequireString("ACCOUNT_GRPC_ADDR", cfg.AccountGRPCAddr); err != nil {
 		return nil, err
 	}
@@ -35,6 +39,14 @@ func Load() (*Config, error) {
 	}
 
 	if err := commonconfig.RequireString("LEDGER_GRPC_ADDR", cfg.LedgerGRPCAddr); err != nil {
+		return nil, err
+	}
+
+	if err := commonconfig.RequireString("AUDIT_GRPC_ADDR", cfg.AuditGRPCAddr); err != nil {
+		return nil, err
+	}
+
+	if err := commonconfig.RequireString("NOTIFICATION_GRPC_ADDR", cfg.NotifyGRPCAddr); err != nil {
 		return nil, err
 	}
 

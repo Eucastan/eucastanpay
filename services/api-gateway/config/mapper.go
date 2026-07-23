@@ -21,10 +21,12 @@ func ToConfig() *Config {
 		Version:     viper.GetString("VERSION"),
 
 		UserGRPCAddr:     viper.GetString("USER_GRPC_ADDR"),
+		AdminGRPCAddr:    viper.GetString("ADMIN_GRPC_ADDR"),
 		AccountGRPCAddr:  viper.GetString("ACCOUNT_GRPC_ADDR"),
 		TransferGRPCAddr: viper.GetString("TRANSFER_GRPC_ADDR"),
 		LedgerGRPCAddr:   viper.GetString("LEDGER_GRPC_ADDR"),
 		AuditGRPCAddr:    viper.GetString("AUDIT_GRPC_ADDR"),
+		NotifyGRPCAddr:   viper.GetString("NOTIFICATION_GRPC_ADDR"),
 
 		GRPCTimeout:     timeout,
 		ShutdownTimeout: 15 * time.Second,

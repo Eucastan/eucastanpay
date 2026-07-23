@@ -18,7 +18,7 @@ func (a *App) initClients() error {
 
 	admin := manager.ServiceConfig{
 		Name:     "admin",
-		Address:  a.cfg.AccountGRPCAddr,
+		Address:  a.cfg.AdminGRPCAddr,
 		Insecure: true,
 		Timeout:  time.Duration(5 * time.Second),
 		Retries:  3,
@@ -58,7 +58,7 @@ func (a *App) initClients() error {
 
 	notify := manager.ServiceConfig{
 		Name:     "notification",
-		Address:  a.cfg.AccountGRPCAddr,
+		Address:  a.cfg.NotifyGRPCAddr,
 		Insecure: true,
 		Timeout:  time.Duration(5 * time.Second),
 		Retries:  3,
