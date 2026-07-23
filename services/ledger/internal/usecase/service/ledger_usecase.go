@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Eucastan/eucastanpay/common/pkg/events"
+	"github.com/Eucastan/eucastanpay/common/pkg/grpc"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpc/clients"
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/common/proto/account"
@@ -21,15 +22,20 @@ import (
 type LedgerUseCase struct {
 	ledger    repository.LedgerRepository
 	telemetry *telemetry.Telemetry
-	*clients.Clients
-	logger *logrus.Logger
+	client    account.AccountServiceClient
+	logger    *logrus.Logger
 }
 
-func NewLedgerUseCase(ledger repository.LedgerRepository, telemetry *telemetry.Telemetry, clients *clients.Clients, logger *logrus.Logger) *LedgerUseCase {
+func NewLedgerUseCase(
+	ledger repository.LedgerRepository,
+	telemetry *telemetry.Telemetry,
+	manager *grpc.Manager,
+	logger *logrus.Logger,
+) *LedgerUseCase {
 	return &LedgerUseCase{
 		ledger:    ledger,
 		telemetry: telemetry,
-		Clients:   clients,
+		client:    clients.Account(manager),
 		logger:    logger,
 	}
 }
@@ -51,7 +57,7 @@ func (u *LedgerUseCase) CreateEntries(
 	// Debit Entry
 	debit := &domain.Ledger{
 		ID:           uuid.NewString(),
-		UserID: userID,
+		UserID:       userID,
 		AccountID:    fromAccID,
 		Amount:       amount,
 		EntryType:    domain.DebitEntry,
@@ -69,7 +75,7 @@ func (u *LedgerUseCase) CreateEntries(
 	// Credit Entry
 	credit := &domain.Ledger{
 		ID:           uuid.NewString(),
-		UserID: userID,
+		UserID:       userID,
 		AccountID:    toAccID,
 		Amount:       amount,
 		EntryType:    domain.CreditEntry,
@@ -129,7 +135,7 @@ func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) 
 	}
 
 	// Get balance from Account Service
-	accResp, err := u.Account.GetBalance(ctx, &account.GetBalanceRequest{Id: accountID})
+	accResp, err := u.client.GetBalance(ctx, &account.GetBalanceRequest{AccountId: accountID})
 	if err != nil {
 		return nil, err
 	}
@@ -168,11 +174,11 @@ func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) 
 	return result, nil
 }
 
-func (u *LedgerUseCase) GetTransactionEntry(ctx context.Context, id string) (*response.LedgerResponse, error) {
+func (u *LedgerUseCase) GetTransactionEntry(ctx context.Context, accID string) (*response.LedgerResponse, error) {
 	ctx, span := u.telemetry.Start(ctx, "LedgerUseCase.GetTransactionEntry")
 	defer span.End()
 
-	ledger, err := u.ledger.FindByID(ctx, id)
+	ledger, err := u.ledger.FindByAccountID(ctx, accID)
 	if err != nil {
 		span.RecordError(err)
 		return nil, err
@@ -192,6 +198,32 @@ func (u *LedgerUseCase) GetAllLedgers(ctx context.Context) ([]response.LedgerRes
 	}
 
 	return response.ToListLedgerResponse(ledgers), nil
+}
+
+func (u *LedgerUseCase) GetLedgerByUserID(ctx context.Context, userID string) (*response.LedgerResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "LedgerUseCase.GetAllLedgers")
+	defer span.End()
+
+	ledgers, err := u.ledger.FindByUserID(ctx, userID)
+	if err != nil {
+		span.RecordError(err)
+		return nil, err
+	}
+
+	return response.ToLedgerResponse(ledgers), nil
+}
+
+func (u *LedgerUseCase) GetLedger(ctx context.Context, id string) (*response.LedgerResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "LedgerUseCase.GetAllLedgers")
+	defer span.End()
+
+	ledgers, err := u.ledger.FindByID(ctx, id)
+	if err != nil {
+		span.RecordError(err)
+		return nil, err
+	}
+
+	return response.ToLedgerResponse(ledgers), nil
 }
 
 func (u *LedgerUseCase) GetTransactionByEntryType(ctx context.Context, input *request.EntryTypeRequest) ([]response.LedgerResponse, error) {

@@ -72,6 +72,30 @@ func (r *LedgerRepository) CreateLedgerEntry(ctx context.Context, tx pgx.Tx, ent
 	).Scan(&entry.ID, &entry.CreatedAt, &entry.UpdatedAt)
 }
 
+func (r *LedgerRepository) FindByAccountID(ctx context.Context, accID string) (*domain.Ledger, error) {
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.FindByID")
+	defer span.End()
+
+	query := `
+        SELECT id, user_id, account_id, amount, entry_type, reference, balance_after, 
+               description, created_at, updated_at 
+        FROM ledgers 
+        WHERE account_id = $1
+    `
+
+	entry := &domain.Ledger{}
+	err := r.DB.QueryRow(ctx, query, accID).Scan(
+		&entry.ID, &entry.UserID, &entry.AccountID, &entry.Amount, &entry.EntryType,
+		&entry.Reference, &entry.BalanceAfter, &entry.Description,
+		&entry.CreatedAt, &entry.UpdatedAt,
+	)
+	if err == pgx.ErrNoRows {
+		span.RecordError(err)
+		return nil, errmessage.ErrLedgerNotFound
+	}
+	return entry, err
+}
+
 func (r *LedgerRepository) FindByID(ctx context.Context, id string) (*domain.Ledger, error) {
 	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.FindByID")
 	defer span.End()
@@ -85,6 +109,30 @@ func (r *LedgerRepository) FindByID(ctx context.Context, id string) (*domain.Led
 
 	entry := &domain.Ledger{}
 	err := r.DB.QueryRow(ctx, query, id).Scan(
+		&entry.ID, &entry.UserID, &entry.AccountID, &entry.Amount, &entry.EntryType,
+		&entry.Reference, &entry.BalanceAfter, &entry.Description,
+		&entry.CreatedAt, &entry.UpdatedAt,
+	)
+	if err == pgx.ErrNoRows {
+		span.RecordError(err)
+		return nil, errmessage.ErrLedgerNotFound
+	}
+	return entry, err
+}
+
+func (r *LedgerRepository) FindByUserID(ctx context.Context, userID string) (*domain.Ledger, error) {
+	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.FindByUserID")
+	defer span.End()
+
+	query := `
+        SELECT id, user_id, account_id, amount, entry_type, reference, balance_after, 
+               description, created_at, updated_at 
+        FROM ledgers 
+        WHERE user_id = $1
+    `
+
+	entry := &domain.Ledger{}
+	err := r.DB.QueryRow(ctx, query, userID).Scan(
 		&entry.ID, &entry.UserID, &entry.AccountID, &entry.Amount, &entry.EntryType,
 		&entry.Reference, &entry.BalanceAfter, &entry.Description,
 		&entry.CreatedAt, &entry.UpdatedAt,

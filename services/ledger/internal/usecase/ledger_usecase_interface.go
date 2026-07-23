@@ -13,6 +13,8 @@ type LedgerUseCase interface {
 	ReconcileAccount(ctx context.Context, accountID string) (*response.ReconciliationResult, error)
 	GetTransactionEntry(ctx context.Context, id string) (*response.LedgerResponse, error)
 	GetAllLedgers(ctx context.Context) ([]response.LedgerResponse, error)
+	GetLedger(ctx context.Context, id string) (*response.LedgerResponse, error)
+	GetLedgerByUserID(ctx context.Context, userID string) (*response.LedgerResponse, error)
 	GetTransactionByEntryType(ctx context.Context, input *request.EntryTypeRequest) ([]response.LedgerResponse, error)
 	GetAccountBalance(ctx context.Context, accID string) (int64, error)
 }

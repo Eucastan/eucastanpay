@@ -10,7 +10,9 @@ import (
 type LedgerRepository interface {
 	WithTx(ctx context.Context, fn func(tx pgx.Tx) error) error
 	CreateLedgerEntry(ctx context.Context, tx pgx.Tx, entry *domain.Ledger) error
+	FindByAccountID(ctx context.Context, accID string) (*domain.Ledger, error)
 	FindByID(ctx context.Context, id string) (*domain.Ledger, error)
+	FindByUserID(ctx context.Context, userID string) (*domain.Ledger, error)
 	FindByReference(ctx context.Context, reference string) (*domain.Ledger, error)
 	FindAll(ctx context.Context) ([]domain.Ledger, error)
 	FindByEntryType(ctx context.Context, entryType string) ([]domain.Ledger, error)

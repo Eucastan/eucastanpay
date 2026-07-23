@@ -12,14 +12,14 @@ import (
 )
 
 const (
-	maxRetries   = 5
-	lockDuration = time.Minute
+	maxRetries = 5
 )
 
 type OutboxWorker struct {
 	db        *pgxpool.Pool
 	publisher *producer.Publisher
 	log       *logrus.Logger
+	interval  time.Duration
 }
 
 type OutboxEvent struct {
@@ -30,7 +30,13 @@ type OutboxEvent struct {
 	RetryCount int
 }
 
-func NewOutboxWorker(db *pgxpool.Pool, publisher *producer.Publisher, log *logrus.Logger) *OutboxWorker {
+func NewOutboxWorker(
+	db *pgxpool.Pool,
+	publisher *producer.Publisher,
+	log *logrus.Logger,
+	interval time.Duration,
+) *OutboxWorker {
+
 	if log == nil {
 		log = logrus.New()
 	}
@@ -39,25 +45,25 @@ func NewOutboxWorker(db *pgxpool.Pool, publisher *producer.Publisher, log *logru
 		db:        db,
 		publisher: publisher,
 		log:       log,
+		interval:  interval,
 	}
 }
 
-func StartOutboxWorker(ctx context.Context, db *pgxpool.Pool, publisher *producer.Publisher, log *logrus.Logger) {
-	log.Info("PUBLISHING OUTBOX EVENT")
-	worker := NewOutboxWorker(db, publisher, log)
+func (w *OutboxWorker) Start(ctx context.Context) {
+	w.log.Info("Outbox worker started")
 
-	ticker := time.NewTicker(2 * time.Second)
+	ticker := time.NewTicker(w.interval)
 	defer ticker.Stop()
 
 	for {
 		select {
 
 		case <-ctx.Done():
-			worker.log.Info("outbox worker stopped")
+			w.log.Info("outbox worker stopped")
 			return
 
 		case <-ticker.C:
-			worker.processBatch(ctx)
+			w.processBatch(ctx)
 		}
 	}
 }
