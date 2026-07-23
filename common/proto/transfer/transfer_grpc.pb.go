@@ -19,18 +19,24 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TransferService_ReverseTransfer_FullMethodName  = "/transfer.TransferService/ReverseTransfer"
-	TransferService_ReconcileAccount_FullMethodName = "/transfer.TransferService/ReconcileAccount"
-	TransferService_GetAllTransfers_FullMethodName  = "/transfer.TransferService/GetAllTransfers"
+	TransferService_Transfer_FullMethodName            = "/transfer.TransferService/Transfer"
+	TransferService_ReverseTransfer_FullMethodName     = "/transfer.TransferService/ReverseTransfer"
+	TransferService_ReconcileAccount_FullMethodName    = "/transfer.TransferService/ReconcileAccount"
+	TransferService_GetAllTransfers_FullMethodName     = "/transfer.TransferService/GetAllTransfers"
+	TransferService_GetTransfer_FullMethodName         = "/transfer.TransferService/GetTransfer"
+	TransferService_GetTransferByUserID_FullMethodName = "/transfer.TransferService/GetTransferByUserID"
 )
 
 // TransferServiceClient is the client API for TransferService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TransferServiceClient interface {
+	Transfer(ctx context.Context, in *TransferRequest, opts ...grpc.CallOption) (*TransferResponse, error)
 	ReverseTransfer(ctx context.Context, in *ReverseRequest, opts ...grpc.CallOption) (*ReverseResponse, error)
 	ReconcileAccount(ctx context.Context, in *ReconcileAccountRequest, opts ...grpc.CallOption) (*ReconcileAccountResponse, error)
 	GetAllTransfers(ctx context.Context, in *ListTransfersRequest, opts ...grpc.CallOption) (*ListTransfersResponse, error)
+	GetTransfer(ctx context.Context, in *TransferIdRequest, opts ...grpc.CallOption) (*GetTransferResponse, error)
+	GetTransferByUserID(ctx context.Context, in *UserIdRequest, opts ...grpc.CallOption) (*GetTransferResponse, error)
 }
 
 type transferServiceClient struct {
@@ -39,6 +45,16 @@ type transferServiceClient struct {
 
 func NewTransferServiceClient(cc grpc.ClientConnInterface) TransferServiceClient {
 	return &transferServiceClient{cc}
+}
+
+func (c *transferServiceClient) Transfer(ctx context.Context, in *TransferRequest, opts ...grpc.CallOption) (*TransferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TransferResponse)
+	err := c.cc.Invoke(ctx, TransferService_Transfer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *transferServiceClient) ReverseTransfer(ctx context.Context, in *ReverseRequest, opts ...grpc.CallOption) (*ReverseResponse, error) {
@@ -71,13 +87,36 @@ func (c *transferServiceClient) GetAllTransfers(ctx context.Context, in *ListTra
 	return out, nil
 }
 
+func (c *transferServiceClient) GetTransfer(ctx context.Context, in *TransferIdRequest, opts ...grpc.CallOption) (*GetTransferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTransferResponse)
+	err := c.cc.Invoke(ctx, TransferService_GetTransfer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transferServiceClient) GetTransferByUserID(ctx context.Context, in *UserIdRequest, opts ...grpc.CallOption) (*GetTransferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTransferResponse)
+	err := c.cc.Invoke(ctx, TransferService_GetTransferByUserID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TransferServiceServer is the server API for TransferService service.
 // All implementations must embed UnimplementedTransferServiceServer
 // for forward compatibility.
 type TransferServiceServer interface {
+	Transfer(context.Context, *TransferRequest) (*TransferResponse, error)
 	ReverseTransfer(context.Context, *ReverseRequest) (*ReverseResponse, error)
 	ReconcileAccount(context.Context, *ReconcileAccountRequest) (*ReconcileAccountResponse, error)
 	GetAllTransfers(context.Context, *ListTransfersRequest) (*ListTransfersResponse, error)
+	GetTransfer(context.Context, *TransferIdRequest) (*GetTransferResponse, error)
+	GetTransferByUserID(context.Context, *UserIdRequest) (*GetTransferResponse, error)
 	mustEmbedUnimplementedTransferServiceServer()
 }
 
@@ -88,6 +127,9 @@ type TransferServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedTransferServiceServer struct{}
 
+func (UnimplementedTransferServiceServer) Transfer(context.Context, *TransferRequest) (*TransferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Transfer not implemented")
+}
 func (UnimplementedTransferServiceServer) ReverseTransfer(context.Context, *ReverseRequest) (*ReverseResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ReverseTransfer not implemented")
 }
@@ -96,6 +138,12 @@ func (UnimplementedTransferServiceServer) ReconcileAccount(context.Context, *Rec
 }
 func (UnimplementedTransferServiceServer) GetAllTransfers(context.Context, *ListTransfersRequest) (*ListTransfersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllTransfers not implemented")
+}
+func (UnimplementedTransferServiceServer) GetTransfer(context.Context, *TransferIdRequest) (*GetTransferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTransfer not implemented")
+}
+func (UnimplementedTransferServiceServer) GetTransferByUserID(context.Context, *UserIdRequest) (*GetTransferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTransferByUserID not implemented")
 }
 func (UnimplementedTransferServiceServer) mustEmbedUnimplementedTransferServiceServer() {}
 func (UnimplementedTransferServiceServer) testEmbeddedByValue()                         {}
@@ -116,6 +164,24 @@ func RegisterTransferServiceServer(s grpc.ServiceRegistrar, srv TransferServiceS
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&TransferService_ServiceDesc, srv)
+}
+
+func _TransferService_Transfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TransferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransferServiceServer).Transfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransferService_Transfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransferServiceServer).Transfer(ctx, req.(*TransferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _TransferService_ReverseTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -172,6 +238,42 @@ func _TransferService_GetAllTransfers_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TransferService_GetTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TransferIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransferServiceServer).GetTransfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransferService_GetTransfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransferServiceServer).GetTransfer(ctx, req.(*TransferIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransferService_GetTransferByUserID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransferServiceServer).GetTransferByUserID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransferService_GetTransferByUserID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransferServiceServer).GetTransferByUserID(ctx, req.(*UserIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TransferService_ServiceDesc is the grpc.ServiceDesc for TransferService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -179,6 +281,10 @@ var TransferService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "transfer.TransferService",
 	HandlerType: (*TransferServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Transfer",
+			Handler:    _TransferService_Transfer_Handler,
+		},
 		{
 			MethodName: "ReverseTransfer",
 			Handler:    _TransferService_ReverseTransfer_Handler,
@@ -190,6 +296,14 @@ var TransferService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllTransfers",
 			Handler:    _TransferService_GetAllTransfers_Handler,
+		},
+		{
+			MethodName: "GetTransfer",
+			Handler:    _TransferService_GetTransfer_Handler,
+		},
+		{
+			MethodName: "GetTransferByUserID",
+			Handler:    _TransferService_GetTransferByUserID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

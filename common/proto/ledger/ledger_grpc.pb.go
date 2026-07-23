@@ -20,9 +20,12 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	LedgerService_ReconcileAccount_FullMethodName      = "/ledger.LedgerService/ReconcileAccount"
+	LedgerService_GetLedgerBalance_FullMethodName      = "/ledger.LedgerService/GetLedgerBalance"
 	LedgerService_GetAllLedgers_FullMethodName         = "/ledger.LedgerService/GetAllLedgers"
 	LedgerService_GetLedgersByEntryType_FullMethodName = "/ledger.LedgerService/GetLedgersByEntryType"
 	LedgerService_GetLedger_FullMethodName             = "/ledger.LedgerService/GetLedger"
+	LedgerService_GetLedgerByUserId_FullMethodName     = "/ledger.LedgerService/GetLedgerByUserId"
+	LedgerService_GetLedgerByAccountId_FullMethodName  = "/ledger.LedgerService/GetLedgerByAccountId"
 )
 
 // LedgerServiceClient is the client API for LedgerService service.
@@ -30,9 +33,12 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LedgerServiceClient interface {
 	ReconcileAccount(ctx context.Context, in *ReconcileAccountRequest, opts ...grpc.CallOption) (*ReconcileResponse, error)
+	GetLedgerBalance(ctx context.Context, in *LedgerBalanceRequest, opts ...grpc.CallOption) (*LedgerBalanceResponse, error)
 	GetAllLedgers(ctx context.Context, in *ListLedgersRequest, opts ...grpc.CallOption) (*ListLedgersResponse, error)
 	GetLedgersByEntryType(ctx context.Context, in *ListLedgersEntryTypeRequest, opts ...grpc.CallOption) (*ListLedgersEntryTypeResponse, error)
 	GetLedger(ctx context.Context, in *LedgerRequest, opts ...grpc.CallOption) (*LedgerResponse, error)
+	GetLedgerByUserId(ctx context.Context, in *UserIdRequest, opts ...grpc.CallOption) (*LedgerResponse, error)
+	GetLedgerByAccountId(ctx context.Context, in *LedgerByAccountIdRequest, opts ...grpc.CallOption) (*LedgerResponse, error)
 }
 
 type ledgerServiceClient struct {
@@ -47,6 +53,16 @@ func (c *ledgerServiceClient) ReconcileAccount(ctx context.Context, in *Reconcil
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ReconcileResponse)
 	err := c.cc.Invoke(ctx, LedgerService_ReconcileAccount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ledgerServiceClient) GetLedgerBalance(ctx context.Context, in *LedgerBalanceRequest, opts ...grpc.CallOption) (*LedgerBalanceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LedgerBalanceResponse)
+	err := c.cc.Invoke(ctx, LedgerService_GetLedgerBalance_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,14 +99,37 @@ func (c *ledgerServiceClient) GetLedger(ctx context.Context, in *LedgerRequest, 
 	return out, nil
 }
 
+func (c *ledgerServiceClient) GetLedgerByUserId(ctx context.Context, in *UserIdRequest, opts ...grpc.CallOption) (*LedgerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LedgerResponse)
+	err := c.cc.Invoke(ctx, LedgerService_GetLedgerByUserId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ledgerServiceClient) GetLedgerByAccountId(ctx context.Context, in *LedgerByAccountIdRequest, opts ...grpc.CallOption) (*LedgerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LedgerResponse)
+	err := c.cc.Invoke(ctx, LedgerService_GetLedgerByAccountId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LedgerServiceServer is the server API for LedgerService service.
 // All implementations must embed UnimplementedLedgerServiceServer
 // for forward compatibility.
 type LedgerServiceServer interface {
 	ReconcileAccount(context.Context, *ReconcileAccountRequest) (*ReconcileResponse, error)
+	GetLedgerBalance(context.Context, *LedgerBalanceRequest) (*LedgerBalanceResponse, error)
 	GetAllLedgers(context.Context, *ListLedgersRequest) (*ListLedgersResponse, error)
 	GetLedgersByEntryType(context.Context, *ListLedgersEntryTypeRequest) (*ListLedgersEntryTypeResponse, error)
 	GetLedger(context.Context, *LedgerRequest) (*LedgerResponse, error)
+	GetLedgerByUserId(context.Context, *UserIdRequest) (*LedgerResponse, error)
+	GetLedgerByAccountId(context.Context, *LedgerByAccountIdRequest) (*LedgerResponse, error)
 	mustEmbedUnimplementedLedgerServiceServer()
 }
 
@@ -104,6 +143,9 @@ type UnimplementedLedgerServiceServer struct{}
 func (UnimplementedLedgerServiceServer) ReconcileAccount(context.Context, *ReconcileAccountRequest) (*ReconcileResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ReconcileAccount not implemented")
 }
+func (UnimplementedLedgerServiceServer) GetLedgerBalance(context.Context, *LedgerBalanceRequest) (*LedgerBalanceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLedgerBalance not implemented")
+}
 func (UnimplementedLedgerServiceServer) GetAllLedgers(context.Context, *ListLedgersRequest) (*ListLedgersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllLedgers not implemented")
 }
@@ -112,6 +154,12 @@ func (UnimplementedLedgerServiceServer) GetLedgersByEntryType(context.Context, *
 }
 func (UnimplementedLedgerServiceServer) GetLedger(context.Context, *LedgerRequest) (*LedgerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetLedger not implemented")
+}
+func (UnimplementedLedgerServiceServer) GetLedgerByUserId(context.Context, *UserIdRequest) (*LedgerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLedgerByUserId not implemented")
+}
+func (UnimplementedLedgerServiceServer) GetLedgerByAccountId(context.Context, *LedgerByAccountIdRequest) (*LedgerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLedgerByAccountId not implemented")
 }
 func (UnimplementedLedgerServiceServer) mustEmbedUnimplementedLedgerServiceServer() {}
 func (UnimplementedLedgerServiceServer) testEmbeddedByValue()                       {}
@@ -148,6 +196,24 @@ func _LedgerService_ReconcileAccount_Handler(srv interface{}, ctx context.Contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(LedgerServiceServer).ReconcileAccount(ctx, req.(*ReconcileAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LedgerService_GetLedgerBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LedgerBalanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LedgerServiceServer).GetLedgerBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LedgerService_GetLedgerBalance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LedgerServiceServer).GetLedgerBalance(ctx, req.(*LedgerBalanceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -206,6 +272,42 @@ func _LedgerService_GetLedger_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LedgerService_GetLedgerByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LedgerServiceServer).GetLedgerByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LedgerService_GetLedgerByUserId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LedgerServiceServer).GetLedgerByUserId(ctx, req.(*UserIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LedgerService_GetLedgerByAccountId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LedgerByAccountIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LedgerServiceServer).GetLedgerByAccountId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LedgerService_GetLedgerByAccountId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LedgerServiceServer).GetLedgerByAccountId(ctx, req.(*LedgerByAccountIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LedgerService_ServiceDesc is the grpc.ServiceDesc for LedgerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -218,6 +320,10 @@ var LedgerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _LedgerService_ReconcileAccount_Handler,
 		},
 		{
+			MethodName: "GetLedgerBalance",
+			Handler:    _LedgerService_GetLedgerBalance_Handler,
+		},
+		{
 			MethodName: "GetAllLedgers",
 			Handler:    _LedgerService_GetAllLedgers_Handler,
 		},
@@ -228,6 +334,14 @@ var LedgerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLedger",
 			Handler:    _LedgerService_GetLedger_Handler,
+		},
+		{
+			MethodName: "GetLedgerByUserId",
+			Handler:    _LedgerService_GetLedgerByUserId_Handler,
+		},
+		{
+			MethodName: "GetLedgerByAccountId",
+			Handler:    _LedgerService_GetLedgerByAccountId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

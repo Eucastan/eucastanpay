@@ -9,9 +9,10 @@ import (
 
 func GenerateAccessToken(userID, email, role, secret string) (string, error) {
 	claims := &Claims{
-		UserID: userID,
-		Email:  email,
-		Role:   role,
+		UserID:    userID,
+		Email:     email,
+		Role:      role,
+		TokenType: "user",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -26,9 +27,9 @@ func GenerateAccessToken(userID, email, role, secret string) (string, error) {
 
 func GenerateAdminAccessToken(adminID, role, secret string) (string, error) {
 	claims := &AdminClaims{
-		AdminID: adminID,
-		Role:    role,
-		Type:    "admin",
+		AdminID:   adminID,
+		Role:      role,
+		TokenType: "admin",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

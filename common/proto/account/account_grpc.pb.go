@@ -19,13 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AccountService_Credit_FullMethodName          = "/account.AccountService/Credit"
-	AccountService_Debit_FullMethodName           = "/account.AccountService/Debit"
-	AccountService_GetUserAccount_FullMethodName  = "/account.AccountService/GetUserAccount"
-	AccountService_ResolveAccount_FullMethodName  = "/account.AccountService/ResolveAccount"
-	AccountService_GetBalance_FullMethodName      = "/account.AccountService/GetBalance"
-	AccountService_GetAllAccounts_FullMethodName  = "/account.AccountService/GetAllAccounts"
-	AccountService_ActionOnAccount_FullMethodName = "/account.AccountService/ActionOnAccount"
+	AccountService_Credit_FullMethodName           = "/account.AccountService/Credit"
+	AccountService_Debit_FullMethodName            = "/account.AccountService/Debit"
+	AccountService_Deposit_FullMethodName          = "/account.AccountService/Deposit"
+	AccountService_Withdraw_FullMethodName         = "/account.AccountService/Withdraw"
+	AccountService_GetUserAccount_FullMethodName   = "/account.AccountService/GetUserAccount"
+	AccountService_ResolveAccount_FullMethodName   = "/account.AccountService/ResolveAccount"
+	AccountService_GetBalance_FullMethodName       = "/account.AccountService/GetBalance"
+	AccountService_ReconcileBalance_FullMethodName = "/account.AccountService/ReconcileBalance"
+	AccountService_GetAllAccounts_FullMethodName   = "/account.AccountService/GetAllAccounts"
+	AccountService_ActionOnAccount_FullMethodName  = "/account.AccountService/ActionOnAccount"
+	AccountService_Delete_FullMethodName           = "/account.AccountService/Delete"
 )
 
 // AccountServiceClient is the client API for AccountService service.
@@ -34,11 +38,15 @@ const (
 type AccountServiceClient interface {
 	Credit(ctx context.Context, in *GetCreditRequest, opts ...grpc.CallOption) (*GetCreditResponse, error)
 	Debit(ctx context.Context, in *GetDebitRequest, opts ...grpc.CallOption) (*GetDebitResponse, error)
+	Deposit(ctx context.Context, in *DepositRequest, opts ...grpc.CallOption) (*ActionResponse, error)
+	Withdraw(ctx context.Context, in *WithDrawalRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	GetUserAccount(ctx context.Context, in *GetUserAccountRequest, opts ...grpc.CallOption) (*GetAccountResponse, error)
 	ResolveAccount(ctx context.Context, in *ConfirmAccountRequest, opts ...grpc.CallOption) (*ConfirmAccountResponse, error)
 	GetBalance(ctx context.Context, in *GetBalanceRequest, opts ...grpc.CallOption) (*GetAccountResponse, error)
+	ReconcileBalance(ctx context.Context, in *BalanceRequest, opts ...grpc.CallOption) (*GetAccountResponse, error)
 	GetAllAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error)
 	ActionOnAccount(ctx context.Context, in *ActionRequest, opts ...grpc.CallOption) (*ActionResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 }
 
 type accountServiceClient struct {
@@ -63,6 +71,26 @@ func (c *accountServiceClient) Debit(ctx context.Context, in *GetDebitRequest, o
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetDebitResponse)
 	err := c.cc.Invoke(ctx, AccountService_Debit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accountServiceClient) Deposit(ctx context.Context, in *DepositRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActionResponse)
+	err := c.cc.Invoke(ctx, AccountService_Deposit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accountServiceClient) Withdraw(ctx context.Context, in *WithDrawalRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActionResponse)
+	err := c.cc.Invoke(ctx, AccountService_Withdraw_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +127,16 @@ func (c *accountServiceClient) GetBalance(ctx context.Context, in *GetBalanceReq
 	return out, nil
 }
 
+func (c *accountServiceClient) ReconcileBalance(ctx context.Context, in *BalanceRequest, opts ...grpc.CallOption) (*GetAccountResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAccountResponse)
+	err := c.cc.Invoke(ctx, AccountService_ReconcileBalance_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accountServiceClient) GetAllAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListAccountsResponse)
@@ -119,17 +157,31 @@ func (c *accountServiceClient) ActionOnAccount(ctx context.Context, in *ActionRe
 	return out, nil
 }
 
+func (c *accountServiceClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActionResponse)
+	err := c.cc.Invoke(ctx, AccountService_Delete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountServiceServer is the server API for AccountService service.
 // All implementations must embed UnimplementedAccountServiceServer
 // for forward compatibility.
 type AccountServiceServer interface {
 	Credit(context.Context, *GetCreditRequest) (*GetCreditResponse, error)
 	Debit(context.Context, *GetDebitRequest) (*GetDebitResponse, error)
+	Deposit(context.Context, *DepositRequest) (*ActionResponse, error)
+	Withdraw(context.Context, *WithDrawalRequest) (*ActionResponse, error)
 	GetUserAccount(context.Context, *GetUserAccountRequest) (*GetAccountResponse, error)
 	ResolveAccount(context.Context, *ConfirmAccountRequest) (*ConfirmAccountResponse, error)
 	GetBalance(context.Context, *GetBalanceRequest) (*GetAccountResponse, error)
+	ReconcileBalance(context.Context, *BalanceRequest) (*GetAccountResponse, error)
 	GetAllAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error)
 	ActionOnAccount(context.Context, *ActionRequest) (*ActionResponse, error)
+	Delete(context.Context, *DeleteRequest) (*ActionResponse, error)
 	mustEmbedUnimplementedAccountServiceServer()
 }
 
@@ -146,6 +198,12 @@ func (UnimplementedAccountServiceServer) Credit(context.Context, *GetCreditReque
 func (UnimplementedAccountServiceServer) Debit(context.Context, *GetDebitRequest) (*GetDebitResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Debit not implemented")
 }
+func (UnimplementedAccountServiceServer) Deposit(context.Context, *DepositRequest) (*ActionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Deposit not implemented")
+}
+func (UnimplementedAccountServiceServer) Withdraw(context.Context, *WithDrawalRequest) (*ActionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Withdraw not implemented")
+}
 func (UnimplementedAccountServiceServer) GetUserAccount(context.Context, *GetUserAccountRequest) (*GetAccountResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserAccount not implemented")
 }
@@ -155,11 +213,17 @@ func (UnimplementedAccountServiceServer) ResolveAccount(context.Context, *Confir
 func (UnimplementedAccountServiceServer) GetBalance(context.Context, *GetBalanceRequest) (*GetAccountResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetBalance not implemented")
 }
+func (UnimplementedAccountServiceServer) ReconcileBalance(context.Context, *BalanceRequest) (*GetAccountResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReconcileBalance not implemented")
+}
 func (UnimplementedAccountServiceServer) GetAllAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllAccounts not implemented")
 }
 func (UnimplementedAccountServiceServer) ActionOnAccount(context.Context, *ActionRequest) (*ActionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ActionOnAccount not implemented")
+}
+func (UnimplementedAccountServiceServer) Delete(context.Context, *DeleteRequest) (*ActionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedAccountServiceServer) mustEmbedUnimplementedAccountServiceServer() {}
 func (UnimplementedAccountServiceServer) testEmbeddedByValue()                        {}
@@ -218,6 +282,42 @@ func _AccountService_Debit_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountService_Deposit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DepositRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServiceServer).Deposit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountService_Deposit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).Deposit(ctx, req.(*DepositRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccountService_Withdraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WithDrawalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServiceServer).Withdraw(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountService_Withdraw_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).Withdraw(ctx, req.(*WithDrawalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AccountService_GetUserAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserAccountRequest)
 	if err := dec(in); err != nil {
@@ -272,6 +372,24 @@ func _AccountService_GetBalance_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountService_ReconcileBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BalanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServiceServer).ReconcileBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountService_ReconcileBalance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).ReconcileBalance(ctx, req.(*BalanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AccountService_GetAllAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListAccountsRequest)
 	if err := dec(in); err != nil {
@@ -308,6 +426,24 @@ func _AccountService_ActionOnAccount_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountService_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).Delete(ctx, req.(*DeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccountService_ServiceDesc is the grpc.ServiceDesc for AccountService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -324,6 +460,14 @@ var AccountService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AccountService_Debit_Handler,
 		},
 		{
+			MethodName: "Deposit",
+			Handler:    _AccountService_Deposit_Handler,
+		},
+		{
+			MethodName: "Withdraw",
+			Handler:    _AccountService_Withdraw_Handler,
+		},
+		{
 			MethodName: "GetUserAccount",
 			Handler:    _AccountService_GetUserAccount_Handler,
 		},
@@ -336,12 +480,20 @@ var AccountService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AccountService_GetBalance_Handler,
 		},
 		{
+			MethodName: "ReconcileBalance",
+			Handler:    _AccountService_ReconcileBalance_Handler,
+		},
+		{
 			MethodName: "GetAllAccounts",
 			Handler:    _AccountService_GetAllAccounts_Handler,
 		},
 		{
 			MethodName: "ActionOnAccount",
 			Handler:    _AccountService_ActionOnAccount_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _AccountService_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

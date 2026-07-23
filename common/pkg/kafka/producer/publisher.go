@@ -16,6 +16,7 @@ import (
 
 type Publisher struct {
 	writer    *kafka.Writer
+	brokers   []string
 	telemetry *telemetry.Telemetry
 }
 
@@ -42,6 +43,7 @@ func NewPublisher(brokers []string, username, password string, telemetry *teleme
 			Balancer:  &kafka.LeastBytes{},
 			Async:     false,
 		},
+		brokers:   brokers,
 		telemetry: telemetry,
 	}
 }
@@ -89,6 +91,18 @@ func (p *Publisher) Publish(ctx context.Context, topic string, key string, event
 		Headers: headers,
 	})
 
+	return err
+}
+
+func (p *Publisher) Ping(ctx context.Context) error {
+	conn, err := kafka.DialContext(ctx, "tcp", p.brokers[0])
+	if err != nil {
+		return err
+	}
+
+	defer conn.Close()
+
+	_, err = conn.Brokers()
 	return err
 }
 

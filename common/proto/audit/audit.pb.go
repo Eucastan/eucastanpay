@@ -2,13 +2,14 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v3.21.12
-// source: audit/audit.proto
+// source: proto/audit/audit.proto
 
 package audit
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -28,8 +29,8 @@ type SearchRequest struct {
 	EventType     string                 `protobuf:"bytes,3,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
 	MinAmount     int64                  `protobuf:"varint,4,opt,name=min_amount,json=minAmount,proto3" json:"min_amount,omitempty"`
 	MaxAmount     int64                  `protobuf:"varint,5,opt,name=max_amount,json=maxAmount,proto3" json:"max_amount,omitempty"`
-	FromDate      int64                  `protobuf:"varint,6,opt,name=from_date,json=fromDate,proto3" json:"from_date,omitempty"` // Unix timestamp
-	ToDate        int64                  `protobuf:"varint,7,opt,name=to_date,json=toDate,proto3" json:"to_date,omitempty"`       // Unix timestamp
+	FromDate      int64                  `protobuf:"varint,6,opt,name=from_date,json=fromDate,proto3" json:"from_date,omitempty"`
+	ToDate        int64                  `protobuf:"varint,7,opt,name=to_date,json=toDate,proto3" json:"to_date,omitempty"`
 	Limit         int32                  `protobuf:"varint,8,opt,name=limit,proto3" json:"limit,omitempty"`
 	Offset        int32                  `protobuf:"varint,9,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -38,7 +39,7 @@ type SearchRequest struct {
 
 func (x *SearchRequest) Reset() {
 	*x = SearchRequest{}
-	mi := &file_audit_audit_proto_msgTypes[0]
+	mi := &file_proto_audit_audit_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50,7 +51,7 @@ func (x *SearchRequest) String() string {
 func (*SearchRequest) ProtoMessage() {}
 
 func (x *SearchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_audit_audit_proto_msgTypes[0]
+	mi := &file_proto_audit_audit_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63,7 +64,7 @@ func (x *SearchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchRequest.ProtoReflect.Descriptor instead.
 func (*SearchRequest) Descriptor() ([]byte, []int) {
-	return file_audit_audit_proto_rawDescGZIP(), []int{0}
+	return file_proto_audit_audit_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *SearchRequest) GetCorrelationId() string {
@@ -131,7 +132,7 @@ func (x *SearchRequest) GetOffset() int32 {
 
 type SearchResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Entries       []*AuditEntry          `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	Entries       []*AuditEntryResponse  `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
 	TotalCount    int32                  `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -139,7 +140,7 @@ type SearchResponse struct {
 
 func (x *SearchResponse) Reset() {
 	*x = SearchResponse{}
-	mi := &file_audit_audit_proto_msgTypes[1]
+	mi := &file_proto_audit_audit_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -151,7 +152,7 @@ func (x *SearchResponse) String() string {
 func (*SearchResponse) ProtoMessage() {}
 
 func (x *SearchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_audit_audit_proto_msgTypes[1]
+	mi := &file_proto_audit_audit_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -164,10 +165,10 @@ func (x *SearchResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResponse.ProtoReflect.Descriptor instead.
 func (*SearchResponse) Descriptor() ([]byte, []int) {
-	return file_audit_audit_proto_rawDescGZIP(), []int{1}
+	return file_proto_audit_audit_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *SearchResponse) GetEntries() []*AuditEntry {
+func (x *SearchResponse) GetEntries() []*AuditEntryResponse {
 	if x != nil {
 		return x.Entries
 	}
@@ -181,16 +182,112 @@ func (x *SearchResponse) GetTotalCount() int32 {
 	return 0
 }
 
+type AuditRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuditRequest) Reset() {
+	*x = AuditRequest{}
+	mi := &file_proto_audit_audit_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuditRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuditRequest) ProtoMessage() {}
+
+func (x *AuditRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_audit_audit_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuditRequest.ProtoReflect.Descriptor instead.
+func (*AuditRequest) Descriptor() ([]byte, []int) {
+	return file_proto_audit_audit_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *AuditRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *AuditRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type GetAllAuditResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []*AuditEntryResponse  `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAllAuditResponse) Reset() {
+	*x = GetAllAuditResponse{}
+	mi := &file_proto_audit_audit_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAllAuditResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAllAuditResponse) ProtoMessage() {}
+
+func (x *GetAllAuditResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_audit_audit_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAllAuditResponse.ProtoReflect.Descriptor instead.
+func (*GetAllAuditResponse) Descriptor() ([]byte, []int) {
+	return file_proto_audit_audit_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetAllAuditResponse) GetData() []*AuditEntryResponse {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 type GetByIDRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AuditId       string                 `protobuf:"bytes,1,opt,name=audit_id,json=auditId,proto3" json:"audit_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetByIDRequest) Reset() {
 	*x = GetByIDRequest{}
-	mi := &file_audit_audit_proto_msgTypes[2]
+	mi := &file_proto_audit_audit_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -202,7 +299,7 @@ func (x *GetByIDRequest) String() string {
 func (*GetByIDRequest) ProtoMessage() {}
 
 func (x *GetByIDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_audit_audit_proto_msgTypes[2]
+	mi := &file_proto_audit_audit_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -215,48 +312,49 @@ func (x *GetByIDRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByIDRequest.ProtoReflect.Descriptor instead.
 func (*GetByIDRequest) Descriptor() ([]byte, []int) {
-	return file_audit_audit_proto_rawDescGZIP(), []int{2}
+	return file_proto_audit_audit_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *GetByIDRequest) GetId() string {
+func (x *GetByIDRequest) GetAuditId() string {
 	if x != nil {
-		return x.Id
+		return x.AuditId
 	}
 	return ""
 }
 
-type AuditEntry struct {
+type AuditEntryResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AuditId       string                 `protobuf:"bytes,1,opt,name=audit_id,json=auditId,proto3" json:"audit_id,omitempty"`
 	EventType     string                 `protobuf:"bytes,2,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
 	Service       string                 `protobuf:"bytes,3,opt,name=service,proto3" json:"service,omitempty"`
 	CorrelationId string                 `protobuf:"bytes,4,opt,name=correlation_id,json=correlationId,proto3" json:"correlation_id,omitempty"`
-	Reference     string                 `protobuf:"bytes,5,opt,name=reference,proto3" json:"reference,omitempty"`
-	AccountId     string                 `protobuf:"bytes,6,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,7,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Amount        int64                  `protobuf:"varint,8,opt,name=amount,proto3" json:"amount,omitempty"`
-	Status        string                 `protobuf:"bytes,9,opt,name=status,proto3" json:"status,omitempty"`
-	Payload       string                 `protobuf:"bytes,10,opt,name=payload,proto3" json:"payload,omitempty"`                       // JSON string
-	CreatedAt     int64                  `protobuf:"varint,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // Unix timestamp
+	CausationId   string                 `protobuf:"bytes,5,opt,name=causation_id,json=causationId,proto3" json:"causation_id,omitempty"`
+	Reference     string                 `protobuf:"bytes,6,opt,name=reference,proto3" json:"reference,omitempty"`
+	AccountId     string                 `protobuf:"bytes,7,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,8,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Amount        int64                  `protobuf:"varint,9,opt,name=amount,proto3" json:"amount,omitempty"`
+	Status        string                 `protobuf:"bytes,10,opt,name=status,proto3" json:"status,omitempty"`
+	Payload       string                 `protobuf:"bytes,11,opt,name=payload,proto3" json:"payload,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AuditEntry) Reset() {
-	*x = AuditEntry{}
-	mi := &file_audit_audit_proto_msgTypes[3]
+func (x *AuditEntryResponse) Reset() {
+	*x = AuditEntryResponse{}
+	mi := &file_proto_audit_audit_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AuditEntry) String() string {
+func (x *AuditEntryResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AuditEntry) ProtoMessage() {}
+func (*AuditEntryResponse) ProtoMessage() {}
 
-func (x *AuditEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_audit_audit_proto_msgTypes[3]
+func (x *AuditEntryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_audit_audit_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -267,93 +365,100 @@ func (x *AuditEntry) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AuditEntry.ProtoReflect.Descriptor instead.
-func (*AuditEntry) Descriptor() ([]byte, []int) {
-	return file_audit_audit_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use AuditEntryResponse.ProtoReflect.Descriptor instead.
+func (*AuditEntryResponse) Descriptor() ([]byte, []int) {
+	return file_proto_audit_audit_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *AuditEntry) GetId() string {
+func (x *AuditEntryResponse) GetAuditId() string {
 	if x != nil {
-		return x.Id
+		return x.AuditId
 	}
 	return ""
 }
 
-func (x *AuditEntry) GetEventType() string {
+func (x *AuditEntryResponse) GetEventType() string {
 	if x != nil {
 		return x.EventType
 	}
 	return ""
 }
 
-func (x *AuditEntry) GetService() string {
+func (x *AuditEntryResponse) GetService() string {
 	if x != nil {
 		return x.Service
 	}
 	return ""
 }
 
-func (x *AuditEntry) GetCorrelationId() string {
+func (x *AuditEntryResponse) GetCorrelationId() string {
 	if x != nil {
 		return x.CorrelationId
 	}
 	return ""
 }
 
-func (x *AuditEntry) GetReference() string {
+func (x *AuditEntryResponse) GetCausationId() string {
+	if x != nil {
+		return x.CausationId
+	}
+	return ""
+}
+
+func (x *AuditEntryResponse) GetReference() string {
 	if x != nil {
 		return x.Reference
 	}
 	return ""
 }
 
-func (x *AuditEntry) GetAccountId() string {
+func (x *AuditEntryResponse) GetAccountId() string {
 	if x != nil {
 		return x.AccountId
 	}
 	return ""
 }
 
-func (x *AuditEntry) GetUserId() string {
+func (x *AuditEntryResponse) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
 	return ""
 }
 
-func (x *AuditEntry) GetAmount() int64 {
+func (x *AuditEntryResponse) GetAmount() int64 {
 	if x != nil {
 		return x.Amount
 	}
 	return 0
 }
 
-func (x *AuditEntry) GetStatus() string {
+func (x *AuditEntryResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
 	return ""
 }
 
-func (x *AuditEntry) GetPayload() string {
+func (x *AuditEntryResponse) GetPayload() string {
 	if x != nil {
 		return x.Payload
 	}
 	return ""
 }
 
-func (x *AuditEntry) GetCreatedAt() int64 {
+func (x *AuditEntryResponse) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return 0
+	return nil
 }
 
-var File_audit_audit_proto protoreflect.FileDescriptor
+var File_proto_audit_audit_proto protoreflect.FileDescriptor
 
-const file_audit_audit_proto_rawDesc = "" +
+const file_proto_audit_audit_proto_rawDesc = "" +
 	"\n" +
-	"\x11audit/audit.proto\x12\x05audit\"\x95\x02\n" +
+	"\x17proto/audit/audit.proto\x12\x05audit\x1a\x1fgoogle/protobuf/timestamp.proto\"\x95\x02\n" +
 	"\rSearchRequest\x12%\n" +
 	"\x0ecorrelation_id\x18\x01 \x01(\tR\rcorrelationId\x12\x1c\n" +
 	"\treference\x18\x02 \x01(\tR\treference\x12\x1d\n" +
@@ -366,86 +471,99 @@ const file_audit_audit_proto_rawDesc = "" +
 	"\tfrom_date\x18\x06 \x01(\x03R\bfromDate\x12\x17\n" +
 	"\ato_date\x18\a \x01(\x03R\x06toDate\x12\x14\n" +
 	"\x05limit\x18\b \x01(\x05R\x05limit\x12\x16\n" +
-	"\x06offset\x18\t \x01(\x05R\x06offset\"^\n" +
-	"\x0eSearchResponse\x12+\n" +
-	"\aentries\x18\x01 \x03(\v2\x11.audit.AuditEntryR\aentries\x12\x1f\n" +
+	"\x06offset\x18\t \x01(\x05R\x06offset\"f\n" +
+	"\x0eSearchResponse\x123\n" +
+	"\aentries\x18\x01 \x03(\v2\x19.audit.AuditEntryResponseR\aentries\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x05R\n" +
-	"totalCount\" \n" +
-	"\x0eGetByIDRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xbb\x02\n" +
-	"\n" +
-	"AuditEntry\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"totalCount\"8\n" +
+	"\fAuditRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"D\n" +
+	"\x13GetAllAuditResponse\x12-\n" +
+	"\x04data\x18\x01 \x03(\v2\x19.audit.AuditEntryResponseR\x04data\"+\n" +
+	"\x0eGetByIDRequest\x12\x19\n" +
+	"\baudit_id\x18\x01 \x01(\tR\aauditId\"\x8d\x03\n" +
+	"\x12AuditEntryResponse\x12\x19\n" +
+	"\baudit_id\x18\x01 \x01(\tR\aauditId\x12\x1d\n" +
 	"\n" +
 	"event_type\x18\x02 \x01(\tR\teventType\x12\x18\n" +
 	"\aservice\x18\x03 \x01(\tR\aservice\x12%\n" +
-	"\x0ecorrelation_id\x18\x04 \x01(\tR\rcorrelationId\x12\x1c\n" +
-	"\treference\x18\x05 \x01(\tR\treference\x12\x1d\n" +
+	"\x0ecorrelation_id\x18\x04 \x01(\tR\rcorrelationId\x12!\n" +
+	"\fcausation_id\x18\x05 \x01(\tR\vcausationId\x12\x1c\n" +
+	"\treference\x18\x06 \x01(\tR\treference\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x06 \x01(\tR\taccountId\x12\x17\n" +
-	"\auser_id\x18\a \x01(\tR\x06userId\x12\x16\n" +
-	"\x06amount\x18\b \x01(\x03R\x06amount\x12\x16\n" +
-	"\x06status\x18\t \x01(\tR\x06status\x12\x18\n" +
-	"\apayload\x18\n" +
-	" \x01(\tR\apayload\x12\x1d\n" +
+	"account_id\x18\a \x01(\tR\taccountId\x12\x17\n" +
+	"\auser_id\x18\b \x01(\tR\x06userId\x12\x16\n" +
+	"\x06amount\x18\t \x01(\x03R\x06amount\x12\x16\n" +
+	"\x06status\x18\n" +
+	" \x01(\tR\x06status\x12\x18\n" +
+	"\apayload\x18\v \x01(\tR\apayload\x129\n" +
 	"\n" +
-	"created_at\x18\v \x01(\x03R\tcreatedAt2\x84\x01\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt2\xcd\x01\n" +
 	"\fAuditService\x12:\n" +
-	"\vSearchAudit\x12\x14.audit.SearchRequest\x1a\x15.audit.SearchResponse\x128\n" +
-	"\fGetAuditByID\x12\x15.audit.GetByIDRequest\x1a\x11.audit.AuditEntryB4Z2github.com/Eucastan/eucastanpay/common/proto/auditb\x06proto3"
+	"\vSearchAudit\x12\x14.audit.SearchRequest\x1a\x15.audit.SearchResponse\x12?\n" +
+	"\fGetAllAudits\x12\x13.audit.AuditRequest\x1a\x1a.audit.GetAllAuditResponse\x12@\n" +
+	"\fGetAuditByID\x12\x15.audit.GetByIDRequest\x1a\x19.audit.AuditEntryResponseB4Z2github.com/Eucastan/eucastanpay/common/proto/auditb\x06proto3"
 
 var (
-	file_audit_audit_proto_rawDescOnce sync.Once
-	file_audit_audit_proto_rawDescData []byte
+	file_proto_audit_audit_proto_rawDescOnce sync.Once
+	file_proto_audit_audit_proto_rawDescData []byte
 )
 
-func file_audit_audit_proto_rawDescGZIP() []byte {
-	file_audit_audit_proto_rawDescOnce.Do(func() {
-		file_audit_audit_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_audit_audit_proto_rawDesc), len(file_audit_audit_proto_rawDesc)))
+func file_proto_audit_audit_proto_rawDescGZIP() []byte {
+	file_proto_audit_audit_proto_rawDescOnce.Do(func() {
+		file_proto_audit_audit_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_audit_audit_proto_rawDesc), len(file_proto_audit_audit_proto_rawDesc)))
 	})
-	return file_audit_audit_proto_rawDescData
+	return file_proto_audit_audit_proto_rawDescData
 }
 
-var file_audit_audit_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
-var file_audit_audit_proto_goTypes = []any{
-	(*SearchRequest)(nil),  // 0: audit.SearchRequest
-	(*SearchResponse)(nil), // 1: audit.SearchResponse
-	(*GetByIDRequest)(nil), // 2: audit.GetByIDRequest
-	(*AuditEntry)(nil),     // 3: audit.AuditEntry
+var file_proto_audit_audit_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_proto_audit_audit_proto_goTypes = []any{
+	(*SearchRequest)(nil),         // 0: audit.SearchRequest
+	(*SearchResponse)(nil),        // 1: audit.SearchResponse
+	(*AuditRequest)(nil),          // 2: audit.AuditRequest
+	(*GetAllAuditResponse)(nil),   // 3: audit.GetAllAuditResponse
+	(*GetByIDRequest)(nil),        // 4: audit.GetByIDRequest
+	(*AuditEntryResponse)(nil),    // 5: audit.AuditEntryResponse
+	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
 }
-var file_audit_audit_proto_depIdxs = []int32{
-	3, // 0: audit.SearchResponse.entries:type_name -> audit.AuditEntry
-	0, // 1: audit.AuditService.SearchAudit:input_type -> audit.SearchRequest
-	2, // 2: audit.AuditService.GetAuditByID:input_type -> audit.GetByIDRequest
-	1, // 3: audit.AuditService.SearchAudit:output_type -> audit.SearchResponse
-	3, // 4: audit.AuditService.GetAuditByID:output_type -> audit.AuditEntry
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+var file_proto_audit_audit_proto_depIdxs = []int32{
+	5, // 0: audit.SearchResponse.entries:type_name -> audit.AuditEntryResponse
+	5, // 1: audit.GetAllAuditResponse.data:type_name -> audit.AuditEntryResponse
+	6, // 2: audit.AuditEntryResponse.created_at:type_name -> google.protobuf.Timestamp
+	0, // 3: audit.AuditService.SearchAudit:input_type -> audit.SearchRequest
+	2, // 4: audit.AuditService.GetAllAudits:input_type -> audit.AuditRequest
+	4, // 5: audit.AuditService.GetAuditByID:input_type -> audit.GetByIDRequest
+	1, // 6: audit.AuditService.SearchAudit:output_type -> audit.SearchResponse
+	3, // 7: audit.AuditService.GetAllAudits:output_type -> audit.GetAllAuditResponse
+	5, // 8: audit.AuditService.GetAuditByID:output_type -> audit.AuditEntryResponse
+	6, // [6:9] is the sub-list for method output_type
+	3, // [3:6] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
-func init() { file_audit_audit_proto_init() }
-func file_audit_audit_proto_init() {
-	if File_audit_audit_proto != nil {
+func init() { file_proto_audit_audit_proto_init() }
+func file_proto_audit_audit_proto_init() {
+	if File_proto_audit_audit_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_audit_audit_proto_rawDesc), len(file_audit_audit_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_audit_audit_proto_rawDesc), len(file_proto_audit_audit_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_audit_audit_proto_goTypes,
-		DependencyIndexes: file_audit_audit_proto_depIdxs,
-		MessageInfos:      file_audit_audit_proto_msgTypes,
+		GoTypes:           file_proto_audit_audit_proto_goTypes,
+		DependencyIndexes: file_proto_audit_audit_proto_depIdxs,
+		MessageInfos:      file_proto_audit_audit_proto_msgTypes,
 	}.Build()
-	File_audit_audit_proto = out.File
-	file_audit_audit_proto_goTypes = nil
-	file_audit_audit_proto_depIdxs = nil
+	File_proto_audit_audit_proto = out.File
+	file_proto_audit_audit_proto_goTypes = nil
+	file_proto_audit_audit_proto_depIdxs = nil
 }

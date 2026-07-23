@@ -7,9 +7,12 @@ option go_package = "github.com/Eucastan/eucastanpay/common/proto/transfer";
 import "google/protobuf/timestamp.proto";
 
 service TransferService {
-  rpc ReverseTransfer (ReverseRequest) returns (ReverseResponse);
-  rpc ReconcileAccount (ReconcileAccountRequest) returns (ReconcileAccountResponse);
-  rpc GetAllTransfers(ListTransfersRequest) returns (ListTransfersResponse);
+	rpc Transfer(TransferRequest) returns (TransferResponse);
+	rpc ReverseTransfer (ReverseRequest) returns (ReverseResponse);
+	rpc ReconcileAccount (ReconcileAccountRequest) returns (ReconcileAccountResponse);
+	rpc GetAllTransfers(ListTransfersRequest) returns (ListTransfersResponse);
+	rpc GetTransfer(TransferIdRequest) returns (GetTransferResponse);
+	rpc GetTransferByUserID(UserIdRequest) returns (GetTransferResponse);
 }
 
 message Transfer {
@@ -34,6 +37,20 @@ message Transfer {
 	google.protobuf.Timestamp updated_at = 19;
 }
 
+message TransferRequest {
+	string user_id = 1;
+	string idempotency_key = 2;
+	int64 to_account_no = 3;
+	int64 amount = 4;
+	string description = 5;
+	string mode = 6;
+}
+
+message TransferResponse {
+  string message = 1;
+  Transfer resp = 2;
+}
+
 message ListTransfersRequest {
   int32 page = 1;
   int32 limit = 2;
@@ -51,7 +68,8 @@ message ReverseRequest {
 }
 
 message ReverseResponse {
-  string status = 1;
+	string message = 1;
+    string status = 2;
 }
 
 message ReconcileAccountRequest {
@@ -62,4 +80,34 @@ message ReconcileAccountRequest {
 message ReconcileAccountResponse {
   string status = 1;
   bool valid = 2;
+}
+
+message TransferIdRequest {
+  string transfer_id = 1;
+}
+
+message UserIdRequest {
+  string user_id = 1;
+}
+
+message GetTransferResponse {
+	string transfer_id = 1;
+	string reference = 2;
+	string step = 3;
+	string from_acc_id = 4;
+	int64 from_acc_no = 5;
+	string to_acc_id = 6;
+	int64 to_acc_no = 7;
+	int64 amount = 8;
+	string description = 9;
+	string idempotency_key = 10;
+	string type = 11;
+	string status = 12;
+	string mode = 13;
+	string reversal_ref = 14;
+    bool is_reversed = 15;
+	int64 from_balance_after = 16;
+	int64 to_balance_after = 17;
+	google.protobuf.Timestamp created_at = 18;
+	google.protobuf.Timestamp updated_at = 19;
 }

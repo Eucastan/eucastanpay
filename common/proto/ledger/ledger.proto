@@ -8,9 +8,12 @@ import "google/protobuf/timestamp.proto";
 
 service LedgerService {
     rpc ReconcileAccount(ReconcileAccountRequest) returns (ReconcileResponse);
+	rpc GetLedgerBalance(LedgerBalanceRequest) returns (LedgerBalanceResponse);
 	rpc GetAllLedgers(ListLedgersRequest) returns (ListLedgersResponse);
 	rpc GetLedgersByEntryType(ListLedgersEntryTypeRequest) returns (ListLedgersEntryTypeResponse);
 	rpc GetLedger(LedgerRequest) returns (LedgerResponse);
+	rpc GetLedgerByUserId(UserIdRequest) returns (LedgerResponse);
+	rpc GetLedgerByAccountId(LedgerByAccountIdRequest) returns (LedgerResponse);
 }
 
 message ReconcileAccountRequest {
@@ -19,20 +22,33 @@ message ReconcileAccountRequest {
 
 message ReconcileResponse {
 	string status = 1;
-	int64 difference = 2;
-	string message = 3;
+	string account_id = 2;
+	int64 account_balance = 3;
+	int64 ledger_balance = 4;
+	int64 difference = 5;
+	string message = 6;
+	google.protobuf.Timestamp reconciled_at = 7;
+}
+
+message LedgerBalanceRequest {
+	string account_id = 1;
+}
+
+message LedgerBalanceResponse{
+	int64 balance = 1;
 }
 
 message Ledger {
 	string ledger_id = 1;
-	string account_id = 2;
-	int64 amount = 3;
-	string entry_type = 4;
-	string reference = 5;
-	int64 balance_after = 6;
-	string description = 7;
-	google.protobuf.Timestamp created_at = 8;
-	google.protobuf.Timestamp updated_at = 9;
+	string user_id = 2;
+	string account_id = 3;
+	int64 amount = 4;
+	string entry_type = 5;
+	string reference = 6;
+	int64 balance_after = 7;
+	string description = 8;
+	google.protobuf.Timestamp created_at = 9;
+	google.protobuf.Timestamp updated_at = 10;
 }
 
 message ListLedgersRequest {
@@ -53,17 +69,26 @@ message ListLedgersEntryTypeResponse {
 }
 
 message LedgerRequest {
+	string ledger_id = 1;
+}
+
+message UserIdRequest {
+	string user_id = 1;
+}
+
+message LedgerByAccountIdRequest {
 	string account_id = 1;
 }
 
 message LedgerResponse {
     string ledger_id = 1;
-	string account_id = 2;
-	int64 amount = 3;
-	string entry_type = 4;
-	string reference = 5;
-	int64 balance_after = 6;
-	string description = 7;
-	google.protobuf.Timestamp created_at = 8;
-	google.protobuf.Timestamp updated_at = 9;
+	string user_id = 2;
+	string account_id = 3;
+	int64 amount = 4;
+	string entry_type = 5;
+	string reference = 6;
+	int64 balance_after = 7;
+	string description = 8;
+	google.protobuf.Timestamp created_at = 9;
+	google.protobuf.Timestamp updated_at = 10;
 }

@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package admin;
+
+option go_package = "github.com/Eucastan/eucastanpay/common/proto/admin";
+
+import "google/protobuf/timestamp.proto";
+
+service AdminService {
+	rpc Register(RegisterRequest) returns (AdminResponse);
+	rpc Login(LoginRequest) returns (LoginResponse);
+    rpc GetAdminByID(GetAdminByIDRequest) returns (AdminResponse);
+    rpc GetAllAdmins(ListAdminsRequest) returns (ListAdminsResponse);
+	rpc LogoutByAdminID(GetAdminByIDRequest) returns (ActionResponse);
+	rpc Update(UpdateRequest) returns (ActionResponse);
+	rpc Delete(GetAdminByIDRequest) returns (ActionResponse);
+}
+
+message Admin {
+	string admin_id = 1;
+	string email = 2;
+	string phone = 3;
+	string first_name = 4;
+	string last_name = 5;
+	string date_of_birth = 6;
+	string status = 7;
+    string role = 8;
+	google.protobuf.Timestamp created_at = 9;
+	google.protobuf.Timestamp updated_at = 10;
+}
+
+message RegisterRequest {
+    string email = 1;
+	string password = 2;
+    string first_name = 3;
+    string last_name = 4;
+	string role = 5;
+}
+
+message LoginRequest {
+	string email = 1;
+	string password = 2;
+}
+
+message LoginResponse {
+	string message = 1;
+	Admin resp = 2;
+	string access_token = 3;
+	string refresh_token = 4;
+}
+
+message UpdateRequest {
+    string admin_id = 1;
+	string password = 2;
+    string first_name = 3;
+    string last_name = 4;
+	string status = 5;
+	string role = 6;
+}
+
+message GetAdminByIDRequest {
+    string admin_id = 1;
+}
+
+message AdminResponse {
+    string admin_id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+	string status = 5;
+    string role = 6;
+	google.protobuf.Timestamp created_at = 7;
+	google.protobuf.Timestamp updated_at = 8;
+}
+
+message ListAdminsRequest {
+    int32 page = 1;
+	int32 limit = 2;
+}
+
+message ListAdminsResponse {
+    repeated Admin admins = 1;
+}
+
+message ActionRequest {
+	string admin_id = 1;
+	string status = 2;
+}
+
+message ActionResponse {
+	string message = 1;
+}

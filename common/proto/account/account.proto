@@ -9,23 +9,42 @@ import "google/protobuf/timestamp.proto";
 service AccountService {
     rpc Credit(GetCreditRequest) returns (GetCreditResponse);
     rpc Debit(GetDebitRequest) returns (GetDebitResponse);
+	rpc Deposit(DepositRequest) returns (ActionResponse);
+	rpc Withdraw(WithDrawalRequest) returns (ActionResponse);
     rpc GetUserAccount(GetUserAccountRequest) returns (GetAccountResponse);
 	rpc ResolveAccount(ConfirmAccountRequest) returns (ConfirmAccountResponse);
     rpc GetBalance(GetBalanceRequest) returns (GetAccountResponse);
+	rpc ReconcileBalance(BalanceRequest) returns (GetAccountResponse);
     rpc GetAllAccounts(ListAccountsRequest) returns (ListAccountsResponse);
 	rpc ActionOnAccount(ActionRequest) returns (ActionResponse);
+	rpc Delete(DeleteRequest) returns (ActionResponse);
 }
 
 message Account {
 	string account_id = 1;
 	string user_id = 2;
-	int64  account_no = 3;
-	int64  balance = 4;
-	string account_type = 5;
-	string currency = 6;
-	string status = 7;
-	google.protobuf.Timestamp created_at = 8;
-	google.protobuf.Timestamp updated_at = 9;
+	string email = 3;
+	int64  account_no = 4;
+	int64  balance = 5;
+	string account_type = 6;
+	string currency = 7;
+	string status = 8;
+	google.protobuf.Timestamp created_at = 9;
+	google.protobuf.Timestamp updated_at = 10;
+}
+
+message DepositRequest {
+	string account_id = 1;
+	int64 account_no = 2;
+	int64 amount = 3;
+	string currency = 4;
+}
+
+message WithDrawalRequest {
+	string account_id = 1;
+	int64 account_no = 2;
+	int64 amount = 3;
+	string currency = 4;
 }
 
 message ConfirmAccountRequest {
@@ -49,12 +68,13 @@ message ConfirmAccountResponse {
 message ListAccountsRequest {
     string account_id = 1;
 	string user_id = 2;
-	int64  account_no = 3;
-	int64  balance = 4;
-	string account_type = 5;
-	string currency = 6;
-	google.protobuf.Timestamp created_at = 7;
-	google.protobuf.Timestamp updated_at = 8;
+	string email = 3;
+	int64  account_no = 4;
+	int64  balance = 5;
+	string account_type = 6;
+	string currency = 7;
+	google.protobuf.Timestamp created_at = 8;
+	google.protobuf.Timestamp updated_at = 9;
 }
 
 message ListAccountsResponse {
@@ -62,13 +82,13 @@ message ListAccountsResponse {
 }
 
 message GetCreditRequest {
-    string id = 1;
+    string account_id = 1;
     int64 account_no = 2;
     int64 amount = 3;
 }
 
 message GetDebitRequest {
-    string id = 1;
+    string account_id = 1;
     int64 account_no = 2;
     int64 amount = 3;
 }
@@ -86,20 +106,26 @@ message GetUserAccountRequest {
 }
 
 message GetBalanceRequest {
-    string id = 1;
+    string account_id = 1;
+    string user_id = 2;
+}
+
+message BalanceRequest {
+    string account_id = 1;
     int64 account_no = 2;
 }
 
 message GetAccountResponse {
     string account_id = 1;
 	string user_id = 2;
-	int64 account_no = 3;
-	int64 balance = 4;
-	string account_type = 5;
-	string currency = 6;
-	string status = 7;
-	google.protobuf.Timestamp created_at = 8;
-	google.protobuf.Timestamp updated_at = 9;
+	string email = 3;
+	int64 account_no = 4;
+	int64 balance = 5;
+	string account_type = 6;
+	string currency = 7;
+	string status = 8;
+	google.protobuf.Timestamp created_at = 9;
+	google.protobuf.Timestamp updated_at = 10;
 }
 
 message ActionRequest {
@@ -110,4 +136,8 @@ message ActionRequest {
 
 message ActionResponse {
 	string message = 1;
+}
+
+message DeleteRequest {
+	string account_id = 1;
 }

@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package notification;
+
+option go_package = "github.com/Eucastan/eucastanpay/common/proto/notification";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service NotificationService {
+    rpc GetByUserID(UserIdRequest) returns (NotificationList);
+    rpc GetByReference(ReferenceRequest) returns (NotificationList);
+}
+
+message Notification {
+    string id = 1;
+    string user_id = 2;
+    string title = 3;
+    string message = 4;
+    string channel = 5;
+    string type = 6;
+    string priority = 7;
+    string reference = 8;
+    google.protobuf.Struct metadata = 9;
+    string status = 10;
+    google.protobuf.Timestamp created_at = 11;
+}
+
+message UserIdRequest {
+    string user_id = 1;
+}
+
+message ReferenceRequest {
+    string reference = 1;
+}
+
+message NotificationList {
+    repeated Notification notifications = 1;
+}

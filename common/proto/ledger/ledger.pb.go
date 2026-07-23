@@ -67,12 +67,16 @@ func (x *ReconcileAccountRequest) GetAccountId() string {
 }
 
 type ReconcileResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
-	Difference    int64                  `protobuf:"varint,2,opt,name=difference,proto3" json:"difference,omitempty"`
-	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Status         string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	AccountId      string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	AccountBalance int64                  `protobuf:"varint,3,opt,name=account_balance,json=accountBalance,proto3" json:"account_balance,omitempty"`
+	LedgerBalance  int64                  `protobuf:"varint,4,opt,name=ledger_balance,json=ledgerBalance,proto3" json:"ledger_balance,omitempty"`
+	Difference     int64                  `protobuf:"varint,5,opt,name=difference,proto3" json:"difference,omitempty"`
+	Message        string                 `protobuf:"bytes,6,opt,name=message,proto3" json:"message,omitempty"`
+	ReconciledAt   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=reconciled_at,json=reconciledAt,proto3" json:"reconciled_at,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ReconcileResponse) Reset() {
@@ -112,6 +116,27 @@ func (x *ReconcileResponse) GetStatus() string {
 	return ""
 }
 
+func (x *ReconcileResponse) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *ReconcileResponse) GetAccountBalance() int64 {
+	if x != nil {
+		return x.AccountBalance
+	}
+	return 0
+}
+
+func (x *ReconcileResponse) GetLedgerBalance() int64 {
+	if x != nil {
+		return x.LedgerBalance
+	}
+	return 0
+}
+
 func (x *ReconcileResponse) GetDifference() int64 {
 	if x != nil {
 		return x.Difference
@@ -126,24 +151,120 @@ func (x *ReconcileResponse) GetMessage() string {
 	return ""
 }
 
+func (x *ReconcileResponse) GetReconciledAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ReconciledAt
+	}
+	return nil
+}
+
+type LedgerBalanceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LedgerBalanceRequest) Reset() {
+	*x = LedgerBalanceRequest{}
+	mi := &file_proto_ledger_ledger_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LedgerBalanceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LedgerBalanceRequest) ProtoMessage() {}
+
+func (x *LedgerBalanceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_ledger_ledger_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LedgerBalanceRequest.ProtoReflect.Descriptor instead.
+func (*LedgerBalanceRequest) Descriptor() ([]byte, []int) {
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *LedgerBalanceRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type LedgerBalanceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Balance       int64                  `protobuf:"varint,1,opt,name=balance,proto3" json:"balance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LedgerBalanceResponse) Reset() {
+	*x = LedgerBalanceResponse{}
+	mi := &file_proto_ledger_ledger_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LedgerBalanceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LedgerBalanceResponse) ProtoMessage() {}
+
+func (x *LedgerBalanceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_ledger_ledger_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LedgerBalanceResponse.ProtoReflect.Descriptor instead.
+func (*LedgerBalanceResponse) Descriptor() ([]byte, []int) {
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *LedgerBalanceResponse) GetBalance() int64 {
+	if x != nil {
+		return x.Balance
+	}
+	return 0
+}
+
 type Ledger struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	LedgerId      string                 `protobuf:"bytes,1,opt,name=ledger_id,json=ledgerId,proto3" json:"ledger_id,omitempty"`
-	AccountId     string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
-	EntryType     string                 `protobuf:"bytes,4,opt,name=entry_type,json=entryType,proto3" json:"entry_type,omitempty"`
-	Reference     string                 `protobuf:"bytes,5,opt,name=reference,proto3" json:"reference,omitempty"`
-	BalanceAfter  int64                  `protobuf:"varint,6,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`
-	Description   string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	AccountId     string                 `protobuf:"bytes,3,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Amount        int64                  `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	EntryType     string                 `protobuf:"bytes,5,opt,name=entry_type,json=entryType,proto3" json:"entry_type,omitempty"`
+	Reference     string                 `protobuf:"bytes,6,opt,name=reference,proto3" json:"reference,omitempty"`
+	BalanceAfter  int64                  `protobuf:"varint,7,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`
+	Description   string                 `protobuf:"bytes,8,opt,name=description,proto3" json:"description,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Ledger) Reset() {
 	*x = Ledger{}
-	mi := &file_proto_ledger_ledger_proto_msgTypes[2]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -155,7 +276,7 @@ func (x *Ledger) String() string {
 func (*Ledger) ProtoMessage() {}
 
 func (x *Ledger) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ledger_ledger_proto_msgTypes[2]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -168,12 +289,19 @@ func (x *Ledger) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ledger.ProtoReflect.Descriptor instead.
 func (*Ledger) Descriptor() ([]byte, []int) {
-	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{2}
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Ledger) GetLedgerId() string {
 	if x != nil {
 		return x.LedgerId
+	}
+	return ""
+}
+
+func (x *Ledger) GetUserId() string {
+	if x != nil {
+		return x.UserId
 	}
 	return ""
 }
@@ -244,7 +372,7 @@ type ListLedgersRequest struct {
 
 func (x *ListLedgersRequest) Reset() {
 	*x = ListLedgersRequest{}
-	mi := &file_proto_ledger_ledger_proto_msgTypes[3]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -256,7 +384,7 @@ func (x *ListLedgersRequest) String() string {
 func (*ListLedgersRequest) ProtoMessage() {}
 
 func (x *ListLedgersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ledger_ledger_proto_msgTypes[3]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -269,7 +397,7 @@ func (x *ListLedgersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLedgersRequest.ProtoReflect.Descriptor instead.
 func (*ListLedgersRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{3}
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ListLedgersRequest) GetPage() int32 {
@@ -295,7 +423,7 @@ type ListLedgersResponse struct {
 
 func (x *ListLedgersResponse) Reset() {
 	*x = ListLedgersResponse{}
-	mi := &file_proto_ledger_ledger_proto_msgTypes[4]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -307,7 +435,7 @@ func (x *ListLedgersResponse) String() string {
 func (*ListLedgersResponse) ProtoMessage() {}
 
 func (x *ListLedgersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ledger_ledger_proto_msgTypes[4]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -320,7 +448,7 @@ func (x *ListLedgersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLedgersResponse.ProtoReflect.Descriptor instead.
 func (*ListLedgersResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{4}
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListLedgersResponse) GetLedgers() []*Ledger {
@@ -339,7 +467,7 @@ type ListLedgersEntryTypeRequest struct {
 
 func (x *ListLedgersEntryTypeRequest) Reset() {
 	*x = ListLedgersEntryTypeRequest{}
-	mi := &file_proto_ledger_ledger_proto_msgTypes[5]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -351,7 +479,7 @@ func (x *ListLedgersEntryTypeRequest) String() string {
 func (*ListLedgersEntryTypeRequest) ProtoMessage() {}
 
 func (x *ListLedgersEntryTypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ledger_ledger_proto_msgTypes[5]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -364,7 +492,7 @@ func (x *ListLedgersEntryTypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLedgersEntryTypeRequest.ProtoReflect.Descriptor instead.
 func (*ListLedgersEntryTypeRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{5}
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListLedgersEntryTypeRequest) GetEntryType() string {
@@ -383,7 +511,7 @@ type ListLedgersEntryTypeResponse struct {
 
 func (x *ListLedgersEntryTypeResponse) Reset() {
 	*x = ListLedgersEntryTypeResponse{}
-	mi := &file_proto_ledger_ledger_proto_msgTypes[6]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -395,7 +523,7 @@ func (x *ListLedgersEntryTypeResponse) String() string {
 func (*ListLedgersEntryTypeResponse) ProtoMessage() {}
 
 func (x *ListLedgersEntryTypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ledger_ledger_proto_msgTypes[6]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -408,7 +536,7 @@ func (x *ListLedgersEntryTypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLedgersEntryTypeResponse.ProtoReflect.Descriptor instead.
 func (*ListLedgersEntryTypeResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{6}
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListLedgersEntryTypeResponse) GetLedgers() []*Ledger {
@@ -420,14 +548,14 @@ func (x *ListLedgersEntryTypeResponse) GetLedgers() []*Ledger {
 
 type LedgerRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	LedgerId      string                 `protobuf:"bytes,1,opt,name=ledger_id,json=ledgerId,proto3" json:"ledger_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *LedgerRequest) Reset() {
 	*x = LedgerRequest{}
-	mi := &file_proto_ledger_ledger_proto_msgTypes[7]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -439,7 +567,7 @@ func (x *LedgerRequest) String() string {
 func (*LedgerRequest) ProtoMessage() {}
 
 func (x *LedgerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ledger_ledger_proto_msgTypes[7]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -452,10 +580,98 @@ func (x *LedgerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LedgerRequest.ProtoReflect.Descriptor instead.
 func (*LedgerRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{7}
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *LedgerRequest) GetAccountId() string {
+func (x *LedgerRequest) GetLedgerId() string {
+	if x != nil {
+		return x.LedgerId
+	}
+	return ""
+}
+
+type UserIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserIdRequest) Reset() {
+	*x = UserIdRequest{}
+	mi := &file_proto_ledger_ledger_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserIdRequest) ProtoMessage() {}
+
+func (x *UserIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_ledger_ledger_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserIdRequest.ProtoReflect.Descriptor instead.
+func (*UserIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UserIdRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type LedgerByAccountIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LedgerByAccountIdRequest) Reset() {
+	*x = LedgerByAccountIdRequest{}
+	mi := &file_proto_ledger_ledger_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LedgerByAccountIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LedgerByAccountIdRequest) ProtoMessage() {}
+
+func (x *LedgerByAccountIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_ledger_ledger_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LedgerByAccountIdRequest.ProtoReflect.Descriptor instead.
+func (*LedgerByAccountIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *LedgerByAccountIdRequest) GetAccountId() string {
 	if x != nil {
 		return x.AccountId
 	}
@@ -465,21 +681,22 @@ func (x *LedgerRequest) GetAccountId() string {
 type LedgerResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	LedgerId      string                 `protobuf:"bytes,1,opt,name=ledger_id,json=ledgerId,proto3" json:"ledger_id,omitempty"`
-	AccountId     string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
-	EntryType     string                 `protobuf:"bytes,4,opt,name=entry_type,json=entryType,proto3" json:"entry_type,omitempty"`
-	Reference     string                 `protobuf:"bytes,5,opt,name=reference,proto3" json:"reference,omitempty"`
-	BalanceAfter  int64                  `protobuf:"varint,6,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`
-	Description   string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	AccountId     string                 `protobuf:"bytes,3,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Amount        int64                  `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	EntryType     string                 `protobuf:"bytes,5,opt,name=entry_type,json=entryType,proto3" json:"entry_type,omitempty"`
+	Reference     string                 `protobuf:"bytes,6,opt,name=reference,proto3" json:"reference,omitempty"`
+	BalanceAfter  int64                  `protobuf:"varint,7,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`
+	Description   string                 `protobuf:"bytes,8,opt,name=description,proto3" json:"description,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *LedgerResponse) Reset() {
 	*x = LedgerResponse{}
-	mi := &file_proto_ledger_ledger_proto_msgTypes[8]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -491,7 +708,7 @@ func (x *LedgerResponse) String() string {
 func (*LedgerResponse) ProtoMessage() {}
 
 func (x *LedgerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ledger_ledger_proto_msgTypes[8]
+	mi := &file_proto_ledger_ledger_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -504,12 +721,19 @@ func (x *LedgerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LedgerResponse.ProtoReflect.Descriptor instead.
 func (*LedgerResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{8}
+	return file_proto_ledger_ledger_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *LedgerResponse) GetLedgerId() string {
 	if x != nil {
 		return x.LedgerId
+	}
+	return ""
+}
+
+func (x *LedgerResponse) GetUserId() string {
+	if x != nil {
+		return x.UserId
 	}
 	return ""
 }
@@ -577,27 +801,39 @@ const file_proto_ledger_ledger_proto_rawDesc = "" +
 	"\x19proto/ledger/ledger.proto\x12\x06ledger\x1a\x1fgoogle/protobuf/timestamp.proto\"8\n" +
 	"\x17ReconcileAccountRequest\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x01 \x01(\tR\taccountId\"e\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"\x95\x02\n" +
 	"\x11ReconcileResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status\x12\x1e\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\x12\x1d\n" +
 	"\n" +
-	"difference\x18\x02 \x01(\x03R\n" +
+	"account_id\x18\x02 \x01(\tR\taccountId\x12'\n" +
+	"\x0faccount_balance\x18\x03 \x01(\x03R\x0eaccountBalance\x12%\n" +
+	"\x0eledger_balance\x18\x04 \x01(\x03R\rledgerBalance\x12\x1e\n" +
+	"\n" +
+	"difference\x18\x05 \x01(\x03R\n" +
 	"difference\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage\"\xd6\x02\n" +
+	"\amessage\x18\x06 \x01(\tR\amessage\x12?\n" +
+	"\rreconciled_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\freconciledAt\"5\n" +
+	"\x14LedgerBalanceRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"1\n" +
+	"\x15LedgerBalanceResponse\x12\x18\n" +
+	"\abalance\x18\x01 \x01(\x03R\abalance\"\xef\x02\n" +
 	"\x06Ledger\x12\x1b\n" +
-	"\tledger_id\x18\x01 \x01(\tR\bledgerId\x12\x1d\n" +
+	"\tledger_id\x18\x01 \x01(\tR\bledgerId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x02 \x01(\tR\taccountId\x12\x16\n" +
-	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12\x1d\n" +
+	"account_id\x18\x03 \x01(\tR\taccountId\x12\x16\n" +
+	"\x06amount\x18\x04 \x01(\x03R\x06amount\x12\x1d\n" +
 	"\n" +
-	"entry_type\x18\x04 \x01(\tR\tentryType\x12\x1c\n" +
-	"\treference\x18\x05 \x01(\tR\treference\x12#\n" +
-	"\rbalance_after\x18\x06 \x01(\x03R\fbalanceAfter\x12 \n" +
-	"\vdescription\x18\a \x01(\tR\vdescription\x129\n" +
+	"entry_type\x18\x05 \x01(\tR\tentryType\x12\x1c\n" +
+	"\treference\x18\x06 \x01(\tR\treference\x12#\n" +
+	"\rbalance_after\x18\a \x01(\x03R\fbalanceAfter\x12 \n" +
+	"\vdescription\x18\b \x01(\tR\vdescription\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\">\n" +
+	"updated_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\">\n" +
 	"\x12ListLedgersRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\"?\n" +
@@ -607,29 +843,38 @@ const file_proto_ledger_ledger_proto_rawDesc = "" +
 	"\n" +
 	"entry_type\x18\x01 \x01(\tR\tentryType\"H\n" +
 	"\x1cListLedgersEntryTypeResponse\x12(\n" +
-	"\aledgers\x18\x01 \x03(\v2\x0e.ledger.LedgerR\aledgers\".\n" +
-	"\rLedgerRequest\x12\x1d\n" +
+	"\aledgers\x18\x01 \x03(\v2\x0e.ledger.LedgerR\aledgers\",\n" +
+	"\rLedgerRequest\x12\x1b\n" +
+	"\tledger_id\x18\x01 \x01(\tR\bledgerId\"(\n" +
+	"\rUserIdRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"9\n" +
+	"\x18LedgerByAccountIdRequest\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x01 \x01(\tR\taccountId\"\xde\x02\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"\xf7\x02\n" +
 	"\x0eLedgerResponse\x12\x1b\n" +
-	"\tledger_id\x18\x01 \x01(\tR\bledgerId\x12\x1d\n" +
+	"\tledger_id\x18\x01 \x01(\tR\bledgerId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x02 \x01(\tR\taccountId\x12\x16\n" +
-	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12\x1d\n" +
+	"account_id\x18\x03 \x01(\tR\taccountId\x12\x16\n" +
+	"\x06amount\x18\x04 \x01(\x03R\x06amount\x12\x1d\n" +
 	"\n" +
-	"entry_type\x18\x04 \x01(\tR\tentryType\x12\x1c\n" +
-	"\treference\x18\x05 \x01(\tR\treference\x12#\n" +
-	"\rbalance_after\x18\x06 \x01(\x03R\fbalanceAfter\x12 \n" +
-	"\vdescription\x18\a \x01(\tR\vdescription\x129\n" +
+	"entry_type\x18\x05 \x01(\tR\tentryType\x12\x1c\n" +
+	"\treference\x18\x06 \x01(\tR\treference\x12#\n" +
+	"\rbalance_after\x18\a \x01(\x03R\fbalanceAfter\x12 \n" +
+	"\vdescription\x18\b \x01(\tR\vdescription\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2\xc9\x02\n" +
+	"updated_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2\xb0\x04\n" +
 	"\rLedgerService\x12N\n" +
-	"\x10ReconcileAccount\x12\x1f.ledger.ReconcileAccountRequest\x1a\x19.ledger.ReconcileResponse\x12H\n" +
+	"\x10ReconcileAccount\x12\x1f.ledger.ReconcileAccountRequest\x1a\x19.ledger.ReconcileResponse\x12O\n" +
+	"\x10GetLedgerBalance\x12\x1c.ledger.LedgerBalanceRequest\x1a\x1d.ledger.LedgerBalanceResponse\x12H\n" +
 	"\rGetAllLedgers\x12\x1a.ledger.ListLedgersRequest\x1a\x1b.ledger.ListLedgersResponse\x12b\n" +
 	"\x15GetLedgersByEntryType\x12#.ledger.ListLedgersEntryTypeRequest\x1a$.ledger.ListLedgersEntryTypeResponse\x12:\n" +
-	"\tGetLedger\x12\x15.ledger.LedgerRequest\x1a\x16.ledger.LedgerResponseB5Z3github.com/Eucastan/eucastanpay/common/proto/ledgerb\x06proto3"
+	"\tGetLedger\x12\x15.ledger.LedgerRequest\x1a\x16.ledger.LedgerResponse\x12B\n" +
+	"\x11GetLedgerByUserId\x12\x15.ledger.UserIdRequest\x1a\x16.ledger.LedgerResponse\x12P\n" +
+	"\x14GetLedgerByAccountId\x12 .ledger.LedgerByAccountIdRequest\x1a\x16.ledger.LedgerResponseB5Z3github.com/Eucastan/eucastanpay/common/proto/ledgerb\x06proto3"
 
 var (
 	file_proto_ledger_ledger_proto_rawDescOnce sync.Once
@@ -643,39 +888,50 @@ func file_proto_ledger_ledger_proto_rawDescGZIP() []byte {
 	return file_proto_ledger_ledger_proto_rawDescData
 }
 
-var file_proto_ledger_ledger_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_proto_ledger_ledger_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_proto_ledger_ledger_proto_goTypes = []any{
 	(*ReconcileAccountRequest)(nil),      // 0: ledger.ReconcileAccountRequest
 	(*ReconcileResponse)(nil),            // 1: ledger.ReconcileResponse
-	(*Ledger)(nil),                       // 2: ledger.Ledger
-	(*ListLedgersRequest)(nil),           // 3: ledger.ListLedgersRequest
-	(*ListLedgersResponse)(nil),          // 4: ledger.ListLedgersResponse
-	(*ListLedgersEntryTypeRequest)(nil),  // 5: ledger.ListLedgersEntryTypeRequest
-	(*ListLedgersEntryTypeResponse)(nil), // 6: ledger.ListLedgersEntryTypeResponse
-	(*LedgerRequest)(nil),                // 7: ledger.LedgerRequest
-	(*LedgerResponse)(nil),               // 8: ledger.LedgerResponse
-	(*timestamppb.Timestamp)(nil),        // 9: google.protobuf.Timestamp
+	(*LedgerBalanceRequest)(nil),         // 2: ledger.LedgerBalanceRequest
+	(*LedgerBalanceResponse)(nil),        // 3: ledger.LedgerBalanceResponse
+	(*Ledger)(nil),                       // 4: ledger.Ledger
+	(*ListLedgersRequest)(nil),           // 5: ledger.ListLedgersRequest
+	(*ListLedgersResponse)(nil),          // 6: ledger.ListLedgersResponse
+	(*ListLedgersEntryTypeRequest)(nil),  // 7: ledger.ListLedgersEntryTypeRequest
+	(*ListLedgersEntryTypeResponse)(nil), // 8: ledger.ListLedgersEntryTypeResponse
+	(*LedgerRequest)(nil),                // 9: ledger.LedgerRequest
+	(*UserIdRequest)(nil),                // 10: ledger.UserIdRequest
+	(*LedgerByAccountIdRequest)(nil),     // 11: ledger.LedgerByAccountIdRequest
+	(*LedgerResponse)(nil),               // 12: ledger.LedgerResponse
+	(*timestamppb.Timestamp)(nil),        // 13: google.protobuf.Timestamp
 }
 var file_proto_ledger_ledger_proto_depIdxs = []int32{
-	9,  // 0: ledger.Ledger.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 1: ledger.Ledger.updated_at:type_name -> google.protobuf.Timestamp
-	2,  // 2: ledger.ListLedgersResponse.ledgers:type_name -> ledger.Ledger
-	2,  // 3: ledger.ListLedgersEntryTypeResponse.ledgers:type_name -> ledger.Ledger
-	9,  // 4: ledger.LedgerResponse.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 5: ledger.LedgerResponse.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 6: ledger.LedgerService.ReconcileAccount:input_type -> ledger.ReconcileAccountRequest
-	3,  // 7: ledger.LedgerService.GetAllLedgers:input_type -> ledger.ListLedgersRequest
-	5,  // 8: ledger.LedgerService.GetLedgersByEntryType:input_type -> ledger.ListLedgersEntryTypeRequest
-	7,  // 9: ledger.LedgerService.GetLedger:input_type -> ledger.LedgerRequest
-	1,  // 10: ledger.LedgerService.ReconcileAccount:output_type -> ledger.ReconcileResponse
-	4,  // 11: ledger.LedgerService.GetAllLedgers:output_type -> ledger.ListLedgersResponse
-	6,  // 12: ledger.LedgerService.GetLedgersByEntryType:output_type -> ledger.ListLedgersEntryTypeResponse
-	8,  // 13: ledger.LedgerService.GetLedger:output_type -> ledger.LedgerResponse
-	10, // [10:14] is the sub-list for method output_type
-	6,  // [6:10] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	13, // 0: ledger.ReconcileResponse.reconciled_at:type_name -> google.protobuf.Timestamp
+	13, // 1: ledger.Ledger.created_at:type_name -> google.protobuf.Timestamp
+	13, // 2: ledger.Ledger.updated_at:type_name -> google.protobuf.Timestamp
+	4,  // 3: ledger.ListLedgersResponse.ledgers:type_name -> ledger.Ledger
+	4,  // 4: ledger.ListLedgersEntryTypeResponse.ledgers:type_name -> ledger.Ledger
+	13, // 5: ledger.LedgerResponse.created_at:type_name -> google.protobuf.Timestamp
+	13, // 6: ledger.LedgerResponse.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 7: ledger.LedgerService.ReconcileAccount:input_type -> ledger.ReconcileAccountRequest
+	2,  // 8: ledger.LedgerService.GetLedgerBalance:input_type -> ledger.LedgerBalanceRequest
+	5,  // 9: ledger.LedgerService.GetAllLedgers:input_type -> ledger.ListLedgersRequest
+	7,  // 10: ledger.LedgerService.GetLedgersByEntryType:input_type -> ledger.ListLedgersEntryTypeRequest
+	9,  // 11: ledger.LedgerService.GetLedger:input_type -> ledger.LedgerRequest
+	10, // 12: ledger.LedgerService.GetLedgerByUserId:input_type -> ledger.UserIdRequest
+	11, // 13: ledger.LedgerService.GetLedgerByAccountId:input_type -> ledger.LedgerByAccountIdRequest
+	1,  // 14: ledger.LedgerService.ReconcileAccount:output_type -> ledger.ReconcileResponse
+	3,  // 15: ledger.LedgerService.GetLedgerBalance:output_type -> ledger.LedgerBalanceResponse
+	6,  // 16: ledger.LedgerService.GetAllLedgers:output_type -> ledger.ListLedgersResponse
+	8,  // 17: ledger.LedgerService.GetLedgersByEntryType:output_type -> ledger.ListLedgersEntryTypeResponse
+	12, // 18: ledger.LedgerService.GetLedger:output_type -> ledger.LedgerResponse
+	12, // 19: ledger.LedgerService.GetLedgerByUserId:output_type -> ledger.LedgerResponse
+	12, // 20: ledger.LedgerService.GetLedgerByAccountId:output_type -> ledger.LedgerResponse
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_proto_ledger_ledger_proto_init() }
@@ -689,7 +945,7 @@ func file_proto_ledger_ledger_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_ledger_ledger_proto_rawDesc), len(file_proto_ledger_ledger_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -210,6 +210,142 @@ func (x *Transfer) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type TransferRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	UserId         string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	IdempotencyKey string                 `protobuf:"bytes,2,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	ToAccountNo    int64                  `protobuf:"varint,3,opt,name=to_account_no,json=toAccountNo,proto3" json:"to_account_no,omitempty"`
+	Amount         int64                  `protobuf:"varint,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	Description    string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Mode           string                 `protobuf:"bytes,6,opt,name=mode,proto3" json:"mode,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *TransferRequest) Reset() {
+	*x = TransferRequest{}
+	mi := &file_proto_transfer_transfer_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferRequest) ProtoMessage() {}
+
+func (x *TransferRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_transfer_transfer_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferRequest.ProtoReflect.Descriptor instead.
+func (*TransferRequest) Descriptor() ([]byte, []int) {
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *TransferRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *TransferRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
+}
+
+func (x *TransferRequest) GetToAccountNo() int64 {
+	if x != nil {
+		return x.ToAccountNo
+	}
+	return 0
+}
+
+func (x *TransferRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *TransferRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *TransferRequest) GetMode() string {
+	if x != nil {
+		return x.Mode
+	}
+	return ""
+}
+
+type TransferResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Resp          *Transfer              `protobuf:"bytes,2,opt,name=resp,proto3" json:"resp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransferResponse) Reset() {
+	*x = TransferResponse{}
+	mi := &file_proto_transfer_transfer_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferResponse) ProtoMessage() {}
+
+func (x *TransferResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_transfer_transfer_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferResponse.ProtoReflect.Descriptor instead.
+func (*TransferResponse) Descriptor() ([]byte, []int) {
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *TransferResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *TransferResponse) GetResp() *Transfer {
+	if x != nil {
+		return x.Resp
+	}
+	return nil
+}
+
 type ListTransfersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
@@ -220,7 +356,7 @@ type ListTransfersRequest struct {
 
 func (x *ListTransfersRequest) Reset() {
 	*x = ListTransfersRequest{}
-	mi := &file_proto_transfer_transfer_proto_msgTypes[1]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -232,7 +368,7 @@ func (x *ListTransfersRequest) String() string {
 func (*ListTransfersRequest) ProtoMessage() {}
 
 func (x *ListTransfersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transfer_transfer_proto_msgTypes[1]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -245,7 +381,7 @@ func (x *ListTransfersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTransfersRequest.ProtoReflect.Descriptor instead.
 func (*ListTransfersRequest) Descriptor() ([]byte, []int) {
-	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{1}
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListTransfersRequest) GetPage() int32 {
@@ -271,7 +407,7 @@ type ListTransfersResponse struct {
 
 func (x *ListTransfersResponse) Reset() {
 	*x = ListTransfersResponse{}
-	mi := &file_proto_transfer_transfer_proto_msgTypes[2]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -283,7 +419,7 @@ func (x *ListTransfersResponse) String() string {
 func (*ListTransfersResponse) ProtoMessage() {}
 
 func (x *ListTransfersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transfer_transfer_proto_msgTypes[2]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -296,7 +432,7 @@ func (x *ListTransfersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTransfersResponse.ProtoReflect.Descriptor instead.
 func (*ListTransfersResponse) Descriptor() ([]byte, []int) {
-	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{2}
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ListTransfersResponse) GetTransfers() []*Transfer {
@@ -318,7 +454,7 @@ type ReverseRequest struct {
 
 func (x *ReverseRequest) Reset() {
 	*x = ReverseRequest{}
-	mi := &file_proto_transfer_transfer_proto_msgTypes[3]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -330,7 +466,7 @@ func (x *ReverseRequest) String() string {
 func (*ReverseRequest) ProtoMessage() {}
 
 func (x *ReverseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transfer_transfer_proto_msgTypes[3]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -343,7 +479,7 @@ func (x *ReverseRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReverseRequest.ProtoReflect.Descriptor instead.
 func (*ReverseRequest) Descriptor() ([]byte, []int) {
-	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{3}
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ReverseRequest) GetUserId() string {
@@ -376,14 +512,15 @@ func (x *ReverseRequest) GetAdminId() string {
 
 type ReverseResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ReverseResponse) Reset() {
 	*x = ReverseResponse{}
-	mi := &file_proto_transfer_transfer_proto_msgTypes[4]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -395,7 +532,7 @@ func (x *ReverseResponse) String() string {
 func (*ReverseResponse) ProtoMessage() {}
 
 func (x *ReverseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transfer_transfer_proto_msgTypes[4]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -408,7 +545,14 @@ func (x *ReverseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReverseResponse.ProtoReflect.Descriptor instead.
 func (*ReverseResponse) Descriptor() ([]byte, []int) {
-	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{4}
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ReverseResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
 }
 
 func (x *ReverseResponse) GetStatus() string {
@@ -428,7 +572,7 @@ type ReconcileAccountRequest struct {
 
 func (x *ReconcileAccountRequest) Reset() {
 	*x = ReconcileAccountRequest{}
-	mi := &file_proto_transfer_transfer_proto_msgTypes[5]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -440,7 +584,7 @@ func (x *ReconcileAccountRequest) String() string {
 func (*ReconcileAccountRequest) ProtoMessage() {}
 
 func (x *ReconcileAccountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transfer_transfer_proto_msgTypes[5]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -453,7 +597,7 @@ func (x *ReconcileAccountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReconcileAccountRequest.ProtoReflect.Descriptor instead.
 func (*ReconcileAccountRequest) Descriptor() ([]byte, []int) {
-	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{5}
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ReconcileAccountRequest) GetAccountId() string {
@@ -480,7 +624,7 @@ type ReconcileAccountResponse struct {
 
 func (x *ReconcileAccountResponse) Reset() {
 	*x = ReconcileAccountResponse{}
-	mi := &file_proto_transfer_transfer_proto_msgTypes[6]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -492,7 +636,7 @@ func (x *ReconcileAccountResponse) String() string {
 func (*ReconcileAccountResponse) ProtoMessage() {}
 
 func (x *ReconcileAccountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transfer_transfer_proto_msgTypes[6]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -505,7 +649,7 @@ func (x *ReconcileAccountResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReconcileAccountResponse.ProtoReflect.Descriptor instead.
 func (*ReconcileAccountResponse) Descriptor() ([]byte, []int) {
-	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{6}
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ReconcileAccountResponse) GetStatus() string {
@@ -520,6 +664,282 @@ func (x *ReconcileAccountResponse) GetValid() bool {
 		return x.Valid
 	}
 	return false
+}
+
+type TransferIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TransferId    string                 `protobuf:"bytes,1,opt,name=transfer_id,json=transferId,proto3" json:"transfer_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransferIdRequest) Reset() {
+	*x = TransferIdRequest{}
+	mi := &file_proto_transfer_transfer_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferIdRequest) ProtoMessage() {}
+
+func (x *TransferIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_transfer_transfer_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferIdRequest.ProtoReflect.Descriptor instead.
+func (*TransferIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *TransferIdRequest) GetTransferId() string {
+	if x != nil {
+		return x.TransferId
+	}
+	return ""
+}
+
+type UserIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserIdRequest) Reset() {
+	*x = UserIdRequest{}
+	mi := &file_proto_transfer_transfer_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserIdRequest) ProtoMessage() {}
+
+func (x *UserIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_transfer_transfer_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserIdRequest.ProtoReflect.Descriptor instead.
+func (*UserIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UserIdRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type GetTransferResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	TransferId       string                 `protobuf:"bytes,1,opt,name=transfer_id,json=transferId,proto3" json:"transfer_id,omitempty"`
+	Reference        string                 `protobuf:"bytes,2,opt,name=reference,proto3" json:"reference,omitempty"`
+	Step             string                 `protobuf:"bytes,3,opt,name=step,proto3" json:"step,omitempty"`
+	FromAccId        string                 `protobuf:"bytes,4,opt,name=from_acc_id,json=fromAccId,proto3" json:"from_acc_id,omitempty"`
+	FromAccNo        int64                  `protobuf:"varint,5,opt,name=from_acc_no,json=fromAccNo,proto3" json:"from_acc_no,omitempty"`
+	ToAccId          string                 `protobuf:"bytes,6,opt,name=to_acc_id,json=toAccId,proto3" json:"to_acc_id,omitempty"`
+	ToAccNo          int64                  `protobuf:"varint,7,opt,name=to_acc_no,json=toAccNo,proto3" json:"to_acc_no,omitempty"`
+	Amount           int64                  `protobuf:"varint,8,opt,name=amount,proto3" json:"amount,omitempty"`
+	Description      string                 `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`
+	IdempotencyKey   string                 `protobuf:"bytes,10,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	Type             string                 `protobuf:"bytes,11,opt,name=type,proto3" json:"type,omitempty"`
+	Status           string                 `protobuf:"bytes,12,opt,name=status,proto3" json:"status,omitempty"`
+	Mode             string                 `protobuf:"bytes,13,opt,name=mode,proto3" json:"mode,omitempty"`
+	ReversalRef      string                 `protobuf:"bytes,14,opt,name=reversal_ref,json=reversalRef,proto3" json:"reversal_ref,omitempty"`
+	IsReversed       bool                   `protobuf:"varint,15,opt,name=is_reversed,json=isReversed,proto3" json:"is_reversed,omitempty"`
+	FromBalanceAfter int64                  `protobuf:"varint,16,opt,name=from_balance_after,json=fromBalanceAfter,proto3" json:"from_balance_after,omitempty"`
+	ToBalanceAfter   int64                  `protobuf:"varint,17,opt,name=to_balance_after,json=toBalanceAfter,proto3" json:"to_balance_after,omitempty"`
+	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,18,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,19,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *GetTransferResponse) Reset() {
+	*x = GetTransferResponse{}
+	mi := &file_proto_transfer_transfer_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTransferResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTransferResponse) ProtoMessage() {}
+
+func (x *GetTransferResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_transfer_transfer_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTransferResponse.ProtoReflect.Descriptor instead.
+func (*GetTransferResponse) Descriptor() ([]byte, []int) {
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetTransferResponse) GetTransferId() string {
+	if x != nil {
+		return x.TransferId
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetReference() string {
+	if x != nil {
+		return x.Reference
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetStep() string {
+	if x != nil {
+		return x.Step
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetFromAccId() string {
+	if x != nil {
+		return x.FromAccId
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetFromAccNo() int64 {
+	if x != nil {
+		return x.FromAccNo
+	}
+	return 0
+}
+
+func (x *GetTransferResponse) GetToAccId() string {
+	if x != nil {
+		return x.ToAccId
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetToAccNo() int64 {
+	if x != nil {
+		return x.ToAccNo
+	}
+	return 0
+}
+
+func (x *GetTransferResponse) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *GetTransferResponse) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetMode() string {
+	if x != nil {
+		return x.Mode
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetReversalRef() string {
+	if x != nil {
+		return x.ReversalRef
+	}
+	return ""
+}
+
+func (x *GetTransferResponse) GetIsReversed() bool {
+	if x != nil {
+		return x.IsReversed
+	}
+	return false
+}
+
+func (x *GetTransferResponse) GetFromBalanceAfter() int64 {
+	if x != nil {
+		return x.FromBalanceAfter
+	}
+	return 0
+}
+
+func (x *GetTransferResponse) GetToBalanceAfter() int64 {
+	if x != nil {
+		return x.ToBalanceAfter
+	}
+	return 0
+}
+
+func (x *GetTransferResponse) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *GetTransferResponse) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
 }
 
 var File_proto_transfer_transfer_proto protoreflect.FileDescriptor
@@ -551,7 +971,17 @@ const file_proto_transfer_transfer_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x13 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"@\n" +
+	"updated_at\x18\x13 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xc5\x01\n" +
+	"\x0fTransferRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12'\n" +
+	"\x0fidempotency_key\x18\x02 \x01(\tR\x0eidempotencyKey\x12\"\n" +
+	"\rto_account_no\x18\x03 \x01(\x03R\vtoAccountNo\x12\x16\n" +
+	"\x06amount\x18\x04 \x01(\x03R\x06amount\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x12\n" +
+	"\x04mode\x18\x06 \x01(\tR\x04mode\"T\n" +
+	"\x10TransferResponse\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\x12&\n" +
+	"\x04resp\x18\x02 \x01(\v2\x12.transfer.TransferR\x04resp\"@\n" +
 	"\x14ListTransfersRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\"I\n" +
@@ -561,9 +991,10 @@ const file_proto_transfer_transfer_proto_rawDesc = "" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1c\n" +
 	"\treference\x18\x02 \x01(\tR\treference\x12'\n" +
 	"\x0fidempotency_key\x18\x03 \x01(\tR\x0eidempotencyKey\x12\x19\n" +
-	"\badmin_id\x18\x04 \x01(\tR\aadminId\")\n" +
-	"\x0fReverseResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status\"W\n" +
+	"\badmin_id\x18\x04 \x01(\tR\aadminId\"C\n" +
+	"\x0fReverseResponse\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"W\n" +
 	"\x17ReconcileAccountRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x1d\n" +
@@ -571,11 +1002,44 @@ const file_proto_transfer_transfer_proto_rawDesc = "" +
 	"account_no\x18\x02 \x01(\x03R\taccountNo\"H\n" +
 	"\x18ReconcileAccountResponse\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\tR\x06status\x12\x14\n" +
-	"\x05valid\x18\x02 \x01(\bR\x05valid2\x88\x02\n" +
-	"\x0fTransferService\x12F\n" +
+	"\x05valid\x18\x02 \x01(\bR\x05valid\"4\n" +
+	"\x11TransferIdRequest\x12\x1f\n" +
+	"\vtransfer_id\x18\x01 \x01(\tR\n" +
+	"transferId\"(\n" +
+	"\rUserIdRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x95\x05\n" +
+	"\x13GetTransferResponse\x12\x1f\n" +
+	"\vtransfer_id\x18\x01 \x01(\tR\n" +
+	"transferId\x12\x1c\n" +
+	"\treference\x18\x02 \x01(\tR\treference\x12\x12\n" +
+	"\x04step\x18\x03 \x01(\tR\x04step\x12\x1e\n" +
+	"\vfrom_acc_id\x18\x04 \x01(\tR\tfromAccId\x12\x1e\n" +
+	"\vfrom_acc_no\x18\x05 \x01(\x03R\tfromAccNo\x12\x1a\n" +
+	"\tto_acc_id\x18\x06 \x01(\tR\atoAccId\x12\x1a\n" +
+	"\tto_acc_no\x18\a \x01(\x03R\atoAccNo\x12\x16\n" +
+	"\x06amount\x18\b \x01(\x03R\x06amount\x12 \n" +
+	"\vdescription\x18\t \x01(\tR\vdescription\x12'\n" +
+	"\x0fidempotency_key\x18\n" +
+	" \x01(\tR\x0eidempotencyKey\x12\x12\n" +
+	"\x04type\x18\v \x01(\tR\x04type\x12\x16\n" +
+	"\x06status\x18\f \x01(\tR\x06status\x12\x12\n" +
+	"\x04mode\x18\r \x01(\tR\x04mode\x12!\n" +
+	"\freversal_ref\x18\x0e \x01(\tR\vreversalRef\x12\x1f\n" +
+	"\vis_reversed\x18\x0f \x01(\bR\n" +
+	"isReversed\x12,\n" +
+	"\x12from_balance_after\x18\x10 \x01(\x03R\x10fromBalanceAfter\x12(\n" +
+	"\x10to_balance_after\x18\x11 \x01(\x03R\x0etoBalanceAfter\x129\n" +
+	"\n" +
+	"created_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\x13 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2\xe5\x03\n" +
+	"\x0fTransferService\x12A\n" +
+	"\bTransfer\x12\x19.transfer.TransferRequest\x1a\x1a.transfer.TransferResponse\x12F\n" +
 	"\x0fReverseTransfer\x12\x18.transfer.ReverseRequest\x1a\x19.transfer.ReverseResponse\x12Y\n" +
 	"\x10ReconcileAccount\x12!.transfer.ReconcileAccountRequest\x1a\".transfer.ReconcileAccountResponse\x12R\n" +
-	"\x0fGetAllTransfers\x12\x1e.transfer.ListTransfersRequest\x1a\x1f.transfer.ListTransfersResponseB7Z5github.com/Eucastan/eucastanpay/common/proto/transferb\x06proto3"
+	"\x0fGetAllTransfers\x12\x1e.transfer.ListTransfersRequest\x1a\x1f.transfer.ListTransfersResponse\x12I\n" +
+	"\vGetTransfer\x12\x1b.transfer.TransferIdRequest\x1a\x1d.transfer.GetTransferResponse\x12M\n" +
+	"\x13GetTransferByUserID\x12\x17.transfer.UserIdRequest\x1a\x1d.transfer.GetTransferResponseB7Z5github.com/Eucastan/eucastanpay/common/proto/transferb\x06proto3"
 
 var (
 	file_proto_transfer_transfer_proto_rawDescOnce sync.Once
@@ -589,32 +1053,46 @@ func file_proto_transfer_transfer_proto_rawDescGZIP() []byte {
 	return file_proto_transfer_transfer_proto_rawDescData
 }
 
-var file_proto_transfer_transfer_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_proto_transfer_transfer_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_proto_transfer_transfer_proto_goTypes = []any{
 	(*Transfer)(nil),                 // 0: transfer.Transfer
-	(*ListTransfersRequest)(nil),     // 1: transfer.ListTransfersRequest
-	(*ListTransfersResponse)(nil),    // 2: transfer.ListTransfersResponse
-	(*ReverseRequest)(nil),           // 3: transfer.ReverseRequest
-	(*ReverseResponse)(nil),          // 4: transfer.ReverseResponse
-	(*ReconcileAccountRequest)(nil),  // 5: transfer.ReconcileAccountRequest
-	(*ReconcileAccountResponse)(nil), // 6: transfer.ReconcileAccountResponse
-	(*timestamppb.Timestamp)(nil),    // 7: google.protobuf.Timestamp
+	(*TransferRequest)(nil),          // 1: transfer.TransferRequest
+	(*TransferResponse)(nil),         // 2: transfer.TransferResponse
+	(*ListTransfersRequest)(nil),     // 3: transfer.ListTransfersRequest
+	(*ListTransfersResponse)(nil),    // 4: transfer.ListTransfersResponse
+	(*ReverseRequest)(nil),           // 5: transfer.ReverseRequest
+	(*ReverseResponse)(nil),          // 6: transfer.ReverseResponse
+	(*ReconcileAccountRequest)(nil),  // 7: transfer.ReconcileAccountRequest
+	(*ReconcileAccountResponse)(nil), // 8: transfer.ReconcileAccountResponse
+	(*TransferIdRequest)(nil),        // 9: transfer.TransferIdRequest
+	(*UserIdRequest)(nil),            // 10: transfer.UserIdRequest
+	(*GetTransferResponse)(nil),      // 11: transfer.GetTransferResponse
+	(*timestamppb.Timestamp)(nil),    // 12: google.protobuf.Timestamp
 }
 var file_proto_transfer_transfer_proto_depIdxs = []int32{
-	7, // 0: transfer.Transfer.created_at:type_name -> google.protobuf.Timestamp
-	7, // 1: transfer.Transfer.updated_at:type_name -> google.protobuf.Timestamp
-	0, // 2: transfer.ListTransfersResponse.transfers:type_name -> transfer.Transfer
-	3, // 3: transfer.TransferService.ReverseTransfer:input_type -> transfer.ReverseRequest
-	5, // 4: transfer.TransferService.ReconcileAccount:input_type -> transfer.ReconcileAccountRequest
-	1, // 5: transfer.TransferService.GetAllTransfers:input_type -> transfer.ListTransfersRequest
-	4, // 6: transfer.TransferService.ReverseTransfer:output_type -> transfer.ReverseResponse
-	6, // 7: transfer.TransferService.ReconcileAccount:output_type -> transfer.ReconcileAccountResponse
-	2, // 8: transfer.TransferService.GetAllTransfers:output_type -> transfer.ListTransfersResponse
-	6, // [6:9] is the sub-list for method output_type
-	3, // [3:6] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	12, // 0: transfer.Transfer.created_at:type_name -> google.protobuf.Timestamp
+	12, // 1: transfer.Transfer.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 2: transfer.TransferResponse.resp:type_name -> transfer.Transfer
+	0,  // 3: transfer.ListTransfersResponse.transfers:type_name -> transfer.Transfer
+	12, // 4: transfer.GetTransferResponse.created_at:type_name -> google.protobuf.Timestamp
+	12, // 5: transfer.GetTransferResponse.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 6: transfer.TransferService.Transfer:input_type -> transfer.TransferRequest
+	5,  // 7: transfer.TransferService.ReverseTransfer:input_type -> transfer.ReverseRequest
+	7,  // 8: transfer.TransferService.ReconcileAccount:input_type -> transfer.ReconcileAccountRequest
+	3,  // 9: transfer.TransferService.GetAllTransfers:input_type -> transfer.ListTransfersRequest
+	9,  // 10: transfer.TransferService.GetTransfer:input_type -> transfer.TransferIdRequest
+	10, // 11: transfer.TransferService.GetTransferByUserID:input_type -> transfer.UserIdRequest
+	2,  // 12: transfer.TransferService.Transfer:output_type -> transfer.TransferResponse
+	6,  // 13: transfer.TransferService.ReverseTransfer:output_type -> transfer.ReverseResponse
+	8,  // 14: transfer.TransferService.ReconcileAccount:output_type -> transfer.ReconcileAccountResponse
+	4,  // 15: transfer.TransferService.GetAllTransfers:output_type -> transfer.ListTransfersResponse
+	11, // 16: transfer.TransferService.GetTransfer:output_type -> transfer.GetTransferResponse
+	11, // 17: transfer.TransferService.GetTransferByUserID:output_type -> transfer.GetTransferResponse
+	12, // [12:18] is the sub-list for method output_type
+	6,  // [6:12] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_proto_transfer_transfer_proto_init() }
@@ -628,7 +1106,7 @@ func file_proto_transfer_transfer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_transfer_transfer_proto_rawDesc), len(file_proto_transfer_transfer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -7,9 +7,18 @@ option go_package = "github.com/Eucastan/eucastanpay/common/proto/user";
 import "google/protobuf/timestamp.proto";
 
 service UserService {
+	rpc Register(RegisterRequest) returns (UserResponse);
+	rpc Login(LoginRequest) returns (LoginResponse);
     rpc GetUserByID(GetUserByIDRequest) returns (UserResponse);
     rpc GetAllUsers(ListUsersRequest) returns (ListUsersResponse);
+	rpc LogoutAllUsers(GetUserByIDRequest) returns (ActionResponse);
 	rpc ActionOnUser(ActionRequest) returns (ActionResponse);
+	rpc Update(UpdateRequest) returns (ActionResponse);
+	rpc Delete(GetUserByIDRequest) returns (ActionResponse);
+
+	rpc CreateKYC(KycRequest) returns (KycResponse);
+	rpc ApproveKYC(KycIdRequest) returns (KycResponse);
+	rpc GetKYC(KycIdRequest) returns (KycResponse);
 }
 
 message User {
@@ -25,6 +34,36 @@ message User {
 	google.protobuf.Timestamp updated_at = 10;
 }
 
+message RegisterRequest {
+    string email = 1;
+	string phone = 2;
+	string password = 3;
+    string first_name = 4;
+    string last_name = 5;
+	string date_of_birth = 6;
+}
+
+message LoginRequest {
+	string email = 1;
+	string password = 2;
+}
+
+message LoginResponse {
+	string message = 1;
+	User resp = 2;
+	string access_token = 3;
+	string refresh_token = 4;
+}
+
+message UpdateRequest {
+    string user_id = 1;
+	string password = 2;
+    string first_name = 3;
+    string last_name = 4;
+	string status = 5;
+	bool email_verified = 6;
+}
+
 message GetUserByIDRequest {
     string user_id = 1;
 }
@@ -32,22 +71,18 @@ message GetUserByIDRequest {
 message UserResponse {
     string user_id = 1;
     string email = 2;
-    string first_name = 3;
-    string last_name = 4;
-    string kyc_status = 5;
+	string phone = 3;
+    string first_name = 4;
+    string last_name = 5;
+	string status = 6;
+	bool   email_verified = 7;
+	google.protobuf.Timestamp created_at = 8;
+	google.protobuf.Timestamp updated_at = 9;
 }
 
 message ListUsersRequest {
-    string user_id = 1;
-	string email = 2;
-	string phone = 3;
-	string first_name = 4;
-	string last_name = 5;
-	string date_of_birth = 6;
-	string status = 7;
-	bool   email_verified = 8;
-	google.protobuf.Timestamp created_at = 9;
-	google.protobuf.Timestamp updated_at = 10;
+    int32 page = 1;
+	int32 limit = 2;
 }
 
 message ListUsersResponse {
@@ -60,5 +95,18 @@ message ActionRequest {
 }
 
 message ActionResponse {
+	string message = 1;
+}
+
+message KycRequest {
+	string id_number = 1;
+	string id_type = 2;
+}
+
+message KycIdRequest {
+	string user_id = 1;
+}
+
+message KycResponse {
 	string message = 1;
 }

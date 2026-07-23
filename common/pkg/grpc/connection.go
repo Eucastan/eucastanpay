@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	//"google.golang.org/grpc/credentials/insecure"
 )
 
 func NewConnection(cfg ServiceConfig, log *logrus.Logger, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
@@ -35,7 +34,7 @@ func NewConnection(cfg ServiceConfig, log *logrus.Logger, opts ...grpc.DialOptio
 
 	log.Infof("Connecting to %s", cfg.Address)
 
-	conn, err := grpc.NewClient(cfg.Address, opts...)
+	conn, err := grpc.NewClient(cfg.Address, options...)
 	if err != nil {
 		return nil, fmt.Errorf("%s connection failed: %w", cfg.Name, err)
 	}

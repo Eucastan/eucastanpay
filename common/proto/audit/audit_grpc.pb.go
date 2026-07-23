@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v3.21.12
-// source: audit/audit.proto
+// source: proto/audit/audit.proto
 
 package audit
 
@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	AuditService_SearchAudit_FullMethodName  = "/audit.AuditService/SearchAudit"
+	AuditService_GetAllAudits_FullMethodName = "/audit.AuditService/GetAllAudits"
 	AuditService_GetAuditByID_FullMethodName = "/audit.AuditService/GetAuditByID"
 )
 
@@ -28,7 +29,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuditServiceClient interface {
 	SearchAudit(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error)
-	GetAuditByID(ctx context.Context, in *GetByIDRequest, opts ...grpc.CallOption) (*AuditEntry, error)
+	GetAllAudits(ctx context.Context, in *AuditRequest, opts ...grpc.CallOption) (*GetAllAuditResponse, error)
+	GetAuditByID(ctx context.Context, in *GetByIDRequest, opts ...grpc.CallOption) (*AuditEntryResponse, error)
 }
 
 type auditServiceClient struct {
@@ -49,9 +51,19 @@ func (c *auditServiceClient) SearchAudit(ctx context.Context, in *SearchRequest,
 	return out, nil
 }
 
-func (c *auditServiceClient) GetAuditByID(ctx context.Context, in *GetByIDRequest, opts ...grpc.CallOption) (*AuditEntry, error) {
+func (c *auditServiceClient) GetAllAudits(ctx context.Context, in *AuditRequest, opts ...grpc.CallOption) (*GetAllAuditResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AuditEntry)
+	out := new(GetAllAuditResponse)
+	err := c.cc.Invoke(ctx, AuditService_GetAllAudits_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *auditServiceClient) GetAuditByID(ctx context.Context, in *GetByIDRequest, opts ...grpc.CallOption) (*AuditEntryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AuditEntryResponse)
 	err := c.cc.Invoke(ctx, AuditService_GetAuditByID_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -64,7 +76,8 @@ func (c *auditServiceClient) GetAuditByID(ctx context.Context, in *GetByIDReques
 // for forward compatibility.
 type AuditServiceServer interface {
 	SearchAudit(context.Context, *SearchRequest) (*SearchResponse, error)
-	GetAuditByID(context.Context, *GetByIDRequest) (*AuditEntry, error)
+	GetAllAudits(context.Context, *AuditRequest) (*GetAllAuditResponse, error)
+	GetAuditByID(context.Context, *GetByIDRequest) (*AuditEntryResponse, error)
 	mustEmbedUnimplementedAuditServiceServer()
 }
 
@@ -78,7 +91,10 @@ type UnimplementedAuditServiceServer struct{}
 func (UnimplementedAuditServiceServer) SearchAudit(context.Context, *SearchRequest) (*SearchResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SearchAudit not implemented")
 }
-func (UnimplementedAuditServiceServer) GetAuditByID(context.Context, *GetByIDRequest) (*AuditEntry, error) {
+func (UnimplementedAuditServiceServer) GetAllAudits(context.Context, *AuditRequest) (*GetAllAuditResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAllAudits not implemented")
+}
+func (UnimplementedAuditServiceServer) GetAuditByID(context.Context, *GetByIDRequest) (*AuditEntryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAuditByID not implemented")
 }
 func (UnimplementedAuditServiceServer) mustEmbedUnimplementedAuditServiceServer() {}
@@ -120,6 +136,24 @@ func _AuditService_SearchAudit_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuditService_GetAllAudits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuditRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuditServiceServer).GetAllAudits(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuditService_GetAllAudits_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuditServiceServer).GetAllAudits(ctx, req.(*AuditRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuditService_GetAuditByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetByIDRequest)
 	if err := dec(in); err != nil {
@@ -150,10 +184,14 @@ var AuditService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuditService_SearchAudit_Handler,
 		},
 		{
+			MethodName: "GetAllAudits",
+			Handler:    _AuditService_GetAllAudits_Handler,
+		},
+		{
 			MethodName: "GetAuditByID",
 			Handler:    _AuditService_GetAuditByID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "audit/audit.proto",
+	Metadata: "proto/audit/audit.proto",
 }
