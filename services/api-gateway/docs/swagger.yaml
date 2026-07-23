@@ -1,0 +1,1557 @@
+basePath: /api/v1
+definitions:
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_account.DepositRequest:
+    properties:
+      account_id:
+        type: string
+      account_no:
+        type: integer
+      amount:
+        type: integer
+      currency:
+        type: string
+    required:
+    - account_id
+    - account_no
+    - amount
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.AdminLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      totp_code:
+        type: string
+    required:
+    - email
+    - password
+    - totp_code
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.CreateAdminRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      role:
+        type: string
+    required:
+    - email
+    - password
+    - role
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.UpdateAdminRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      role:
+        type: string
+      status:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_transfer.ReconciliationRequest:
+    properties:
+      to_account_no:
+        type: integer
+    required:
+    - to_account_no
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_transfer.TransferRequest:
+    properties:
+      amount:
+        type: integer
+      description:
+        type: string
+      idempotency_key:
+        type: string
+      mode:
+        enum:
+        - intraBank
+        - interBank
+        - own
+        type: string
+      to_account_no:
+        type: integer
+      user_id:
+        type: string
+    required:
+    - amount
+    - idempotency_key
+    - mode
+    - to_account_no
+    - user_id
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.CreateKYCRequest:
+    properties:
+      id_number:
+        minLength: 11
+        type: string
+      id_type:
+        enum:
+        - NIN
+        - passport
+        - license
+        type: string
+    required:
+    - id_number
+    - id_type
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.RegisterRequest:
+    properties:
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password_hash:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password_hash
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.UpdateRequest:
+    properties:
+      email:
+        type: string
+      email_verified:
+        type: boolean
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password_hash:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+      status:
+        type: string
+    type: object
+  github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse:
+    properties:
+      data: {}
+      error: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+info:
+  contact:
+    name: Stanley Emeh
+  description: API Gateway for the EucastanPay Microservices Platform.
+  title: EucastanPay API Gateway
+  version: "1.0"
+paths:
+  /{user_id}/kyc:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Approve user KYC by admin
+      tags:
+      - KYC
+  /account/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Account Details with accountID and userID
+      tags:
+      - Account
+  /admin:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: List All Admins
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      description: Creates a new EucastanPay admin account.
+      parameters:
+      - description: Admin Registration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.CreateAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Register a new admin
+      tags:
+      - Admin
+  /admin/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Admin ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Deleting Admin information
+      tags:
+      - Admin
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Admin ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Admin
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Admin ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Admin Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.UpdateAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Editing Admin information
+      tags:
+      - Admin
+  /admin/account/{id}/balance:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Account owner's balance
+      tags:
+      - Account
+  /admin/account/{id}/pay-in:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Deposit information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_account.DepositRequest'
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Pay into owner's account
+      tags:
+      - Account
+  /admin/account/{id}/withdraw:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Deposit information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_account.DepositRequest'
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "409":
+          description: Insufficient balance
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Withdrawing Cash from account
+      tags:
+      - Account
+  /admin/accounts:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Account Details for all users
+      tags:
+      - Account
+  /admin/accounts/{account_id}/balance:
+    get:
+      consumes:
+      - application/json
+      description: Get Account Balance from Ledger
+      parameters:
+      - description: Ledger Account ID
+        in: path
+        name: account_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Account Balance
+      tags:
+      - Ledger
+  /admin/accounts/{account_id}/reconcile:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Ledger Account ID
+        in: path
+        name: account_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Reconciliation Result
+      tags:
+      - Ledger
+    post:
+      consumes:
+      - application/json
+      description: Reconciliation Account from Transfer service.
+      parameters:
+      - description: Reconciliation Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_transfer.ReconciliationRequest'
+      - description: Account Reconciliation
+        in: path
+        name: account_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Reconcile account
+      tags:
+      - Transfer
+  /admin/audits:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: List AuditReads
+      tags:
+      - Audit
+  /admin/audits/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Audit Read ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get AuditRead by ID
+      tags:
+      - Audit
+  /admin/audits/search:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event type
+        in: query
+        name: event_type
+        type: string
+      - description: Correlation ID
+        in: query
+        name: correlation_id
+        type: string
+      - description: Reference
+        in: query
+        name: reference
+        type: string
+      - description: Minimum amount
+        in: query
+        name: min_amount
+        type: integer
+      - description: Maximum amount
+        in: query
+        name: max_amount
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Search AuditRead
+      tags:
+      - Audit
+  /admin/ledgers:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Entry Type
+        enum:
+        - credit
+        - debit
+        in: query
+        name: entry_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get All Ledger Entries
+      tags:
+      - Ledger
+  /admin/ledgers/{account_id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Ledger ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Ledger by Account ID
+      tags:
+      - Ledger
+  /admin/ledgers/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Ledger ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Ledger by ID
+      tags:
+      - Ledger
+  /admin/transfers:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: List transfers
+      tags:
+      - Transfer
+  /admin/transfers/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get transfer by ID
+      tags:
+      - Transfer
+  /admin/transfers/{reference}:
+    post:
+      consumes:
+      - application/json
+      description: Reverses transfer from receiver back to sender (receiver -> sender).
+      parameters:
+      - description: Unique idempotency key
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Transfer Reference
+        in: path
+        name: reference
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Reverse transfer
+      tags:
+      - Transfer
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns JWT tokens.
+      parameters:
+      - description: Login
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      summary: Login user
+      tags:
+      - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new EucastanPay user account.
+      parameters:
+      - description: User Registration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      summary: Register a new user
+      tags:
+      - Authentication
+  /ledgers/me:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Ledger UserID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Ledger by User ID
+      tags:
+      - Ledger
+  /transfers:
+    post:
+      consumes:
+      - application/json
+      description: Initiates transfer from one user to the other (sender and receiver).
+      parameters:
+      - description: Unique idempotency key
+        in: header
+        name: Idempotency-Key
+        required: true
+        type: string
+      - description: Transfer Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_transfer.TransferRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: TransferFromUser Initiate transfer
+      tags:
+      - Transfer
+  /transfers/me:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get transfer by User ID
+      tags:
+      - Transfer
+  /user:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get User
+      tags:
+      - User
+  /users:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: List All Users
+      tags:
+      - User
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Deleting User information
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Update Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Editing User information
+      tags:
+      - User
+  /users/{user_id}/kyc:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get KYC
+      tags:
+      - KYC
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: KYC Information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.CreateKYCRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Submit KYC information
+      tags:
+      - KYC
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
