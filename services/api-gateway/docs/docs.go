@@ -955,7 +955,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/ledgers/{account_id}": {
+        "/admin/ledgers/account/{account_id}": {
             "get": {
                 "security": [
                     {
