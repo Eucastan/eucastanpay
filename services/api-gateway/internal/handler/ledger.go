@@ -166,7 +166,7 @@ func (h *LedgerHandler) GetLedger(c *gin.Context) {
 // @Failure 404 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/ledgers/{account_id} [get]
+// @Router /admin/ledgers/account/{account_id} [get]
 func (h *LedgerHandler) GetLedgerByAccountID(c *gin.Context) {
 
 	uri, err := httpx.BindURI[ledgerReq.AccountURI](c)

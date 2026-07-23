@@ -116,6 +116,8 @@ func (a *App) initLogger() {
 	a.logger = logger.New(
 		a.cfg.SharedCfg.LogLevel,
 	)
+
+	a.logger.Info("Starting Gateway service...")
 }
 
 func (a *App) initTelemetry() error {
