@@ -348,6 +348,27 @@ func (r *AccountRepository) UpdateBalance(ctx context.Context, tx pgx.Tx, accID 
 	return nil
 }
 
+func (r *AccountRepository) Delete(ctx context.Context, accID string) error {
+	ctx, span := r.telemetry.Start(ctx, "AccountRepository.Delete")
+	defer span.End()
+
+	query := `
+	     DELETE FROM accounts 
+		 WHERE id = $1
+	`
+
+	_, err := r.DB.Exec(ctx, query, accID)
+	if err == pgx.ErrNoRows {
+		return errmessage.ErrUserNotFound
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *AccountRepository) SaveOutboxEvent(ctx context.Context, tx pgx.Tx, topic, key string, payload interface{}) error {
 	ctx, span := r.telemetry.Start(ctx, "AccountRepository.SaveOutboxEvent")
 	defer span.End()

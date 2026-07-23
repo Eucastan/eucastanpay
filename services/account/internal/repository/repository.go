@@ -21,5 +21,6 @@ type AccountRepository interface {
 	IsActive(ctx context.Context, tx pgx.Tx, accID, userID string) (bool, error)
 	UpdateStatus(ctx context.Context, tx pgx.Tx, accID, status string) error
 	UpdateBalance(ctx context.Context, tx pgx.Tx, id string, amount int64, isCredit bool) error
+	Delete(ctx context.Context, accID string) error
 	SaveOutboxEvent(ctx context.Context, tx pgx.Tx, topic, key string, payload interface{}) error
 }

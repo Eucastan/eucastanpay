@@ -2,6 +2,7 @@ package config
 
 import (
 	"strings"
+	"time"
 
 	commonconfig "github.com/Eucastan/eucastanpay/common/pkg/config"
 
@@ -9,14 +10,15 @@ import (
 )
 
 type Config struct {
-	HTTPPort    string `mapstructure:"HTTP_PORT"`
-	GRPCPort    string `mapstructure:"GRPC_PORT"`
-	ServiceName string `mapstructure:"SERVICE_NAME"`
-	Version     string `mapstructure:"VERSION"`
-	EmailAPIKey string `mapstructure:"EMAIL_API_KEY"`
-	AppEmail    string `mapstructure:"APP_EMAIL"`
-	FromName    string `mapstructure:"FROM_NAME"`
-	SharedCfg   commonconfig.SharedCfg
+	HTTPPort        string `mapstructure:"HTTP_PORT"`
+	GRPCPort        string `mapstructure:"GRPC_PORT"`
+	ServiceName     string `mapstructure:"SERVICE_NAME"`
+	Version         string `mapstructure:"VERSION"`
+	EmailAPIKey     string `mapstructure:"EMAIL_API_KEY"`
+	AppEmail        string `mapstructure:"APP_EMAIL"`
+	FromName        string `mapstructure:"FROM_NAME"`
+	ShutdownTimeout time.Duration
+	SharedCfg       commonconfig.SharedCfg
 }
 
 func Load() (*Config, error) {

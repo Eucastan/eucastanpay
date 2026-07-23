@@ -597,3 +597,7 @@ func (u *AccountUseCase) ActionOnAccount(ctx context.Context, accID, status stri
 
 	return message, nil
 }
+
+func (u *AccountUseCase) DeleteAccount(ctx context.Context, accID string) error {
+	return u.ACC.Delete(ctx, accID)
+}

@@ -21,4 +21,5 @@ type AccountUseCase interface {
 	GetByAccountIDAndUserID(ctx context.Context, accID, userID string) (*response.AccountResponse, error)
 	GetBalance(ctx context.Context, accID, userID string) (*response.AccountResponse, error)
 	ActionOnAccount(ctx context.Context, accID, status string, accNo int64) (string, error)
+	DeleteAccount(ctx context.Context, accID string) error
 }

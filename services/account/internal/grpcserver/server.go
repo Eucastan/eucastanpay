@@ -3,82 +3,69 @@ package grpcserver
 import (
 	"context"
 
-	"github.com/Eucastan/eucastanpay/common/proto/account"
+	"github.com/Eucastan/eucastanpay/common/pkg/grpcstatus"
+	accountpb "github.com/Eucastan/eucastanpay/common/proto/account"
 	"github.com/Eucastan/eucastanpay/services/account/internal/dto/request"
-	"github.com/Eucastan/eucastanpay/services/account/internal/repository"
 	"github.com/Eucastan/eucastanpay/services/account/internal/usecase"
-	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AccountServiceServer struct {
-	account.UnimplementedAccountServiceServer
-	ACC  usecase.AccountUseCase
-	Repo repository.AccountRepository
+	accountpb.UnimplementedAccountServiceServer
+	ACC usecase.AccountUseCase
 }
 
-func NewAccountServiceServer(acc usecase.AccountUseCase, repo repository.AccountRepository) *AccountServiceServer {
+func NewAccountServiceServer(acc usecase.AccountUseCase) *AccountServiceServer {
 	return &AccountServiceServer{
-		ACC:  acc,
-		Repo: repo,
+		ACC: acc,
 	}
 }
 
-func (s *AccountServiceServer) Credit(ctx context.Context, req *account.GetCreditRequest) (*account.GetCreditResponse, error) {
-	credit := &request.CreditRequest{
+func (s *AccountServiceServer) Deposit(ctx context.Context, req *accountpb.DepositRequest) (*accountpb.ActionResponse, error) {
+	credit := &request.DepositRequest{
 		AccountNo: req.AccountNo,
 		Amount:    req.Amount,
+		Currency:  req.Currency,
 	}
 
-	err := s.Repo.WithTx(ctx, func(tx pgx.Tx) error {
-
-		if err := s.ACC.Credit(ctx, tx, req.Id, credit); err != nil {
-			return status.Error(codes.Internal, err.Error())
-		}
-
-		return nil
-
-	})
-
-	if err != nil {
-		return nil, err
+	if err := s.ACC.DepositAccount(ctx, req.AccountId, credit); err != nil {
+		return nil, grpcstatus.ToAccountStatus(err)
 	}
 
-	return &account.GetCreditResponse{
+	return &accountpb.ActionResponse{
 		Message: "Credit processed successfully",
 	}, nil
 }
 
-func (s *AccountServiceServer) Debit(ctx context.Context, req *account.GetDebitRequest) (*account.GetDebitResponse, error) {
-	debit := &request.DebitRequest{
+func (s *AccountServiceServer) WithDrawal(ctx context.Context, req *accountpb.DepositRequest) (*accountpb.ActionResponse, error) {
+	debit := &request.DepositRequest{
 		AccountNo: req.AccountNo,
 		Amount:    req.Amount,
+		Currency:  req.Currency,
 	}
 
-	err := s.Repo.WithTx(ctx, func(tx pgx.Tx) error {
-		return s.ACC.Debit(ctx, tx, req.Id, debit)
-	})
+	if err := s.ACC.WithDrawal(ctx, req.AccountId, debit); err != nil {
 
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, grpcstatus.ToAccountStatus(err)
 	}
 
-	return &account.GetDebitResponse{
+	return &accountpb.ActionResponse{
 		Message: "Debit processed successfully",
 	}, nil
 }
 
-func (s *AccountServiceServer) GetUserAccount(ctx context.Context, req *account.GetUserAccountRequest) (*account.GetAccountResponse, error) {
+func (s *AccountServiceServer) GetUserAccount(ctx context.Context, req *accountpb.GetUserAccountRequest) (*accountpb.GetAccountResponse, error) {
 	resp, err := s.ACC.GetByUserID(ctx, req.UserId)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, grpcstatus.ToAccountStatus(err)
 	}
 
-	return &account.GetAccountResponse{
+	return &accountpb.GetAccountResponse{
 		AccountId:   resp.ID,
 		UserId:      resp.UserID,
+		Email:       resp.Email,
 		AccountNo:   resp.AccountNo,
 		Balance:     resp.Balance,
 		AccountType: resp.AccountType,
@@ -86,13 +73,13 @@ func (s *AccountServiceServer) GetUserAccount(ctx context.Context, req *account.
 	}, nil
 }
 
-func (s AccountServiceServer) ResolveAccount(ctx context.Context, req *account.ConfirmAccountRequest) (*account.ConfirmAccountResponse, error) {
+func (s AccountServiceServer) ResolveAccount(ctx context.Context, req *accountpb.ConfirmAccountRequest) (*accountpb.ConfirmAccountResponse, error) {
 	resp, err := s.ACC.ConfirmSenderAndReceiver(ctx, req.FromAccountNo, req.ToAccountNo)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, grpcstatus.ToAccountStatus(err)
 	}
 
-	return &account.ConfirmAccountResponse{
+	return &accountpb.ConfirmAccountResponse{
 		FromAccountId: resp.FromAccID,
 		ToAccountId:   resp.ToAccID,
 		FromUserId:    resp.FromUserID,
@@ -106,21 +93,45 @@ func (s AccountServiceServer) ResolveAccount(ctx context.Context, req *account.C
 	}, nil
 }
 
-func (s *AccountServiceServer) GetBalance(ctx context.Context, req *account.GetBalanceRequest) (*account.GetAccountResponse, error) {
+func (s *AccountServiceServer) ReconcileBalance(ctx context.Context, req *accountpb.BalanceRequest) (*accountpb.GetAccountResponse, error) {
 
 	userID, ok := ctx.Value("user_id").(string)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "missing user_id")
 	}
 
-	resp, err := s.ACC.GetBalance(ctx, req.Id, userID)
+	resp, err := s.ACC.GetBalance(ctx, req.AccountId, userID)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, grpcstatus.ToAccountStatus(err)
 	}
 
-	return &account.GetAccountResponse{
+	return &accountpb.GetAccountResponse{
 		AccountId:   resp.ID,
 		UserId:      resp.UserID,
+		Email:       resp.Email,
+		AccountNo:   resp.AccountNo,
+		Balance:     resp.Balance,
+		AccountType: resp.AccountType,
+		Currency:    resp.Currency,
+	}, nil
+}
+
+func (s *AccountServiceServer) GetBalance(ctx context.Context, req *accountpb.GetBalanceRequest) (*accountpb.GetAccountResponse, error) {
+
+	userID, ok := ctx.Value("user_id").(string)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "missing user_id")
+	}
+
+	resp, err := s.ACC.GetBalance(ctx, req.AccountId, userID)
+	if err != nil {
+		return nil, grpcstatus.ToAccountStatus(err)
+	}
+
+	return &accountpb.GetAccountResponse{
+		AccountId:   resp.ID,
+		UserId:      resp.UserID,
+		Email:       resp.Email,
 		AccountNo:   resp.AccountNo,
 		Balance:     resp.Balance,
 		AccountType: resp.AccountType,
@@ -130,18 +141,19 @@ func (s *AccountServiceServer) GetBalance(ctx context.Context, req *account.GetB
 
 func (s *AccountServiceServer) GetAllAccounts(
 	ctx context.Context,
-	req *account.ListAccountsRequest,
-) (*account.ListAccountsResponse, error) {
+	req *accountpb.ListAccountsRequest,
+) (*accountpb.ListAccountsResponse, error) {
 	accounts, err := s.ACC.GetAllAccount(ctx)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to get all accounts")
+		return nil, grpcstatus.ToAccountStatus(err)
 	}
 
-	resp := make([]*account.Account, 0, len(accounts))
+	resp := make([]*accountpb.Account, 0, len(accounts))
 	for _, v := range accounts {
-		resp = append(resp, &account.Account{
+		resp = append(resp, &accountpb.Account{
 			AccountId:   v.ID,
 			UserId:      v.UserID,
+			Email:       v.Email,
 			AccountNo:   v.AccountNo,
 			Balance:     v.Balance,
 			AccountType: v.AccountType,
@@ -150,18 +162,28 @@ func (s *AccountServiceServer) GetAllAccounts(
 		})
 	}
 
-	return &account.ListAccountsResponse{
+	return &accountpb.ListAccountsResponse{
 		Accounts: resp,
 	}, nil
 }
 
-func (s *AccountServiceServer) ActionOnAccount(ctx context.Context, req *account.ActionRequest) (*account.ActionResponse, error) {
+func (s *AccountServiceServer) ActionOnAccount(ctx context.Context, req *accountpb.ActionRequest) (*accountpb.ActionResponse, error) {
 	msg, err := s.ACC.ActionOnAccount(ctx, req.AccountId, req.Status, req.AccountNo)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, grpcstatus.ToAccountStatus(err)
 	}
 
-	return &account.ActionResponse{
+	return &accountpb.ActionResponse{
 		Message: msg,
+	}, nil
+}
+
+func (s AccountServiceServer) Delete(ctx context.Context, req *accountpb.DeleteRequest) (*accountpb.ActionResponse, error) {
+	if err := s.ACC.DeleteAccount(ctx, req.AccountId); err != nil {
+		return nil, grpcstatus.ToAccountStatus(err)
+	}
+
+	return &accountpb.ActionResponse{
+		Message: "Deleted successsfully",
 	}, nil
 }
