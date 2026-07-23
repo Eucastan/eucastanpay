@@ -2,22 +2,25 @@ package config
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	commonconfig "github.com/Eucastan/eucastanpay/common/pkg/config"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 func ToCfg() *Config {
 	fmt.Println("ToCfg DSN:", viper.GetString("DSN"))
 
 	cfg := &Config{
-		HTTPPort:    viper.GetString("HTTP_PORT"),
-		GRPCPort:    viper.GetString("GRPC_PORT"),
-		ServiceName: viper.GetString("SERVICE_NAME"),
-		Version:     viper.GetString("VERSION"),
-		EmailAPIKey: viper.GetString("EMAIL_API_KEY"),
-		AppEmail:    viper.GetString("APP_EMAIL"),
-		FromName:    viper.GetString("FROM_NAME"),
+		HTTPPort:        viper.GetString("HTTP_PORT"),
+		GRPCPort:        viper.GetString("GRPC_PORT"),
+		ServiceName:     viper.GetString("SERVICE_NAME"),
+		Version:         viper.GetString("VERSION"),
+		EmailAPIKey:     viper.GetString("EMAIL_API_KEY"),
+		AppEmail:        viper.GetString("APP_EMAIL"),
+		FromName:        viper.GetString("FROM_NAME"),
+		ShutdownTimeout: 15 * time.Second,
 		SharedCfg: commonconfig.SharedCfg{
 			Dsn:       viper.GetString("DSN"),
 			Schema:    viper.GetString("SCHEMA"),

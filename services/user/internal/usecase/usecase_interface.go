@@ -19,4 +19,6 @@ type UserUseCaseInterface interface {
 	Logout(ctx context.Context, refreshToken string) error
 	ForgotPassword(ctx context.Context, input *request.ForgotPasswordRequest) error
 	ResetPassword(ctx context.Context, req *request.ResetPasswordRequest) error
+	Update(ctx context.Context, userID string, input *request.UpdateRequest) error
+	DeleteUser(ctx context.Context, userID string) error
 }

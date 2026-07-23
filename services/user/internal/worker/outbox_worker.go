@@ -7,21 +7,19 @@ import (
 	"time"
 
 	"github.com/Eucastan/eucastanpay/common/pkg/kafka/producer"
-	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	maxRetries   = 5
-	lockDuration = time.Minute
+	maxRetries = 5
 )
 
 type OutboxWorker struct {
 	db        *pgxpool.Pool
 	publisher *producer.Publisher
-	telemetry *telemetry.Telemetry
 	log       *logrus.Logger
+	interval  time.Duration
 }
 
 type OutboxEvent struct {
@@ -32,7 +30,13 @@ type OutboxEvent struct {
 	RetryCount int
 }
 
-func NewOutboxWorker(db *pgxpool.Pool, publisher *producer.Publisher, tm *telemetry.Telemetry, log *logrus.Logger) *OutboxWorker {
+func NewOutboxWorker(
+	db *pgxpool.Pool,
+	publisher *producer.Publisher,
+	log *logrus.Logger,
+	interval time.Duration,
+) *OutboxWorker {
+
 	if log == nil {
 		log = logrus.New()
 	}
@@ -40,35 +44,31 @@ func NewOutboxWorker(db *pgxpool.Pool, publisher *producer.Publisher, tm *teleme
 	return &OutboxWorker{
 		db:        db,
 		publisher: publisher,
-		telemetry: tm,
 		log:       log,
+		interval:  interval,
 	}
 }
 
-func StartOutboxWorker(ctx context.Context, db *pgxpool.Pool, publisher *producer.Publisher, tm *telemetry.Telemetry, log *logrus.Logger) {
-	log.Info("PUBLISHING OUTBOX EVENT")
-	worker := NewOutboxWorker(db, publisher, tm, log)
+func (w *OutboxWorker) Start(ctx context.Context) {
+	w.log.Info("Outbox worker started")
 
-	ticker := time.NewTicker(2 * time.Second)
+	ticker := time.NewTicker(w.interval)
 	defer ticker.Stop()
 
 	for {
 		select {
 
 		case <-ctx.Done():
-			worker.log.Info("outbox worker stopped")
+			w.log.Info("outbox worker stopped")
 			return
 
 		case <-ticker.C:
-			worker.processBatch(ctx)
+			w.processBatch(ctx)
 		}
 	}
 }
 
 func (w *OutboxWorker) fetchAndLock(ctx context.Context) ([]OutboxEvent, error) {
-	ctx, span := w.telemetry.Start(ctx, "OutboxWorker.fetchAndLock")
-	defer span.End()
-
 	query := `
 	WITH cte AS (
     SELECT id
@@ -89,7 +89,6 @@ func (w *OutboxWorker) fetchAndLock(ctx context.Context) ([]OutboxEvent, error) 
 
 	rows, err := w.db.Query(ctx, query)
 	if err != nil {
-		span.RecordError(err)
 		return nil, err
 	}
 
@@ -101,8 +100,9 @@ func (w *OutboxWorker) fetchAndLock(ctx context.Context) ([]OutboxEvent, error) 
 
 		var e OutboxEvent
 
-		if err := rows.Scan(&e.ID, &e.Topic, &e.Key, &e.Payload, &e.RetryCount); err != nil {
-			span.RecordError(err)
+		if err := rows.Scan(&e.ID, &e.Topic, &e.Key, &e.Payload,
+			&e.RetryCount,
+		); err != nil {
 			return nil, err
 		}
 
@@ -113,16 +113,9 @@ func (w *OutboxWorker) fetchAndLock(ctx context.Context) ([]OutboxEvent, error) 
 }
 
 func (w *OutboxWorker) processBatch(ctx context.Context) {
-	ctx, span := w.telemetry.Start(ctx, "OutboxWorker.processBatch")
-	defer span.End()
 
 	events, err := w.fetchAndLock(ctx)
 	if err != nil {
-		span.RecordError(err)
-		if ctx.Err() != nil {
-			return
-		}
-
 		w.log.WithError(err).Error("failed to fetch outbox events")
 		return
 	}
@@ -140,12 +133,7 @@ func (w *OutboxWorker) processBatch(ctx context.Context) {
 		)
 
 		if err != nil {
-			if ctx.Err() != nil {
-				return
-			}
-
 			w.log.WithError(err).Error("publish failed")
-			span.RecordError(err)
 			w.handleFailure(ctx, event.ID, event.RetryCount, err)
 
 			continue
@@ -162,9 +150,6 @@ func (w *OutboxWorker) processBatch(ctx context.Context) {
 }
 
 func (w *OutboxWorker) markPublished(ctx context.Context, id string) {
-	ctx, span := w.telemetry.Start(ctx, "OutboxWorker.markPublished")
-	defer span.End()
-
 	_, err := w.db.Exec(
 		ctx,
 		`
@@ -178,15 +163,11 @@ func (w *OutboxWorker) markPublished(ctx context.Context, id string) {
 	)
 
 	if err != nil {
-		span.RecordError(err)
 		w.log.WithError(err).Error("failed to mark event published")
 	}
 }
 
 func (w *OutboxWorker) handleFailure(ctx context.Context, id string, retryCount int, publishErr error) {
-	ctx, span := w.telemetry.Start(ctx, "OutboxWorker.handleFailure")
-	defer span.End()
-
 	retryCount++
 
 	if retryCount >= maxRetries {
@@ -207,7 +188,6 @@ func (w *OutboxWorker) handleFailure(ctx context.Context, id string, retryCount 
 		)
 
 		if err != nil {
-			span.RecordError(err)
 			w.log.WithError(err).Error("failed to move event to DLQ")
 		}
 
@@ -232,7 +212,6 @@ func (w *OutboxWorker) handleFailure(ctx context.Context, id string, retryCount 
 	)
 
 	if err != nil {
-		span.RecordError(err)
 		w.log.WithError(err).Error("failed to update retry state")
 	}
 }

@@ -10,12 +10,12 @@ import (
 
 	"github.com/Eucastan/eucastanpay/common/pkg/auth"
 	"github.com/Eucastan/eucastanpay/common/pkg/errmessage"
-	"github.com/Eucastan/eucastanpay/common/pkg/redisclient"
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/user/config"
 	"github.com/Eucastan/eucastanpay/services/user/internal/domain"
 	"github.com/Eucastan/eucastanpay/services/user/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/user/internal/dto/response"
+	"github.com/Eucastan/eucastanpay/services/user/internal/infra/redis"
 	"github.com/Eucastan/eucastanpay/services/user/internal/repository"
 	"github.com/Eucastan/eucastanpay/services/user/internal/usecase"
 	"github.com/Eucastan/eucastanpay/services/user/internal/util/password"
@@ -28,7 +28,7 @@ type UserUseCase struct {
 	telemetry *telemetry.Telemetry
 	cfg       *config.Config
 	Email     usecase.EmailSender
-	Redis     redisclient.RedisClient
+	Redis     *redis.RedisClient
 	Publisher *worker.PublishUserRegistration
 }
 
@@ -38,7 +38,7 @@ func NewUserUseCase(
 	telemetry *telemetry.Telemetry,
 	cfg *config.Config,
 	email usecase.EmailSender,
-	redis redisclient.RedisClient,
+	redis *redis.RedisClient,
 	publisher *worker.PublishUserRegistration,
 ) *UserUseCase {
 
@@ -481,4 +481,27 @@ func (u *UserUseCase) ResetPassword(ctx context.Context, req *request.ResetPassw
 	}
 
 	return u.Auth.Revoked(ctx, req.Token)
+}
+
+func (u *UserUseCase) Update(ctx context.Context, userID string, input *request.UpdateRequest) error {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.Update")
+	defer span.End()
+
+	updateUser := &domain.User{
+		ID:            userID,
+		Password:      input.Password,
+		FirstName:     input.FirstName,
+		LastName:      input.LastName,
+		Status:        domain.UserStatus(input.Status),
+		EmailVerified: input.EmailVerified,
+	}
+
+	return u.User.Update(ctx, updateUser)
+}
+
+func (u *UserUseCase) DeleteUser(ctx context.Context, userID string) error {
+	ctx, span := u.telemetry.Start(ctx, "UserUseCase.DeleteUser")
+	defer span.End()
+
+	return u.User.Delete(ctx, userID)
 }

@@ -176,6 +176,27 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) error {
 	return nil
 }
 
+func (r *UserRepository) Delete(ctx context.Context, userID string) error {
+	ctx, span := r.telemetry.Start(ctx, "UserRepository.Delete")
+	defer span.End()
+
+	query := `
+	     DELETE FROM users 
+		 WHERE id = $1
+	`
+
+	_, err := r.db.Exec(ctx, query, userID)
+	if err == pgx.ErrNoRows {
+		return errmessage.ErrUserNotFound
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *UserRepository) SaveOutboxEvent(ctx context.Context, tx pgx.Tx, topic, key string, payload interface{}) error {
 	ctx, span := r.telemetry.Start(ctx, "UserRepository.SaveOutboxEvent")
 	defer span.End()
