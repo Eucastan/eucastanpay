@@ -9,7 +9,9 @@ import (
 
 func (a *App) initGRPCServer() {
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(interceptor.AuthInterceptor(a.cfg.SharedCfg.JWTSecret)),
+		grpc.UnaryInterceptor(
+			interceptor.AuthAnyInterceptor(a.cfg.SharedCfg.JWTSecret),
+		),
 	)
 
 	gs := server.NewAuditServiceServer(a.uc)
