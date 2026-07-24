@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/application/service"
 	userReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/user"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/httpx"
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/proxy"
@@ -245,6 +246,11 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 //
 // @Router /users/{user_id}/kyc [post]
 func (h *UserHandler) CreateKYC(c *gin.Context) {
+	h.Logger.Printf("CreateKYC handler reached")
+
+	ctx := proxy.Context(c)
+	md, _ := metadata.FromOutgoingContext(ctx)
+	h.Logger.Printf("Outgoing metadata: %+v\n", md)
 
 	req, err := httpx.BindJSON[userReq.CreateKYCRequest](c)
 	if err != nil {
@@ -258,7 +264,7 @@ func (h *UserHandler) CreateKYC(c *gin.Context) {
 		return
 	}
 
-	res, err := h.userApp.CreateKYC(proxy.Context(c), req.IdNumber, req.IdType)
+	res, err := h.userApp.CreateKYC(ctx, req.IdNumber, req.IdType)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return
