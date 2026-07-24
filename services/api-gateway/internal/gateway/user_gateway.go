@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"log"
 
 	userpb "github.com/Eucastan/eucastanpay/common/proto/user"
 	userReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/user"
@@ -27,6 +28,7 @@ func (s *UserGateway) Register(ctx context.Context, req *userReq.RegisterRequest
 	)
 
 	if err != nil {
+		log.Printf("Register failed: %v", err)
 		return nil, err
 	}
 
