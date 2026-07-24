@@ -27,6 +27,8 @@ type Dependencies struct {
 
 func Register(r *gin.Engine, deps Dependencies, h Handlers) {
 
+	RegisterGlobalMiddleware(r, deps.Logger)
+
 	RegisterHealth(r, healthcheck.New(
 		deps.Config.ServiceName,
 		deps.Config.Version,
