@@ -71,10 +71,9 @@ func AuthInterceptor(cfg string) grpc.UnaryServerInterceptor {
 
 		// Propagation for outgoing calls
 		newMetadata := metadata.New(map[string]string{
-			"user_id":       claims.UserID,
-			"email":         claims.Email,
-			"role":          claims.Role,
-			"authorization": "Bearer " + token,
+			UserIDKey:        claims.UserID,
+			RoleKey:          claims.Role,
+			AuthorizationKey: "Bearer " + token,
 		})
 
 		outgoingMD, _ := metadata.FromOutgoingContext(ctx)
