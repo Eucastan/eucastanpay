@@ -7,24 +7,26 @@ import (
 )
 
 const (
-	UserIDKey = "x-user-id"
-
-	RoleKey = "x-user-role"
-
-	CorrelationKey = "x-correlation-id"
-
-	RequestIDKey = "x-request-id"
+	UserIDKey        = "x-user-id"
+	RoleKey          = "x-user-role"
+	AdminIDKey       = "x-admin-id"
+	AdminRoleKey     = "x-admin-role"
+	CorrelationKey   = "x-correlation-id"
+	AuthorizationKey = "authorization"
+	RequestIDKey     = "x-request-id"
 )
 
 func MetadataFromContext(ctx context.Context) metadata.MD {
 
-	md, ok := metadata.FromIncomingContext(ctx)
-
-	if !ok {
-		return metadata.New(nil)
+	if md, ok := metadata.FromOutgoingContext(ctx); ok {
+		return md
 	}
 
-	return md
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		return md
+	}
+
+	return metadata.New(nil)
 }
 
 func OutgoingContext(ctx context.Context, md metadata.MD) context.Context {
