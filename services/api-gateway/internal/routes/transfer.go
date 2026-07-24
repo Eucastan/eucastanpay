@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterTransferRoutes(r *gin.Engine, deps Dependencies, h Handlers) {
+func RegisterTransferRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
-	admin := AdminGroup(r, deps.Config)
+	admin := AdminGroup(api, deps.Config)
 
 	{
 		admin.GET("/transfers", h.Transfer.GetAllTransfers)
@@ -16,7 +16,7 @@ func RegisterTransferRoutes(r *gin.Engine, deps Dependencies, h Handlers) {
 		admin.POST("/transfers/:reference", middleware.RequireIdempotencyKey(), h.Transfer.ReverseTransfer)
 	}
 
-	user := UserGroup(r, deps.Config)
+	user := UserGroup(api, deps.Config)
 
 	{
 		user.POST("/transfers", middleware.RequireIdempotencyKey(), h.Transfer.TransferFromUser)

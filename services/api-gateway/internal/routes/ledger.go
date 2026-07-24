@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterLedgerRoutes(r *gin.Engine, deps Dependencies, h Handlers) {
+func RegisterLedgerRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
-	admin := AdminGroup(r, deps.Config)
+	admin := AdminGroup(api, deps.Config)
 
 	{
 		admin.GET("/ledgers", h.Ledger.GetAllLedgers)
@@ -16,7 +16,7 @@ func RegisterLedgerRoutes(r *gin.Engine, deps Dependencies, h Handlers) {
 		admin.GET("/accounts/:account_id/reconcile", h.Ledger.ReconciliationResult)
 	}
 
-	user := UserGroup(r, deps.Config)
+	user := UserGroup(api, deps.Config)
 
 	{
 		user.GET("/ledgers/me", h.Ledger.GetLedgerByUserID)

@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAdminRoutes(r *gin.Engine, deps Dependencies, h Handlers) {
+func RegisterAdminRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
-	admin := AdminGroup(r, deps.Config)
+	admin := AdminGroup(api, deps.Config)
 
 	{
 		admin.GET("/", h.Admin.ListAdmins)

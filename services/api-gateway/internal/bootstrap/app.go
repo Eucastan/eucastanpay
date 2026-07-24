@@ -11,10 +11,8 @@ import (
 	"github.com/Eucastan/eucastanpay/common/pkg/grpc/discovery"
 	"github.com/Eucastan/eucastanpay/common/pkg/healthcheck"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
-	sharedmw "github.com/Eucastan/eucastanpay/common/pkg/middleware"
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/api-gateway/config"
-	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/middleware"
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/ratelimiter"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -104,7 +102,6 @@ func (a *App) bootstrap() error {
 	a.initApplications()
 	a.initHandlers()
 	a.initRouter()
-	a.registerMiddleware()
 	a.initHealth()
 	a.registerRoutes()
 	a.initServer()
@@ -132,18 +129,6 @@ func (a *App) initTelemetry() error {
 	a.telemetry = tm
 
 	return nil
-}
-
-func (a *App) registerMiddleware() {
-
-	a.router.Use(
-
-		middleware.Recovery(),
-		middleware.RequestID(),
-		sharedmw.CorrelationMiddleware(),
-		middleware.Logger(a.logger),
-		middleware.CORS(),
-	)
 }
 
 func (a *App) initServer() {

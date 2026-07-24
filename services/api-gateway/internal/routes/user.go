@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterUserRoutes(r *gin.Engine, deps Dependencies, h Handlers) {
+func RegisterUserRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
-	users := UserGroup(r, deps.Config)
+	users := UserGroup(api, deps.Config)
 
 	{
 		users.GET("/users", h.User.GetAllUsers)

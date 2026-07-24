@@ -36,13 +36,15 @@ func Register(r *gin.Engine, deps Dependencies, h Handlers) {
 	),
 	)
 
-	RegisterSwaggerRoutes(r)
-	RegisterAuth(r, deps, h)
+	api := r.Group("/api/v1")
 
-	RegisterUserRoutes(r, deps, h)
-	RegisterAdminRoutes(r, deps, h)
-	RegisterAccountRoutes(r, deps, h)
-	RegisterTransferRoutes(r, deps, h)
-	RegisterLedgerRoutes(r, deps, h)
-	RegisterAuditRoutes(r, deps, h)
+	RegisterSwaggerRoutes(r)
+	RegisterAuth(api, deps, h)
+
+	RegisterUserRoutes(api, deps, h)
+	RegisterAdminRoutes(api, deps, h)
+	RegisterAccountRoutes(api, deps, h)
+	RegisterTransferRoutes(api, deps, h)
+	RegisterLedgerRoutes(api, deps, h)
+	RegisterAuditRoutes(api, deps, h)
 }

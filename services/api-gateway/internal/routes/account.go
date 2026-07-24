@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAccountRoutes(r *gin.Engine, deps Dependencies, h Handlers) {
+func RegisterAccountRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
-	admin := AdminGroup(r, deps.Config)
+	admin := AdminGroup(api, deps.Config)
 
 	{
 		admin.GET("/account", h.Account.GetAllUsersAccount)
@@ -15,7 +15,7 @@ func RegisterAccountRoutes(r *gin.Engine, deps Dependencies, h Handlers) {
 		admin.PUT("/account/:id/withdraw", h.Account.WithDrawal)
 	}
 
-	user := UserGroup(r, deps.Config)
+	user := UserGroup(api, deps.Config)
 
 	{
 		user.GET("/account/:id", h.Account.GetUserAccount)

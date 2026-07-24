@@ -6,9 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAuth(r *gin.Engine, deps Dependencies, h Handlers) {
+func RegisterAuth(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
-	public := r.Group("/api/v1")
+	public := api.Group("")
 
 	{
 		auth := public.Group("/auth")

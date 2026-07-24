@@ -6,18 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UserGroup(r *gin.Engine, cfg *config.Config) *gin.RouterGroup {
+func UserGroup(api *gin.RouterGroup, cfg *config.Config) *gin.RouterGroup {
 
-	g := r.Group("/")
+	g := api.Group("/")
 	g.Use(commonmw.Auth(cfg.SharedCfg.JWTSecret))
 	g.Use(commonmw.RequireRole("user"))
 
 	return g
 }
 
-func AdminGroup(r *gin.Engine, cfg *config.Config) *gin.RouterGroup {
+func AdminGroup(api *gin.RouterGroup, cfg *config.Config) *gin.RouterGroup {
 
-	g := r.Group("/admin")
+	g := api.Group("/admin")
 	g.Use(commonmw.AdminAuth(cfg.SharedCfg.JWTSecret))
 	g.Use(commonmw.RequireAdminRole("admin"))
 

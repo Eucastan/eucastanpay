@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAuditRoutes(r *gin.Engine, deps Dependencies, h Handlers) {
+func RegisterAuditRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
-	admin := AdminGroup(r, deps.Config)
+	admin := AdminGroup(api, deps.Config)
 
 	{
 		admin.GET("/audits", h.Audit.GetAllAuditReads)
