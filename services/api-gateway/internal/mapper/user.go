@@ -70,10 +70,14 @@ func ToRegisterResponse(resp *userpb.UserResponse) userResp.RegisterResponse {
 	return userResp.RegisterResponse{
 		Message: "registration successful",
 		User: userResp.UserResponse{
-			ID:        resp.UserId,
-			Email:     resp.Email,
-			FirstName: resp.FirstName,
-			LastName:  resp.LastName,
+			ID:            resp.UserId,
+			Email:         resp.Email,
+			Phone:         resp.Phone,
+			FirstName:     resp.FirstName,
+			LastName:      resp.LastName,
+			Status:        resp.Status,
+			EmailVerified: resp.EmailVerified,
+			CreatedAt:     resp.CreatedAt.AsTime(),
 		},
 	}
 }
