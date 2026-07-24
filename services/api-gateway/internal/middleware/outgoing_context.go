@@ -21,6 +21,10 @@ func OutgoingContext(timeout time.Duration) gin.HandlerFunc {
 
 		md := metadata.New(nil)
 
+		if auth := c.GetHeader("Authorization"); auth != "" {
+			md.Set("authorization", auth)
+		}
+
 		if v := c.GetString("request_id"); v != "" {
 			md.Set("request-id", v)
 		}
@@ -41,15 +45,9 @@ func OutgoingContext(timeout time.Duration) gin.HandlerFunc {
 			md.Set("role", v)
 		}
 
-		outgoing := metadata.NewOutgoingContext(
-			ctx,
-			md,
-		)
+		outgoing := metadata.NewOutgoingContext(ctx, md)
 
-		c.Set(
-			OutgoingContextKey,
-			outgoing,
-		)
+		c.Set(OutgoingContextKey, outgoing)
 
 		defer cancel()
 
