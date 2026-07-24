@@ -27,7 +27,8 @@ func AuthInterceptor(cfg string) grpc.UnaryServerInterceptor {
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		log.Printf("gRPC method: %s", info.FullMethod)
+		log.Println("========================")
+		log.Printf("METHOD: %s", info.FullMethod)
 
 		if publicMethods[info.FullMethod] {
 			return handler(ctx, req)
@@ -38,7 +39,13 @@ func AuthInterceptor(cfg string) grpc.UnaryServerInterceptor {
 			return nil, status.Error(codes.Unauthenticated, "missing metadata in context")
 		}
 
-		authHeader := md["authorization"]
+		log.Printf("Incoming metadata: %+v\n", md)
+		log.Printf("HAS METADATA: %v", ok)
+		log.Printf("METADATA: %#v", md)
+
+		authHeader := md.Get("authorization")
+		log.Printf("AUTH HEADER: %#v", authHeader)
+		log.Println("========================")
 		if len(authHeader) == 0 {
 			return nil, status.Error(codes.Unauthenticated, "missing authorization token")
 		}
