@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,13 +58,19 @@ func (u *UserUseCase) Register(ctx context.Context, input *request.RegisterReque
 	ctx, span := u.telemetry.Start(ctx, "UserUseCase.Register")
 	defer span.End()
 
+	log.Println("1. checking email")
+
 	if _, err := u.User.FindByEmail(ctx, input.Email); err == nil {
+		log.Printf("7. failed while checking duplicate email: %v", err)
 		span.RecordError(err)
 		return nil, errmessage.ErrDuplicateEmail
 	}
 
+	log.Println("2. hashing password")
+
 	hashPass, err := password.GeneratePassHash(input.Password)
 	if err != nil {
+		log.Printf("7. failed hash password: %v", err)
 		span.RecordError(err)
 		return nil, err
 	}
@@ -82,16 +89,24 @@ func (u *UserUseCase) Register(ctx context.Context, input *request.RegisterReque
 		CreatedAt:     time.Now(),
 	}
 
+	log.Println("3. creating user")
+
 	if err := u.User.Create(ctx, user); err != nil {
+		log.Printf("7. failed to register user: %v", err)
 		span.RecordError(err)
 		return nil, err
 	}
 
+	log.Println("4. generating access token")
+
 	token, err := auth.GenerateAccessToken(user.ID, user.Email, string(domain.EmailToken), u.cfg.SharedCfg.JWTSecret)
 	if err != nil {
+		log.Printf("7. failed access token generation: %v", err)
 		span.RecordError(err)
 		return nil, err
 	}
+
+	log.Println("5. saving token")
 
 	err = u.Auth.Create(ctx, &domain.Token{
 		ID:        uuid.NewString(),
@@ -101,19 +116,25 @@ func (u *UserUseCase) Register(ctx context.Context, input *request.RegisterReque
 		ExpiredAt: time.Now().Add(24 * time.Hour),
 	})
 	if err != nil {
+		log.Printf("7. failed to save token: %v", err)
 		span.RecordError(err)
 		return nil, err
 	}
 
+	log.Println("6. generating email token")
+
 	link := "http://localhost:8080/verify?token=" + token
 	if err := u.Email.SendVerificationEmail(user.Email, link); err != nil {
+		log.Printf("7. failed to send email: %v", err)
 		span.RecordError(err)
 		return nil, err
 	}
 
 	response := response.ToUserResponse(user)
+	log.Println("7. publishing event")
 
 	if err := u.Publisher.OnUserRegistration(ctx, &response); err != nil {
+		log.Printf("7. failed event: %v", err)
 		span.RecordError(err)
 		return nil, err
 	}
