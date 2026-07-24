@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/Eucastan/eucastanpay/common/pkg/auth"
@@ -11,12 +12,26 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var publicMethods = map[string]bool{
+	"/user.UserService/Register":        true,
+	"/user.UserService/Login":           true,
+	"/user.UserService/VerifyEmail":     true,
+	"/user.UserService/RefreshToken":    true,
+	"/user.UserService/RequestPassword": true,
+}
+
 func AuthInterceptor(cfg string) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
 		req interface{},
 		info *grpc.UnaryServerInfo,
-		handler grpc.UnaryHandler) (interface{}, error) {
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
+		log.Printf("gRPC method: %s", info.FullMethod)
+
+		if publicMethods[info.FullMethod] {
+			return handler(ctx, req)
+		}
 
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
