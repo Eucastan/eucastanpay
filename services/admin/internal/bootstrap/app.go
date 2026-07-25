@@ -74,7 +74,8 @@ func (a *App) Run() error {
 	go func() {
 		grpcListener, err := net.Listen("tcp", ":"+a.cfg.GRPCPort)
 		if err != nil {
-			panic(err)
+			errCh <- err
+			return
 		}
 
 		a.logger.Infof("Admin gRPC server listening on %s", a.cfg.GRPCPort)
