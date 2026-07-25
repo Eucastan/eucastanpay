@@ -17,9 +17,9 @@ func RegisterUserRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
 	admin := AdminGroup(api, deps.Config)
 	{
-		users.GET("/users", h.User.GetAllUsers)
-		users.PUT("/users/:id", h.User.UpdateUser)
-		users.DELETE("/users/:id", h.User.DeleteUser)
+		admin.GET("/users", h.User.GetAllUsers)
+		admin.PUT("/users/:id", h.User.UpdateUser)
+		admin.DELETE("/users/:id", h.User.DeleteUser)
 		admin.PATCH("/:user_id/kyc", h.User.ApproveKYC)
 	}
 }
