@@ -3,6 +3,7 @@ package grpcserver
 import (
 	"context"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
 	ledgerpb "github.com/Eucastan/eucastanpay/common/proto/ledger"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/usecase"
@@ -41,6 +42,17 @@ func (s *LedgerServiceServer) GetAllLedgers(
 	ctx context.Context,
 	req *ledgerpb.ListLedgersRequest,
 ) (*ledgerpb.ListLedgersResponse, error) {
+	_, err := interceptor.RequireAdminRole(
+		ctx,
+		"super_admin",
+		"admin",
+		"auditor",
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
 	ledgers, err := s.Ledger.GetAllLedgers(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to get all ledgers")
@@ -118,7 +130,12 @@ func (s *LedgerServiceServer) GetLedgerByID(ctx context.Context, req *ledgerpb.L
 }
 
 func (s *LedgerServiceServer) GetLedgerByUserID(ctx context.Context, req *ledgerpb.UserIdRequest) (*ledgerpb.LedgerResponse, error) {
-	ldg, err := s.Ledger.GetLedger(ctx, req.UserId)
+	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	ldg, err := s.Ledger.GetLedgerByUserID(ctx, user.UserID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to fetch ledger entry")
 	}
