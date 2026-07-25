@@ -95,7 +95,7 @@ func (u *AdminUseCase) Login(ctx context.Context, input *request.AdminLoginReque
 		return nil, err
 	}
 
-	refreshToken, err := auth.RefreshToken(admin.ID, admin.Email, string(admin.Role), u.cfg.SharedCfg.JWTSecret)
+	refreshToken, err := auth.RefreshAdminToken(admin.ID, string(admin.Role), u.cfg.SharedCfg.JWTSecret)
 	if err != nil {
 		return nil, err
 	}
