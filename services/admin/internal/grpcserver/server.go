@@ -3,6 +3,7 @@ package grpcserver
 import (
 	"context"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpcstatus"
 	adminpb "github.com/Eucastan/eucastanpay/common/proto/admin"
 	"github.com/Eucastan/eucastanpay/services/admin/internal/dto/request"
@@ -79,21 +80,19 @@ func (s *AdminServer) Login(ctx context.Context, req *adminpb.LoginRequest) (*ad
 }
 
 func (s *AdminServer) GetAdminByID(ctx context.Context, req *adminpb.GetAdminByIDRequest) (*adminpb.AdminResponse, error) {
-	adminID := ctx.Value("user_id")
-	if adminID == "" {
-		return nil, status.Error(codes.Unauthenticated, "id not found in context")
+	adm, err := interceptor.RequireAdmin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	idStr, ok := adminID.(string)
-	if !ok {
-		return nil, status.Error(codes.InvalidArgument, "invalid user id format")
+	if req.AdminId != adm.AdminID {
+		return nil, status.Error(
+			codes.PermissionDenied,
+			"unauthorized access",
+		)
 	}
 
-	if req.AdminId != idStr {
-		return nil, status.Error(codes.PermissionDenied, "unauthorized access")
-	}
-
-	admin, err := s.admin.GetAdminByID(ctx, req.AdminId)
+	admin, err := s.admin.GetAdminByID(ctx, adm.AdminID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -154,7 +153,19 @@ func (s *AdminServer) Update(ctx context.Context, req *adminpb.UpdateRequest) (*
 		Role:   &req.Role,
 	}
 
-	_, err := s.admin.UpdateAdmin(ctx, req.AdminId, &input)
+	adm, err := interceptor.RequireAdmin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.AdminId != adm.AdminID {
+		return nil, status.Error(
+			codes.PermissionDenied,
+			"unauthorized access",
+		)
+	}
+
+	_, err = s.admin.UpdateAdmin(ctx, adm.AdminID, &input)
 	if err != nil {
 		return nil, grpcstatus.ToAdminStatus(err)
 	}
@@ -165,7 +176,19 @@ func (s *AdminServer) Update(ctx context.Context, req *adminpb.UpdateRequest) (*
 }
 
 func (s *AdminServer) Delete(ctx context.Context, req *adminpb.GetAdminByIDRequest) (*adminpb.ActionResponse, error) {
-	if err := s.admin.DeleteAdmin(ctx, req.AdminId); err != nil {
+	adm, err := interceptor.RequireAdmin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.AdminId != adm.AdminID {
+		return nil, status.Error(
+			codes.PermissionDenied,
+			"unauthorized access",
+		)
+	}
+
+	if err := s.admin.DeleteAdmin(ctx, adm.AdminID); err != nil {
 		return nil, grpcstatus.ToAdminStatus(err)
 	}
 
