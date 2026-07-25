@@ -21,12 +21,9 @@ definitions:
         type: string
       password:
         type: string
-      totp_code:
-        type: string
     required:
     - email
     - password
-    - totp_code
     type: object
   github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.CreateAdminRequest:
     properties:

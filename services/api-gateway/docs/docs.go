@@ -2293,17 +2293,13 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "password",
-                "totp_code"
+                "password"
             ],
             "properties": {
                 "email": {
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
-                },
-                "totp_code": {
                     "type": "string"
                 }
             }
