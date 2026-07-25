@@ -15,6 +15,5 @@ func RegisterAdminRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 		admin.POST("/", h.Admin.CreateAdmin)
 		admin.PUT("/:id", h.Admin.UpdateAdmin)
 		admin.DELETE("/:id", h.Admin.DeleteAdmin)
-		admin.PATCH("/:user_id/kyc", h.User.ApproveKYC)
 	}
 }

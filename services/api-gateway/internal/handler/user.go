@@ -138,7 +138,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /users [get]
+// @Router /admin/users [get]
 func (h *UserHandler) GetAllUsers(c *gin.Context) {
 
 	res, err := h.userApp.GetAllUsers(proxy.Context(c))
@@ -168,7 +168,7 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /users/{id} [put]
+// @Router /admin/users/{id} [put]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	req, err := httpx.BindJSON[userReq.UpdateRequest](c)
@@ -206,7 +206,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /users/{id} [delete]
+// @Router /admin/users/{id} [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	uri, err := httpx.BindURI[userReq.UserURI](c)
@@ -290,7 +290,7 @@ func (h *UserHandler) CreateKYC(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /{user_id}/kyc [patch]
+// @Router /admin/{user_id}/kyc [patch]
 func (h *UserHandler) ApproveKYC(c *gin.Context) {
 
 	uri, err := httpx.BindURI[userReq.UserKYCURI](c)

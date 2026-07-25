@@ -36,6 +36,7 @@ type TransferURI struct {
 }
 
 type ReverseURI struct {
+	UserID    string `uri:"user_id" binding:"required"`
 	Reference string `uri:"reference" binding:"required"`
 }
 

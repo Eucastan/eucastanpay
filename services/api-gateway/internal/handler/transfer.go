@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/application/service"
 	transferReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/transfer"
 
@@ -51,13 +50,9 @@ func (h *TransferHandler) TransferFromUser(c *gin.Context) {
 	ctx, span := h.Telemetry.Start(ctx, "TransferHandler.TransferFromUser")
 	defer span.End()
 
-	token := proxy.Token(c)
-
 	userID := proxy.UserID(c)
 
 	idemKey := proxy.IdemKey(c)
-
-	ctx = interceptor.AppendJWTToContext(ctx, token)
 
 	req, err := httpx.BindJSON[transferReq.TransferRequest](c)
 	if err != nil {
@@ -116,8 +111,6 @@ func (h *TransferHandler) GetAllTransfers(c *gin.Context) {
 //
 // @Accept json
 // @Produce json
-//
-// @Param id path string true "User ID"
 //
 // @Success 200 {object} httpx.APIResponse
 //
@@ -191,6 +184,7 @@ func (h *TransferHandler) GetTransfer(c *gin.Context) {
 //
 // @Param Idempotency-Key header string true "Unique idempotency key"
 // @Param reference path string true "Transfer Reference"
+// @Param user_id path string true "User ID"
 //
 // @Success 200 {object} httpx.APIResponse
 //
@@ -210,15 +204,9 @@ func (h *TransferHandler) ReverseTransfer(c *gin.Context) {
 		return
 	}
 
-	token := proxy.Token(c)
-
-	adminID := proxy.AdminID(c)
-
-	ctx = interceptor.AppendJWTToContext(ctx, token)
-
 	idemKey := proxy.IdemKey(c)
 
-	resp, err := h.transferApp.ReverseTransfer(ctx, adminID, uri.Reference, idemKey)
+	resp, err := h.transferApp.ReverseTransfer(ctx, uri.UserID, uri.Reference, idemKey)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return
@@ -252,15 +240,11 @@ func (h *TransferHandler) ReverseTransfer(c *gin.Context) {
 func (h *TransferHandler) ReconcileAccount(c *gin.Context) {
 	ctx := proxy.Context(c)
 
-	token := proxy.Token(c)
-
 	uri, err := httpx.BindURI[transferReq.AccountIdURI](c)
 	if err != nil {
 		httpx.ValidationError(c, err)
 		return
 	}
-
-	ctx = interceptor.AppendJWTToContext(ctx, token)
 
 	req, err := httpx.BindJSON[transferReq.ReconciliationRequest](c)
 	if err != nil {

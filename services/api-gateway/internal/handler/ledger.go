@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/application/service"
 	ledgerReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/ledger"
 
@@ -84,8 +83,6 @@ func (h *LedgerHandler) GetAllLedgers(c *gin.Context) {
 // @Accept json
 // @Produce json
 //
-// @Param id path string true "Ledger UserID"
-//
 // @Success 200 {object} httpx.APIResponse
 //
 // @Failure 400 {object} httpx.APIResponse
@@ -99,7 +96,7 @@ func (h *LedgerHandler) GetLedgerByUserID(c *gin.Context) {
 
 	userID := proxy.UserID(c)
 
-	ledger, err := h.ledgerApp.GetLedger(proxy.Context(c), userID)
+	ledger, err := h.ledgerApp.GetLedgerUserID(proxy.Context(c), userID)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return
@@ -244,7 +241,6 @@ func (h *LedgerHandler) GetAccountBalance(c *gin.Context) {
 //
 // @Router /admin/accounts/{account_id}/reconcile [get]
 func (h *LedgerHandler) ReconciliationResult(c *gin.Context) {
-	ctx := proxy.Context(c)
 
 	uri, err := httpx.BindURI[ledgerReq.AccountURI](c)
 	if err != nil {
@@ -252,11 +248,7 @@ func (h *LedgerHandler) ReconciliationResult(c *gin.Context) {
 		return
 	}
 
-	token := c.GetString("token")
-
-	ctx = interceptor.AppendJWTToContext(ctx, token)
-
-	result, err := h.ledgerApp.GetLedgerReconciliation(ctx, uri.AccountID)
+	result, err := h.ledgerApp.GetLedgerReconciliation(proxy.Context(c), uri.AccountID)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return
