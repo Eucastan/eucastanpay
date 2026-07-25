@@ -62,7 +62,7 @@ func (h *AccountConsumer) OnCreateAccountRequest(ctx context.Context, msg []byte
 		"email":     event.Email,
 	}).Info("Request to Create User Account")
 
-	eventID := fmt.Sprintf("%s:%s", event.Email, events.TopicAccountCreated)
+	eventID := fmt.Sprintf("%s:%s", event.UserID, events.TopicAccountCreated)
 	return h.Repo.WithTx(ctx, func(tx pgx.Tx) error {
 		processed, err := h.IdemStore.IsEventProcessedTx(ctx, tx, eventID)
 		if err != nil {
