@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpcstatus"
 	userpb "github.com/Eucastan/eucastanpay/common/proto/user"
 	"github.com/Eucastan/eucastanpay/services/user/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/user/internal/usecase"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -83,17 +82,12 @@ func (s *UserServer) Login(ctx context.Context, req *userpb.LoginRequest) (*user
 }
 
 func (s *UserServer) GetUserByID(ctx context.Context, req *userpb.GetUserByIDRequest) (*userpb.UserResponse, error) {
-	userID := ctx.Value("user_id")
-	idStr, ok := userID.(string)
-	if !ok {
-		return nil, status.Error(codes.InvalidArgument, "user ID not found in context")
+	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
+	if err != nil {
+		return nil, err
 	}
 
-	if req.UserId != idStr {
-		return nil, status.Error(codes.PermissionDenied, "unauthorized access")
-	}
-
-	userInfo, err := s.User.GetUserByID(ctx, req.UserId)
+	userInfo, err := s.User.GetUserByID(ctx, user.UserID)
 	if err != nil {
 		return nil, grpcstatus.ToUserStatus(err)
 	}
@@ -113,6 +107,11 @@ func (s *UserServer) GetAllUsers(
 	ctx context.Context,
 	req *userpb.ListUsersRequest,
 ) (*userpb.ListUsersResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "admin", "super_admin")
+	if err != nil {
+		return nil, err
+	}
+
 	users, err := s.User.GetAllUsers(ctx)
 	if err != nil {
 		return nil, grpcstatus.ToUserStatus(err)
@@ -138,7 +137,12 @@ func (s *UserServer) GetAllUsers(
 }
 
 func (s *UserServer) LogoutAllUser(ctx context.Context, req *userpb.GetUserByIDRequest) (*userpb.ActionResponse, error) {
-	if err := s.User.LogoutAllUsers(ctx, req.UserId); err != nil {
+	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.User.LogoutAllUsers(ctx, user.UserID); err != nil {
 		return nil, grpcstatus.ToUserStatus(err)
 	}
 
@@ -148,6 +152,11 @@ func (s *UserServer) LogoutAllUser(ctx context.Context, req *userpb.GetUserByIDR
 }
 
 func (s *UserServer) ActionOnUser(ctx context.Context, req *userpb.ActionRequest) (*userpb.ActionResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	msg, err := s.User.UserCurrentStatus(ctx, req.UserId, req.Status)
 	if err != nil {
 		return nil, grpcstatus.ToUserStatus(err)
@@ -177,6 +186,11 @@ func (s *UserServer) Update(ctx context.Context, req *userpb.UpdateRequest) (*us
 }
 
 func (s *UserServer) Delete(ctx context.Context, req *userpb.GetUserByIDRequest) (*userpb.ActionResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	if err := s.User.DeleteUser(ctx, req.UserId); err != nil {
 		return nil, grpcstatus.ToUserStatus(err)
 	}
@@ -187,22 +201,17 @@ func (s *UserServer) Delete(ctx context.Context, req *userpb.GetUserByIDRequest)
 }
 
 func (s *UserServer) CreateKYC(ctx context.Context, req *userpb.KycRequest) (*userpb.KycResponse, error) {
+	user, err := interceptor.RequireUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	input := &request.KYCRequest{
 		IDType:   req.IdType,
 		IDNumber: req.IdNumber,
 	}
 
-	userId := ctx.Value("user_id")
-	if userId == "" {
-		return nil, status.Error(codes.Unauthenticated, "user id not found in context")
-	}
-
-	userID, ok := userId.(string)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "invalid user id format")
-	}
-
-	err := s.Kyc.CreateKYC(ctx, userID, input)
+	err = s.Kyc.CreateKYC(ctx, user.UserID, input)
 	if err != nil {
 		return nil, grpcstatus.ToUserStatus(err)
 	}
@@ -213,8 +222,12 @@ func (s *UserServer) CreateKYC(ctx context.Context, req *userpb.KycRequest) (*us
 }
 
 func (s *UserServer) ApproveKYC(ctx context.Context, req *userpb.KycIdRequest) (*userpb.KycResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
 
-	err := s.Kyc.ApproveKYC(ctx, req.UserId)
+	err = s.Kyc.ApproveKYC(ctx, req.UserId)
 	if err != nil {
 		return nil, grpcstatus.ToUserStatus(err)
 	}
@@ -225,7 +238,12 @@ func (s *UserServer) ApproveKYC(ctx context.Context, req *userpb.KycIdRequest) (
 }
 
 func (s *UserServer) GetKYC(ctx context.Context, req *userpb.KycIdRequest) (*userpb.KycResponse, error) {
-	kyc, err := s.Kyc.GetKYC(ctx, req.UserId)
+	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	kyc, err := s.Kyc.GetKYC(ctx, user.UserID)
 	if err != nil {
 		return nil, grpcstatus.ToUserStatus(err)
 	}
