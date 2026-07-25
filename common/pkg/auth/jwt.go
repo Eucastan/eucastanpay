@@ -45,9 +45,10 @@ func GenerateAdminAccessToken(adminID, role, secret string) (string, error) {
 
 func RefreshToken(userID, email, role, secret string) (string, error) {
 	claims := &Claims{
-		UserID: userID,
-		Email:  email,
-		Role:   role,
+		UserID:    userID,
+		Email:     email,
+		Role:      role,
+		TokenType: "user",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -62,8 +63,9 @@ func RefreshToken(userID, email, role, secret string) (string, error) {
 
 func RefreshAdminToken(adminID, role, secret string) (string, error) {
 	claims := &AdminClaims{
-		AdminID: adminID,
-		Role:    role,
+		AdminID:   adminID,
+		Role:      role,
+		TokenType: "admin",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -130,7 +132,7 @@ func ValidateAdminToken(tokenStr, secret string) (*AdminClaims, error) {
 
 	claims, ok := token.Claims.(*AdminClaims)
 	if !ok || !token.Valid {
-		return claims, nil
+		return nil, jwt.ErrTokenInvalidClaims
 	}
 
 	if claims.TokenType != "admin" {
