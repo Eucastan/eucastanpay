@@ -72,7 +72,12 @@ func (a *App) Run() error {
 	}()
 
 	go func() {
-		grpcListener, err := net.Listen("tcp", ":"+a.cfg.GRPCPort)
+		a.logger.Printf("HTTP Port: %#v", a.cfg.HTTPPort)
+		a.logger.Printf("GRPC Port: %#v", a.cfg.GRPCPort)
+
+		addr := ":" + a.cfg.GRPCPort
+		a.logger.Printf("Listening on %q", addr)
+		grpcListener, err := net.Listen("tcp", addr)
 		if err != nil {
 			errCh <- err
 			return
