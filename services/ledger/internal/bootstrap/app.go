@@ -111,7 +111,6 @@ func (a *App) bootstrap() error {
 
 	a.initDatabase()
 	a.initPublisher()
-	a.initConsumer()
 
 	if err := a.initManager(); err != nil {
 		return err
@@ -119,6 +118,7 @@ func (a *App) bootstrap() error {
 
 	a.initRepository()
 	a.initUseCase()
+	a.initConsumer()
 	a.initHealth()
 	a.initRouter()
 
