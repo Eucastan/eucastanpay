@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"log"
 
 	adminpb "github.com/Eucastan/eucastanpay/common/proto/admin"
 	adminReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/admin"
@@ -43,6 +44,7 @@ func (s *AdminGateway) Login(ctx context.Context, req *adminReq.AdminLoginReques
 	)
 
 	if err != nil {
+		log.Printf("Admin Login RPC failed")
 		return nil, err
 	}
 

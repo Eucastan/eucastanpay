@@ -117,6 +117,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 
 	resp, err := h.adminApp.Login(proxy.Context(c), &req)
 	if err != nil {
+		h.Logger.WithError(err).Error("Admin Login RPC failed")
 		httpx.HandleGRPCError(c, err)
 		return
 	}
