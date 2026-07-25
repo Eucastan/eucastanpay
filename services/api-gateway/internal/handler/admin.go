@@ -36,7 +36,7 @@ func NewAdminHandler(base *proxy.Base, adminApp *service.AdminApplication) *Admi
 // @Failure 409 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /auth/register [post]
+// @Router /admin/auth/register [post]
 func (h *AdminHandler) CreateBootstrapAdmin(c *gin.Context) {
 
 	req, err := httpx.BindJSON[adminReq.CreateAdminRequest](c)
@@ -107,7 +107,7 @@ func (h *AdminHandler) CreateAdmin(c *gin.Context) {
 // @Failure 401 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /auth/login [post]
+// @Router /admin/auth/login [post]
 func (h *AdminHandler) Login(c *gin.Context) {
 	req, err := httpx.BindJSON[adminReq.AdminLoginRequest](c)
 	if err != nil {

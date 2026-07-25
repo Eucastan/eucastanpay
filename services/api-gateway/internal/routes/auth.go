@@ -15,9 +15,10 @@ func RegisterAuth(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
 		auth.POST("/register", h.User.Register)
 		auth.POST("/login", h.User.Login)
+	}
 
-		admin := public.Group("/admin/auth")
-
+	admin := api.Group("/admin/auth")
+	{
 		admin.POST("/register", h.Admin.CreateBootstrapAdmin)
 		admin.POST("/login", h.Admin.Login)
 	}

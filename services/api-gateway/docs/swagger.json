@@ -879,6 +879,110 @@
                 }
             }
         },
+        "/admin/auth/login": {
+            "post": {
+                "description": "Authenticates an admin and returns JWT tokens.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Auth"
+                ],
+                "summary": "Login admin",
+                "parameters": [
+                    {
+                        "description": "Login",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.AdminLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/auth/register": {
+            "post": {
+                "description": "Creates a new EucastanPay admin account.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Auth"
+                ],
+                "summary": "Register a new admin",
+                "parameters": [
+                    {
+                        "description": "Admin Registration",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.CreateAdminRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/ledgers": {
             "get": {
                 "security": [

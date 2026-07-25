@@ -881,6 +881,74 @@ paths:
       summary: Search AuditRead
       tags:
       - Audit
+  /admin/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates an admin and returns JWT tokens.
+      parameters:
+      - description: Login
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.AdminLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      summary: Login admin
+      tags:
+      - Admin Auth
+  /admin/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new EucastanPay admin account.
+      parameters:
+      - description: Admin Registration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_admin.CreateAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      summary: Register a new admin
+      tags:
+      - Admin Auth
   /admin/ledgers:
     get:
       consumes:
