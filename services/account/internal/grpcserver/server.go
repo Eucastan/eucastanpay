@@ -3,12 +3,11 @@ package grpcserver
 import (
 	"context"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpcstatus"
 	accountpb "github.com/Eucastan/eucastanpay/common/proto/account"
 	"github.com/Eucastan/eucastanpay/services/account/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/account/internal/usecase"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -95,12 +94,7 @@ func (s AccountServiceServer) ResolveAccount(ctx context.Context, req *accountpb
 
 func (s *AccountServiceServer) ReconcileBalance(ctx context.Context, req *accountpb.BalanceRequest) (*accountpb.GetAccountResponse, error) {
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "missing user_id")
-	}
-
-	resp, err := s.ACC.GetBalance(ctx, req.AccountId, userID)
+	resp, err := s.ACC.GetBalance(ctx, req.AccountId, req.UserId)
 	if err != nil {
 		return nil, grpcstatus.ToAccountStatus(err)
 	}
@@ -118,12 +112,12 @@ func (s *AccountServiceServer) ReconcileBalance(ctx context.Context, req *accoun
 
 func (s *AccountServiceServer) GetBalance(ctx context.Context, req *accountpb.GetBalanceRequest) (*accountpb.GetAccountResponse, error) {
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "missing user_id")
+	user, err := interceptor.RequireUser(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	resp, err := s.ACC.GetBalance(ctx, req.AccountId, userID)
+	resp, err := s.ACC.GetBalance(ctx, req.AccountId, user.UserID)
 	if err != nil {
 		return nil, grpcstatus.ToAccountStatus(err)
 	}
@@ -179,6 +173,7 @@ func (s *AccountServiceServer) ActionOnAccount(ctx context.Context, req *account
 }
 
 func (s AccountServiceServer) Delete(ctx context.Context, req *accountpb.DeleteRequest) (*accountpb.ActionResponse, error) {
+
 	if err := s.ACC.DeleteAccount(ctx, req.AccountId); err != nil {
 		return nil, grpcstatus.ToAccountStatus(err)
 	}
