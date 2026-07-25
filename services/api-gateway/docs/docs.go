@@ -1466,6 +1466,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.UpdateRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

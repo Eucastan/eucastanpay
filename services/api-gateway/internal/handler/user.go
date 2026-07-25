@@ -160,6 +160,7 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body userReq.UpdateRequest true "Update Details"
+// @Param id path string true "User ID"
 //
 // @Success 200 {object} httpx.APIResponse
 //
@@ -177,9 +178,9 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	userID := proxy.UserID(c)
+	uri, err := httpx.BindURI[userReq.UserURI](c)
 
-	res, err := h.userApp.UpdateUser(proxy.Context(c), userID, &req)
+	res, err := h.userApp.UpdateUser(proxy.Context(c), uri.UserID, &req)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return
