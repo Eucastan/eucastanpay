@@ -67,12 +67,7 @@ func (u *AdminUseCase) Login(ctx context.Context, input *request.AdminLoginReque
 		return nil, errmessage.ErrInvalidCredentials
 	}
 
-	u.logger.Info(
-		admin.Email,
-		admin.TwoFAEnabled,
-		admin.TwoFASecret,
-		input.TotpCode,
-	)
+	u.logger.Info(admin.Email)
 
 	u.logger.Info("status:", admin.Status)
 	u.logger.Info("password hash:", admin.PasswordHash)

@@ -16,7 +16,6 @@ type UpdateAdminRequest struct {
 type AdminLoginRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
-	TotpCode string `json:"totp_code" binding:"required"`
 }
 
 type ReverseTransactionRequest struct {
