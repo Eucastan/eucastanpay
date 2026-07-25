@@ -9,7 +9,7 @@ import (
 
 func (a *App) initGRPCServer() {
 	server := grpc.NewServer(grpc.UnaryInterceptor(
-		interceptor.AuthAnyInterceptor(a.cfg.JWTSecret),
+		interceptor.AuthAnyInterceptor(a.cfg.SharedCfg.JWTSecret),
 	))
 
 	gs := grpcserver.NewAdminServiceServer(a.uc)

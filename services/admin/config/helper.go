@@ -47,7 +47,7 @@ func ToCfg() *Config {
 		},
 	}
 
-	fmt.Println("Assigned DSN:", cfg.Dsn)
+	fmt.Println("Assigned DSN:", cfg.SharedCfg.Dsn)
 
 	return cfg
 }
