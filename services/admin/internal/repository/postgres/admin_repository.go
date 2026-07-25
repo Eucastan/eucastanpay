@@ -113,7 +113,6 @@ func (r *AdminRepository) Update(ctx context.Context, admin *domain.Admin) error
 		admin.Role,
 		admin.Status,
 		admin.LastLoginAt,
-		admin.UpdatedAt,
 		admin.ID,
 	)
 
