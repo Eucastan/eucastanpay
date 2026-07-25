@@ -171,7 +171,7 @@ func (s *AdminServer) Update(ctx context.Context, req *adminpb.UpdateRequest) (*
 	}
 
 	return &adminpb.ActionResponse{
-		Message: "User deleted successfully",
+		Message: "User updated successfully",
 	}, nil
 }
 
