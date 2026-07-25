@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/grpc/interceptor"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpcstatus"
 	transferpb "github.com/Eucastan/eucastanpay/common/proto/transfer"
 	"github.com/Eucastan/eucastanpay/services/transfer/internal/dto/request"
@@ -22,6 +23,11 @@ func NewTransferServiceServer(transfer usecase.TransferUseCase) *TransferService
 }
 
 func (s *TransferServiceServer) Transfer(ctx context.Context, req *transferpb.TransferRequest) (*transferpb.TransferResponse, error) {
+	user, err := interceptor.RequireUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	input := &request.TransferRequest{
 		ToAccNo:     req.ToAccountNo,
 		Amount:      req.Amount,
@@ -29,7 +35,7 @@ func (s *TransferServiceServer) Transfer(ctx context.Context, req *transferpb.Tr
 		Mode:        req.Mode,
 	}
 
-	resp, err := s.t.TransferFromUser(ctx, req.UserId, req.IdempotencyKey, input)
+	resp, err := s.t.TransferFromUser(ctx, user.UserID, req.IdempotencyKey, input)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
 	}
@@ -61,7 +67,12 @@ func (s *TransferServiceServer) Transfer(ctx context.Context, req *transferpb.Tr
 }
 
 func (s *TransferServiceServer) ReverseTransfer(ctx context.Context, req *transferpb.ReverseRequest) (*transferpb.ReverseResponse, error) {
-	_, err := s.t.ReverseTransfer(ctx, req.UserId, req.Reference, req.IdempotencyKey)
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.t.ReverseTransfer(ctx, req.UserId, req.Reference, req.IdempotencyKey)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
 	}
@@ -158,8 +169,12 @@ func (s *TransferServiceServer) GetTransferByUserID(
 	ctx context.Context,
 	req *transferpb.UserIdRequest,
 ) (*transferpb.GetTransferResponse, error) {
+	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
 
-	resp, err := s.t.GetByUserID(ctx, req.UserId)
+	resp, err := s.t.GetByUserID(ctx, user.UserID)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
 	}
