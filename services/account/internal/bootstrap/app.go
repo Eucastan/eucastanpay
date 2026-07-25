@@ -109,9 +109,9 @@ func (a *App) bootstrap() error {
 
 	a.initDatabase()
 	a.initPublisher()
-	a.initConsumer()
 	a.initRepository()
 	a.initUseCase()
+	a.initConsumer()
 	a.initHealth()
 	a.initRouter()
 
