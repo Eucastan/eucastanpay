@@ -13,8 +13,6 @@ func ToCfg() *Config {
 	fmt.Println("ToCfg DSN:", viper.GetString("DSN"))
 
 	cfg := &Config{
-		Dsn:              viper.GetString("DSN"),
-		JWTSecret:        viper.GetString("JWT_SECRET"),
 		HTTPPort:         viper.GetString("HTTP_PORT"),
 		GRPCPort:         viper.GetString("GRPC_PORT"),
 		LedgerGRPCPort:   viper.GetString("LEDGER_GRPC_PORT"),
