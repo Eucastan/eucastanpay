@@ -43,7 +43,7 @@ func (s *AccountServiceServer) Deposit(ctx context.Context, req *accountpb.Depos
 	}, nil
 }
 
-func (s *AccountServiceServer) WithDrawal(ctx context.Context, req *accountpb.DepositRequest) (*accountpb.ActionResponse, error) {
+func (s *AccountServiceServer) Withdraw(ctx context.Context, req *accountpb.WithDrawalRequest) (*accountpb.ActionResponse, error) {
 	debit := &request.DepositRequest{
 		AccountNo: req.AccountNo,
 		Amount:    req.Amount,
