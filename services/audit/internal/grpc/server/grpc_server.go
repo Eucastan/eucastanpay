@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"time"
 
 	auditpb "github.com/Eucastan/eucastanpay/common/proto/audit"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/repository/postgres"
@@ -23,12 +24,26 @@ func NewAuditServiceServer(audit usecase.AuditUseCase) *AuditServiceServer {
 }
 
 func (s *AuditServiceServer) SearchAudit(ctx context.Context, req *auditpb.SearchRequest) (*auditpb.SearchResponse, error) {
+	var fromDate *time.Time
+	if req.FromDate != 0 {
+		t := time.Unix(req.FromDate, 0)
+		fromDate = &t
+	}
+
+	var toDate *time.Time
+	if req.ToDate != 0 {
+		t := time.Unix(req.ToDate, 0)
+		toDate = &t
+	}
+
 	filter := postgres.Filter{
 		CorrelationID: req.CorrelationId,
 		Reference:     req.Reference,
 		EventType:     req.EventType,
 		MinAmount:     req.MinAmount,
 		MaxAmount:     req.MaxAmount,
+		FromDate:      fromDate,
+		ToDate:        toDate,
 		Limit:         int(req.Limit),
 		Offset:        int(req.Offset),
 	}
