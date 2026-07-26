@@ -20,14 +20,24 @@ func ToProtoListAudits() *auditpb.AuditRequest {
 }
 
 func ToProtoSearchAuditLogs(req *auditReq.Filter) *auditpb.SearchRequest {
+	var fromDate int64
+	if req.FromDate != nil {
+		fromDate = req.FromDate.Unix()
+	}
+
+	var toDate int64
+	if req.ToDate != nil {
+		toDate = req.ToDate.Unix()
+	}
+
 	return &auditpb.SearchRequest{
 		CorrelationId: req.CorrelationID,
 		Reference:     req.Reference,
 		EventType:     req.EventType,
 		MinAmount:     req.MinAmount,
 		MaxAmount:     req.MaxAmount,
-		FromDate:      req.FromDate.Unix(),
-		ToDate:        req.ToDate.Unix(),
+		FromDate:      fromDate,
+		ToDate:        toDate,
 		Limit:         int32(req.Limit),
 		Offset:        int32(req.Offset),
 	}
