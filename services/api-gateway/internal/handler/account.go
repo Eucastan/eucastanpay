@@ -161,15 +161,13 @@ func (h *AccountHandler) GetBalance(c *gin.Context) {
 
 // GetUserAccount godoc
 //
-// @Summary Get Account Details with accountID and userID
+// @Summary Get Account Details with user authentication
 // @Tags Account
 //
 // @Security BearerAuth
 //
 // @Accept json
 // @Produce json
-//
-// @Param id path string true "Account ID"
 //
 // @Success 200 {object} httpx.APIResponse
 //
@@ -179,7 +177,7 @@ func (h *AccountHandler) GetBalance(c *gin.Context) {
 // @Failure 404 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /account/{id} [get]
+// @Router /account/me [get]
 func (h *AccountHandler) GetUserAccount(c *gin.Context) {
 
 	userID := proxy.UserID(c)

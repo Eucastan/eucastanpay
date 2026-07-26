@@ -172,16 +172,10 @@ info:
   title: EucastanPay API Gateway
   version: "1.0"
 paths:
-  /account/{id}:
+  /account/me:
     get:
       consumes:
       - application/json
-      parameters:
-      - description: Account ID
-        in: path
-        name: id
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -211,7 +205,7 @@ paths:
             $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
       security:
       - BearerAuth: []
-      summary: Get Account Details with accountID and userID
+      summary: Get Account Details with user authentication
       tags:
       - Account
   /admin:

@@ -18,6 +18,6 @@ func RegisterAccountRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) 
 	user := UserGroup(api, deps.Config)
 
 	{
-		user.GET("/account/:id", h.Account.GetUserAccount)
+		user.GET("/account/me", h.Account.GetUserAccount)
 	}
 }

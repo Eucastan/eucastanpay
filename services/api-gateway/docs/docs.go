@@ -17,7 +17,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account/{id}": {
+        "/account/me": {
             "get": {
                 "security": [
                     {
@@ -33,16 +33,7 @@ const docTemplate = `{
                 "tags": [
                     "Account"
                 ],
-                "summary": "Get Account Details with accountID and userID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Account ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Get Account Details with user authentication",
                 "responses": {
                     "200": {
                         "description": "OK",
