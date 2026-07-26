@@ -153,7 +153,7 @@ func (h *LedgerHandler) GetLedger(c *gin.Context) {
 // @Accept json
 // @Produce json
 //
-// @Param id path string true "Account ID"
+// @Param account_id path string true "Account ID"
 //
 // @Success 200 {object} httpx.APIResponse
 //

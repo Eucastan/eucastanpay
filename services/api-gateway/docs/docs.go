@@ -1071,7 +1071,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Account ID",
-                        "name": "id",
+                        "name": "account_id",
                         "in": "path",
                         "required": true
                     }
