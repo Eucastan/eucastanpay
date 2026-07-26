@@ -1070,7 +1070,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Ledger ID",
+                        "description": "Account ID",
                         "name": "id",
                         "in": "path",
                         "required": true
