@@ -22,6 +22,11 @@ func NewLedgerServiceServer(ledger usecase.LedgerUseCase) *LedgerServiceServer {
 }
 
 func (s *LedgerServiceServer) ReconcileAccount(ctx context.Context, req *ledgerpb.ReconcileAccountRequest) (*ledgerpb.ReconcileResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := s.Ledger.ReconcileAccount(ctx, req.AccountId)
 	if err != nil {
 		return nil, err
@@ -82,6 +87,10 @@ func (s *LedgerServiceServer) GetLedgersByEntryType(
 	ctx context.Context,
 	req *ledgerpb.ListLedgersEntryTypeRequest,
 ) (*ledgerpb.ListLedgersEntryTypeResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
 
 	entryType := request.EntryTypeRequest{EntryType: req.EntryType}
 
@@ -154,6 +163,11 @@ func (s *LedgerServiceServer) GetLedgerByUserID(ctx context.Context, req *ledger
 }
 
 func (s *LedgerServiceServer) GetLedgerByAccountID(ctx context.Context, req *ledgerpb.LedgerByAccountIdRequest) (*ledgerpb.LedgerResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	ldg, err := s.Ledger.GetTransactionEntry(ctx, req.AccountId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to fetch ledger entry")
