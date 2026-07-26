@@ -23,6 +23,11 @@ func NewAccountServiceServer(acc usecase.AccountUseCase) *AccountServiceServer {
 }
 
 func (s *AccountServiceServer) Deposit(ctx context.Context, req *accountpb.DepositRequest) (*accountpb.ActionResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	credit := &request.DepositRequest{
 		AccountNo: req.AccountNo,
 		Amount:    req.Amount,
@@ -137,6 +142,11 @@ func (s *AccountServiceServer) GetAllAccounts(
 	ctx context.Context,
 	req *accountpb.ListAccountsRequest,
 ) (*accountpb.ListAccountsResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	accounts, err := s.ACC.GetAllAccount(ctx)
 	if err != nil {
 		return nil, grpcstatus.ToAccountStatus(err)
@@ -162,6 +172,11 @@ func (s *AccountServiceServer) GetAllAccounts(
 }
 
 func (s *AccountServiceServer) ActionOnAccount(ctx context.Context, req *accountpb.ActionRequest) (*accountpb.ActionResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	msg, err := s.ACC.ActionOnAccount(ctx, req.AccountId, req.Status, req.AccountNo)
 	if err != nil {
 		return nil, grpcstatus.ToAccountStatus(err)
@@ -173,6 +188,10 @@ func (s *AccountServiceServer) ActionOnAccount(ctx context.Context, req *account
 }
 
 func (s AccountServiceServer) Delete(ctx context.Context, req *accountpb.DeleteRequest) (*accountpb.ActionResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
 
 	if err := s.ACC.DeleteAccount(ctx, req.AccountId); err != nil {
 		return nil, grpcstatus.ToAccountStatus(err)
