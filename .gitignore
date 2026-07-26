@@ -13,12 +13,6 @@
 **/bin/
 **/dist/
 
-
-# Protobuf generated files
-
-*.pb.go
-*._grpc.pb.go
-
 # Environment & Secrets
 
 .env

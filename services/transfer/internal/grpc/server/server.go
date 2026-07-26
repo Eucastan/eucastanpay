@@ -72,7 +72,7 @@ func (s *TransferServiceServer) ReverseTransfer(ctx context.Context, req *transf
 		return nil, err
 	}
 
-	_, err = s.t.ReverseTransfer(ctx, req.UserId, req.Reference, req.IdempotencyKey)
+	_, err = s.t.ReverseTransfer(ctx, req.Reference, req.IdempotencyKey)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
 	}

@@ -1,0 +1,121 @@
+Distributed tracing (OpenTelemetry)
+Proper metrics + monitoring (Prometheus)
+Circuit breakers / resilience4j
+Comprehensive integration + contract tests
+Database migrations tool (goose/flyway)
+Feature flags
+Proper secrets management
+Rate limiting & API Gateway
+
+go 1.25.9
+
+docker run --rm \
+  -e HTTP_PORT=8002 \
+  -e GRPC_PORT=50052 \
+  -e JWT_SECRET=supersecretjwtkeythatismorethan32chars \
+  -e DSN=postgresql://user:password@postgres/dbname \
+  account-service
+
+go test ./test/e2e -v
+
+eucas@eucas-VirtualBox:~/eucastanpay$ curl http://localhost:8001/health
+{"status":"degraded","service":"user-service","version":"v1.0.0","uptime":"9m35.814976338s","timestamp":"2026-06-25T13:50:22.41104058Z","components":{"database":{"status":"healthy","details":{"acquired_conns":0,"active_queries":1,"idle_conns":6,"max_conns":25,"total_conns":6}},"kafka_consumer":{"status":"degraded","error":"not configured"},"kafka_producer":{"status":"healthy"},"system":{"status":"healthy","details":{"cpu_goroutines":2,"gc_cycles":5,"goroutines":9,"memory_alloc_mb":2,"memory_sys_mb":12,"memory_total_mb":4}}},"summary":{}}eucas@eucas-Virtueucas@eucas-VirtualBox:~/eucastanpay$ curl -X POST http://localhost:8001/api/v1/public/register \
+
+curl -X POST http://localhost:8004/api/v1/transfers -H "Authorization: Bearer $TOKEN" -H "Idempotency-Key: $(uuidgen)" -H "Content-Type: application/json" -d '{
+    "to_account_no":1440000001,
+    "amount":200,
+    "description":"Lunch",
+    "mode":"intraBank"
+}'
+{"error":"rpc error: code = Unavailable 
+desc = delegating_resolver: invalid target address \"\": missing address"}
+
+eucas@eucas-VirtualBox:~/eucastanpay$ docker exec -it postgres-account psql -U postgres -d account_db
+psql (16.14)
+Type "help" for help.
+
+account_db=# select id,user_id,account_no,balance,status from accounts;
+                  id                  |               user_id                | account_no | balance | status 
+--------------------------------------+--------------------------------------+------------+---------+--------
+ 3e24f83f-77e0-4664-84c3-403367737fbb | 1dabaf09-4258-4455-a6e1-aa17543fbb5c | 1440000000 |    1000 | active
+ f32a9b51-1623-4e95-862f-708713401313 | 0332a669-d3c6-40e1-bbca-b5545c9f228e | 1440000001 |    1000 | active
+ 700c7b2b-b7b8-42ad-b980-5bb23fa57311 | decd1840-51a8-44c7-a7da-f90ef46c04e3 | 1440000100 |    1000 | active
+(3 rows)
+
+account_db=# select id,user_id,account_no,balance,status from accounts;
+                  id                  |               user_id                | account_no | balance | status 
+--------------------------------------+--------------------------------------+------------+---------+--------
+ 3e24f83f-77e0-4664-84c3-403367737fbb | 1dabaf09-4258-4455-a6e1-aa17543fbb5c | 1440000000 |    1000 | active
+ f32a9b51-1623-4e95-862f-708713401313 | 0332a669-d3c6-40e1-bbca-b5545c9f228e | 1440000001 |    1000 | active
+ 700c7b2b-b7b8-42ad-b980-5bb23fa57311 | decd1840-51a8-44c7-a7da-f90ef46c04e3 | 1440000100 |    1000 | active
+ 9e5b04c5-92c9-47f4-b499-e2e8227b954f | e35aac69-c894-4d97-9b97-67adfd2b9ea6 | 1440000002 |    1000 | active
+(4 rows)
+
+account_db=# 
+
+eucas@eucas-VirtualBox:~/eucastanpay$ docker exec -it postgres-user psql -U postgres -d user_db
+psql (16.14)
+Type "help" for help.
+
+user_db=# select id,email,first_name,last_name from users;
+                  id                  |       email        | first_name | last_name 
+--------------------------------------+--------------------+------------+-----------
+ 1dabaf09-4258-4455-a6e1-aa17543fbb5c | marnor@example.com | Mar        | Norma
+ 0332a669-d3c6-40e1-bbca-b5545c9f228e | john@gmail.com     | John       | Doe
+ decd1840-51a8-44c7-a7da-f90ef46c04e3 | john2@gmail.com    | John       | Tim
+ e35aac69-c894-4d97-9b97-67adfd2b9ea6 | manouvre@gmail.com | Manou      | Trevor
+(4 rows)
+
+docker exec -it postgres-user psql -U postgres -d user_db
+psql (16.14)
+Type "help" for help.
+
+user_db=# select id,email,first_name,last_name from users;
+ id | email | first_name | last_name 
+----+-------+------------+-----------
+(0 rows)
+
+user_db=# select id,email,first_name,last_name from users;
+                  id                  |      email       | first_name | last_name 
+--------------------------------------+------------------+------------+-----------
+ 42bcf5b0-f1bf-4998-80db-7049ada0a517 | stan@example.com | Stan       | Eucas
+(1 row)
+
+user_db=# select id,email,first_name,last_name from users;
+                  id                  |       email        | first_name | last_name 
+--------------------------------------+--------------------+------------+-----------
+ 42bcf5b0-f1bf-4998-80db-7049ada0a517 | stan@example.com   | Stan       | Eucas
+ 346f38b8-e11a-40fa-9f0a-aea7d5c356da | marnor@example.com | Manor      | Norma
+(2 rows)
+
+user_db=# select id,topic,payload,published from outbox;
+                  id                  |      topic      |                                                                                                                                                                  payload                                                                                                                                                                  | published 
+--------------------------------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------
+ 3cbd377b-eabe-4513-a2f1-c05de45ac559 | user.registered | {"id": "42bcf5b0-f1bf-4998-80db-7049ada0a517", "email": "stan@example.com", "phone": "070990805021", "version": 1, "event_id": "8bc9faf0-35f5-451c-b23a-0d1d66f5292c", "last_name": "Eucas", "timestamp": 1782815350, "first_name": "Stan", "causation_id": "user-service", "correlation_id": "f9cef45d-7494-47e9-a279-3ae0892cddf0"}     | t
+ 02f358b1-d0a7-4774-87a1-e7a9a417cd33 | user.registered | {"id": "346f38b8-e11a-40fa-9f0a-aea7d5c356da", "email": "marnor@example.com", "phone": "0910940805021", "version": 1, "event_id": "bbd443d8-1ec6-4cca-8ac2-58e588cb34f6", "last_name": "Norma", "timestamp": 1782815836, "first_name": "Manor", "causation_id": "user-service", "correlation_id": "76bf51f5-02b3-4d68-9b14-a26e136b4535"} | t
+(2 rows)
+
+docker exec -it postgres-user psql -U postgres -d user_db
+psql (16.14)
+Type "help" for help.
+
+user_db=# select id,email,first_name,last_name from users;
+                  id                  |       email        | first_name | last_name 
+--------------------------------------+--------------------+------------+-----------
+ 42bcf5b0-f1bf-4998-80db-7049ada0a517 | stan@example.com   | Stan       | Eucas
+ 346f38b8-e11a-40fa-9f0a-aea7d5c356da | marnor@example.com | Manor      | Norma
+(2 rows)
+
+user_db=# eucas@eucas-VirtualBox:~/eucastanpay$ ^C
+eucas@eucas-VirtualBox:~/eucastanpay$ docker exec -it postgres-user psql -U postgres -d user_db
+psql (16.14)
+Type "help" for help.
+
+user_db=# select id,email,first_name,last_name from users;
+                  id                  |       email        | first_name | last_name 
+--------------------------------------+--------------------+------------+-----------
+ 42bcf5b0-f1bf-4998-80db-7049ada0a517 | stan@example.com   | Stan       | Eucas
+ 346f38b8-e11a-40fa-9f0a-aea7d5c356da | marnor@example.com | Manor      | Norma
+(2 rows)
+
+

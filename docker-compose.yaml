@@ -18,6 +18,25 @@ services:
     networks:
       - eucastanpay
 
+  postgres-admin:
+    image: postgres:16-alpine
+    container_name: postgres-admin
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: user_db
+    ports:
+      - "5439:5432"
+    volumes:
+      - admin_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eucastanpay
+
   postgres-account:
     image: postgres:16-alpine
     container_name: postgres-account
@@ -285,6 +304,7 @@ services:
 
 volumes:
   user_db_data:
+  admin_db_data:
   account_db_data:
   transfer_db_data:
   ledger_db_data:

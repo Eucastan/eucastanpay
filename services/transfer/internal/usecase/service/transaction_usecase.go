@@ -147,7 +147,7 @@ func (u *TransferUseCase) TransferFromUser(
 
 }
 
-func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalRef, idemKey string) (*response.TransferResponse, error) {
+func (u *TransferUseCase) ReverseTransfer(ctx context.Context, originalRef, idemKey string) (*response.TransferResponse, error) {
 	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.ReverseTransfer")
 	defer span.End()
 
@@ -155,7 +155,6 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalR
 		"operation":       "reverse_transfer",
 		"original_ref":    originalRef,
 		"idempotency_key": idemKey,
-		"user_id":         userID,
 	})
 
 	existing, err := u.TX.FindByIdempotencyKey(ctx, idemKey)
@@ -187,7 +186,7 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, userID, originalR
 		reversalRef := uuid.NewString()
 		reversal = &domain.Transfer{
 			ID:             uuid.NewString(),
-			UserID:         userID,
+			UserID:         original.UserID,
 			Reference:      reversalRef,
 			Step:           domain.StepInitiated,
 			FromAccID:      original.ToAccID,
