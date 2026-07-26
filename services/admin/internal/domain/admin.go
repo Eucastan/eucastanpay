@@ -18,28 +18,26 @@ const (
 )
 
 type Admin struct {
-	ID           string      `json:"id"`
-	Email        string      `json:"email"`
-	PasswordHash string      `json:"-"`
-	FirstName    string      `json:"first_name"`
-	LastName     string      `json:"last_name"`
-	Role         AdminRole   `json:"role"`
-	Status       AdminStatus `json:"status"`
-	TwoFAEnabled bool        `json:"two_fa_enabled"`
-	TwoFASecret  *string     `json:"-"`
-	LastLoginAt  *time.Time  `json:"last_login_at,omitempty"`
-	CreatedAt    time.Time   `json:"created_at"`
-	UpdatedAt    time.Time   `json:"updated_at"`
+	ID           string      `db:"id" json:"id"`
+	Email        string      `db:"email" json:"email"`
+	PasswordHash string      `db:"-" json:"-"`
+	FirstName    string      `db:"first_name" json:"first_name"`
+	LastName     string      `db:"last_name" json:"last_name"`
+	Role         AdminRole   `db:"role" json:"role"`
+	Status       AdminStatus `db:"status" json:"status"`
+	LastLoginAt  *time.Time  `db:"last_login_at" json:"last_login_at,omitempty"`
+	CreatedAt    time.Time   `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time   `db:"updated_at" json:"updated_at"`
 }
 
 type AdminAction struct {
-	ID         string    `json:"id"`
-	AdminID    string    `json:"admin_id"`
-	Action     string    `json:"action"`
-	TargetType string    `json:"target_type"`
-	TargetID   string    `json:"target_id"`
-	Reason     string    `json:"reason"`
-	Payload    any       `json:"payload,omitempty"`
-	Status     string    `json:"status"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID         string    `db:"id" json:"id"`
+	AdminID    string    `db:"admin_id" json:"admin_id"`
+	Action     string    `db:"action" json:"action"`
+	TargetType string    `db:"target_type" json:"target_type"`
+	TargetID   string    `db:"target_id" json:"target_id"`
+	Reason     string    `db:"reason" json:"reason"`
+	Payload    any       `db:"payload" json:"payload,omitempty"`
+	Status     string    `db:"status" json:"status"`
+	CreatedAt  time.Time `db:"created_at" json:"created_at"`
 }

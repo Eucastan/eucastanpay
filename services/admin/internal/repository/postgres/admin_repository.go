@@ -142,31 +142,7 @@ func (r *AdminRepository) List(ctx context.Context, limit, offset int) ([]domain
 	}
 	defer rows.Close()
 
-	var admins []domain.Admin
-
-	for rows.Next() {
-		var admin domain.Admin
-
-		err := rows.Scan(
-			&admin.ID,
-			&admin.Email,
-			&admin.PasswordHash,
-			&admin.FirstName,
-			&admin.LastName,
-			&admin.Role,
-			&admin.Status,
-			&admin.LastLoginAt,
-			&admin.CreatedAt,
-			&admin.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		admins = append(admins, admin)
-	}
-
-	return admins, nil
+	return pgx.CollectRows(rows, pgx.RowToStructByName[domain.Admin])
 }
 
 func (r *AdminRepository) SaveOutboxEvent(ctx context.Context, tx pgx.Tx, topic, key string, payload interface{}) error {
