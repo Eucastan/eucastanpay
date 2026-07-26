@@ -23,7 +23,7 @@ func NewTransferServiceServer(transfer usecase.TransferUseCase) *TransferService
 }
 
 func (s *TransferServiceServer) Transfer(ctx context.Context, req *transferpb.TransferRequest) (*transferpb.TransferResponse, error) {
-	user, err := interceptor.RequireUser(ctx)
+	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -83,10 +83,16 @@ func (s *TransferServiceServer) ReverseTransfer(ctx context.Context, req *transf
 }
 
 func (s *TransferServiceServer) ReconcileAccount(ctx context.Context, req *transferpb.ReconcileAccountRequest) (*transferpb.ReconcileAccountResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	input := request.ReconciliationRequest{
 		AccountNo: req.AccountNo,
 	}
-	err := s.t.ReconcileAccount(ctx, req.AccountId, &input)
+
+	err = s.t.ReconcileAccount(ctx, req.AccountId, &input)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
 	}
@@ -101,6 +107,11 @@ func (s *TransferServiceServer) GetAllTransfers(
 	ctx context.Context,
 	req *transferpb.ListTransfersRequest,
 ) (*transferpb.ListTransfersResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	transfers, err := s.t.GetAllTransfers(ctx)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
