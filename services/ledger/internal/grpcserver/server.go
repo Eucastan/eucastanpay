@@ -119,7 +119,7 @@ func (s *LedgerServiceServer) GetLedgersByEntryType(
 	}, nil
 }
 
-func (s *LedgerServiceServer) GetLedgerByID(ctx context.Context, req *ledgerpb.LedgerRequest) (*ledgerpb.LedgerResponse, error) {
+func (s *LedgerServiceServer) GetLedger(ctx context.Context, req *ledgerpb.LedgerRequest) (*ledgerpb.LedgerResponse, error) {
 	ldg, err := s.Ledger.GetLedger(ctx, req.LedgerId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to fetch ledger entry")
@@ -138,7 +138,7 @@ func (s *LedgerServiceServer) GetLedgerByID(ctx context.Context, req *ledgerpb.L
 	}, nil
 }
 
-func (s *LedgerServiceServer) GetLedgerByUserID(ctx context.Context, req *ledgerpb.UserIdRequest) (*ledgerpb.LedgerResponse, error) {
+func (s *LedgerServiceServer) GetLedgerByUserId(ctx context.Context, req *ledgerpb.UserIdRequest) (*ledgerpb.LedgerResponse, error) {
 	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
 	if err != nil {
 		return nil, err
@@ -162,7 +162,7 @@ func (s *LedgerServiceServer) GetLedgerByUserID(ctx context.Context, req *ledger
 	}, nil
 }
 
-func (s *LedgerServiceServer) GetLedgerByAccountID(ctx context.Context, req *ledgerpb.LedgerByAccountIdRequest) (*ledgerpb.LedgerResponse, error) {
+func (s *LedgerServiceServer) GetLedgerByAccountId(ctx context.Context, req *ledgerpb.LedgerByAccountIdRequest) (*ledgerpb.LedgerResponse, error) {
 	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
 	if err != nil {
 		return nil, err
@@ -186,7 +186,7 @@ func (s *LedgerServiceServer) GetLedgerByAccountID(ctx context.Context, req *led
 	}, nil
 }
 
-func (s *LedgerServiceServer) GetBalance(ctx context.Context, req *ledgerpb.LedgerBalanceRequest) (*ledgerpb.LedgerBalanceResponse, error) {
+func (s *LedgerServiceServer) GetLedgerBalance(ctx context.Context, req *ledgerpb.LedgerBalanceRequest) (*ledgerpb.LedgerBalanceResponse, error) {
 	balance, err := s.Ledger.GetAccountBalance(ctx, req.AccountId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to fetch ledger entry")
