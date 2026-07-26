@@ -1388,13 +1388,6 @@ const docTemplate = `{
                         "name": "reference",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {

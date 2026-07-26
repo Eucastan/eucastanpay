@@ -17,9 +17,8 @@ func ToProtoTransfer(req transferReq.TransferRequest) *transferpb.TransferReques
 	}
 }
 
-func ToProtoReverseTransfer(userID, originalRef, idemKey string) *transferpb.ReverseRequest {
+func ToProtoReverseTransfer(originalRef, idemKey string) *transferpb.ReverseRequest {
 	return &transferpb.ReverseRequest{
-		UserId:         userID,
 		Reference:      originalRef,
 		IdempotencyKey: idemKey,
 	}

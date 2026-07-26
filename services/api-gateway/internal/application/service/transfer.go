@@ -22,8 +22,8 @@ func (s *TransferApplication) Transfer(ctx context.Context, input *transferReq.T
 	return s.gateway.Transfer(ctx, input)
 }
 
-func (s *TransferApplication) ReverseTransfer(ctx context.Context, userID, originalRef, idemKey string) (*transferResp.MessageResponse, error) {
-	return s.gateway.ReverseTransfer(ctx, userID, originalRef, idemKey)
+func (s *TransferApplication) ReverseTransfer(ctx context.Context, originalRef, idemKey string) (*transferResp.MessageResponse, error) {
+	return s.gateway.ReverseTransfer(ctx, originalRef, idemKey)
 }
 
 func (s *TransferApplication) ReconcileAccount(ctx context.Context, accID string, accNo int64) (*transferResp.MessageResponse, error) {

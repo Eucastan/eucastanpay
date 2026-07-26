@@ -1194,11 +1194,6 @@ paths:
         name: reference
         required: true
         type: string
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: string
       produces:
       - application/json
       responses:

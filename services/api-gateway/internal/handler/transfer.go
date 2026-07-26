@@ -184,7 +184,6 @@ func (h *TransferHandler) GetTransfer(c *gin.Context) {
 //
 // @Param Idempotency-Key header string true "Unique idempotency key"
 // @Param reference path string true "Transfer Reference"
-// @Param user_id path string true "User ID"
 //
 // @Success 200 {object} httpx.APIResponse
 //
@@ -206,7 +205,7 @@ func (h *TransferHandler) ReverseTransfer(c *gin.Context) {
 
 	idemKey := proxy.IdemKey(c)
 
-	resp, err := h.transferApp.ReverseTransfer(ctx, uri.UserID, uri.Reference, idemKey)
+	resp, err := h.transferApp.ReverseTransfer(ctx, uri.Reference, idemKey)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return

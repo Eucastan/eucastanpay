@@ -32,10 +32,10 @@ func (s *TransferGateway) Transfer(ctx context.Context, input *transferReq.Trans
 	return &resp, nil
 }
 
-func (s *TransferGateway) ReverseTransfer(ctx context.Context, userID, originalRef, idemKey string) (*transferResp.MessageResponse, error) {
+func (s *TransferGateway) ReverseTransfer(ctx context.Context, originalRef, idemKey string) (*transferResp.MessageResponse, error) {
 	grpcResp, err := s.client.ReverseTransfer(
 		ctx,
-		mapper.ToProtoReverseTransfer(userID, originalRef, idemKey),
+		mapper.ToProtoReverseTransfer(originalRef, idemKey),
 	)
 
 	if err != nil {
