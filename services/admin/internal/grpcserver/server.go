@@ -80,19 +80,12 @@ func (s *AdminServer) Login(ctx context.Context, req *adminpb.LoginRequest) (*ad
 }
 
 func (s *AdminServer) GetAdminByID(ctx context.Context, req *adminpb.GetAdminByIDRequest) (*adminpb.AdminResponse, error) {
-	adm, err := interceptor.RequireAdmin(ctx)
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
 	if err != nil {
 		return nil, err
 	}
 
-	if req.AdminId != adm.AdminID {
-		return nil, status.Error(
-			codes.PermissionDenied,
-			"unauthorized access",
-		)
-	}
-
-	admin, err := s.admin.GetAdminByID(ctx, adm.AdminID)
+	admin, err := s.admin.GetAdminByID(ctx, req.AdminId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -109,10 +102,15 @@ func (s *AdminServer) GetAdminByID(ctx context.Context, req *adminpb.GetAdminByI
 	}, nil
 }
 
-func (s *AdminServer) GetAllUsers(
+func (s *AdminServer) GetAllAdmins(
 	ctx context.Context,
 	req *adminpb.ListAdminsRequest,
 ) (*adminpb.ListAdminsResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
 	admins, err := s.admin.ListAdmins(ctx, int(req.Limit), int(req.Page))
 	if err != nil {
 		return nil, grpcstatus.ToAdminStatus(err)
@@ -137,7 +135,7 @@ func (s *AdminServer) GetAllUsers(
 	}, nil
 }
 
-func (s *AdminServer) Logout(ctx context.Context, req *adminpb.GetAdminByIDRequest) (*adminpb.ActionResponse, error) {
+func (s *AdminServer) LogoutByAdminID(ctx context.Context, req *adminpb.GetAdminByIDRequest) (*adminpb.ActionResponse, error) {
 	if err := s.admin.LogoutByAdminID(ctx, req.AdminId); err != nil {
 		return nil, grpcstatus.ToAdminStatus(err)
 	}
@@ -148,24 +146,17 @@ func (s *AdminServer) Logout(ctx context.Context, req *adminpb.GetAdminByIDReque
 }
 
 func (s *AdminServer) Update(ctx context.Context, req *adminpb.UpdateRequest) (*adminpb.ActionResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin")
+	if err != nil {
+		return nil, err
+	}
+
 	input := request.UpdateAdminRequest{
 		Status: &req.Status,
 		Role:   &req.Role,
 	}
 
-	adm, err := interceptor.RequireAdmin(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if req.AdminId != adm.AdminID {
-		return nil, status.Error(
-			codes.PermissionDenied,
-			"unauthorized access",
-		)
-	}
-
-	_, err = s.admin.UpdateAdmin(ctx, adm.AdminID, &input)
+	_, err = s.admin.UpdateAdmin(ctx, req.AdminId, &input)
 	if err != nil {
 		return nil, grpcstatus.ToAdminStatus(err)
 	}
@@ -176,19 +167,12 @@ func (s *AdminServer) Update(ctx context.Context, req *adminpb.UpdateRequest) (*
 }
 
 func (s *AdminServer) Delete(ctx context.Context, req *adminpb.GetAdminByIDRequest) (*adminpb.ActionResponse, error) {
-	adm, err := interceptor.RequireAdmin(ctx)
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin")
 	if err != nil {
 		return nil, err
 	}
 
-	if req.AdminId != adm.AdminID {
-		return nil, status.Error(
-			codes.PermissionDenied,
-			"unauthorized access",
-		)
-	}
-
-	if err := s.admin.DeleteAdmin(ctx, adm.AdminID); err != nil {
+	if err := s.admin.DeleteAdmin(ctx, req.AdminId); err != nil {
 		return nil, grpcstatus.ToAdminStatus(err)
 	}
 
