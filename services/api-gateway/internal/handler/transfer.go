@@ -125,7 +125,7 @@ func (h *TransferHandler) GetTransferByUserID(c *gin.Context) {
 
 	userID := proxy.UserID(c)
 
-	resp, err := h.transferApp.GetTransfer(proxy.Context(c), userID)
+	resp, err := h.transferApp.GetTransferUserID(proxy.Context(c), userID)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return

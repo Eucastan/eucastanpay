@@ -134,7 +134,7 @@ func (h *AccountHandler) WithDrawal(c *gin.Context) {
 // @Failure 404 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/account/{id}/balance [get]
+// @Router /account/{id}/balance [get]
 func (h *AccountHandler) GetBalance(c *gin.Context) {
 
 	uri, err := httpx.BindURI[accountreq.AccountURI](c)

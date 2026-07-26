@@ -10,7 +10,6 @@ func RegisterAccountRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) 
 
 	{
 		admin.GET("/account", h.Account.GetAllUsersAccount)
-		admin.GET("/account/:id/balance", h.Account.GetBalance)
 		admin.PUT("/account/:id/pay-in", h.Account.InitiatePayIn)
 		admin.PUT("/account/:id/withdraw", h.Account.WithDrawal)
 	}
@@ -19,5 +18,6 @@ func RegisterAccountRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) 
 
 	{
 		user.GET("/account/me", h.Account.GetUserAccount)
+		admin.GET("/account/:id/balance", h.Account.GetBalance)
 	}
 }
