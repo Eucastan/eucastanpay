@@ -142,7 +142,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin [get]
+// @Router /admin/me [get]
 func (h *AdminHandler) GetAdminProfile(c *gin.Context) {
 	adminID := proxy.AdminID(c)
 

@@ -1191,6 +1191,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get Admin",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/transfers": {
             "get": {
                 "security": [

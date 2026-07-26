@@ -10,6 +10,7 @@ func RegisterAdminRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
 	{
 		admin.GET("/", h.Admin.ListAdmins)
+		admin.GET("/me", h.Admin.GetAdminProfile)
 		admin.GET("/:id", h.Admin.GetAdmin)
 
 		admin.POST("/", h.Admin.CreateAdmin)
