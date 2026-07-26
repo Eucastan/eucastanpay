@@ -22,7 +22,7 @@ import (
 type LedgerUseCase struct {
 	ledger    repository.LedgerRepository
 	telemetry *telemetry.Telemetry
-	client    account.AccountServiceClient
+	manager   *grpc.Manager
 	logger    *logrus.Logger
 }
 
@@ -35,7 +35,7 @@ func NewLedgerUseCase(
 	return &LedgerUseCase{
 		ledger:    ledger,
 		telemetry: telemetry,
-		client:    clients.Account(manager),
+		manager:   manager,
 		logger:    logger,
 	}
 }
@@ -135,11 +135,16 @@ func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) 
 	}
 
 	// Get balance from Account Service
-	accResp, err := u.client.GetBalance(ctx, &account.GetBalanceRequest{AccountId: accountID})
+	m := clients.Account(u.manager)
+	res, err := m.GetBalance(ctx, &account.GetBalanceRequest{
+		AccountId: accountID,
+	})
+
 	if err != nil {
 		return nil, err
 	}
-	result.AccountBalance = accResp.Balance
+
+	result.AccountBalance = res.Balance
 
 	// Get ledger sum
 	ledgerSum, err := u.ledger.SumByAccountID(ctx, accountID)
