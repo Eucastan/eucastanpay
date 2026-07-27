@@ -72,13 +72,34 @@ func (s *TransferServiceServer) ReverseTransfer(ctx context.Context, req *transf
 		return nil, err
 	}
 
-	_, err = s.t.ReverseTransfer(ctx, req.Reference, req.IdempotencyKey)
+	resp, err := s.t.ReverseTransfer(ctx, req.Reference, req.IdempotencyKey)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
 	}
 
+	data := &transferpb.Transfer{
+		TransferId:       resp.ID,
+		Reference:        resp.Reference,
+		Step:             resp.Step,
+		FromAccId:        resp.FromAccID,
+		FromAccNo:        resp.FromAccNo,
+		ToAccId:          resp.ToAccID,
+		ToAccNo:          resp.ToAccNo,
+		Amount:           resp.Amount,
+		Description:      resp.Description,
+		IdempotencyKey:   resp.IdempotencyKey,
+		Status:           resp.Status,
+		Mode:             resp.Mode,
+		ReversalRef:      resp.ReversalRef,
+		IsReversed:       resp.IsReversed,
+		FromBalanceAfter: resp.FromBalanceAfter,
+		ToBalanceAfter:   resp.ToBalanceAfter,
+		CreatedAt:        timestamppb.New(resp.CreatedAt),
+	}
+
 	return &transferpb.ReverseResponse{
-		Status: "success",
+		Message: "reverse initiated",
+		Data:    data,
 	}, nil
 }
 
