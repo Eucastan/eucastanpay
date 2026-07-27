@@ -900,9 +900,7 @@ func (x *GetBalanceRequest) GetUserId() string {
 
 type BalanceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	AccountId     string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	AccountNo     int64                  `protobuf:"varint,3,opt,name=account_no,json=accountNo,proto3" json:"account_no,omitempty"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -937,25 +935,11 @@ func (*BalanceRequest) Descriptor() ([]byte, []int) {
 	return file_proto_account_account_proto_rawDescGZIP(), []int{13}
 }
 
-func (x *BalanceRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
 func (x *BalanceRequest) GetAccountId() string {
 	if x != nil {
 		return x.AccountId
 	}
 	return ""
-}
-
-func (x *BalanceRequest) GetAccountNo() int64 {
-	if x != nil {
-		return x.AccountNo
-	}
-	return 0
 }
 
 type GetAccountResponse struct {
@@ -1314,13 +1298,10 @@ const file_proto_account_account_proto_rawDesc = "" +
 	"\x11GetBalanceRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"g\n" +
-	"\x0eBalanceRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"/\n" +
+	"\x0eBalanceRequest\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x02 \x01(\tR\taccountId\x12\x1d\n" +
-	"\n" +
-	"account_no\x18\x03 \x01(\x03R\taccountNo\"\xe8\x02\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"\xe8\x02\n" +
 	"\x12GetAccountResponse\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x17\n" +

@@ -111,9 +111,7 @@ message GetBalanceRequest {
 }
 
 message BalanceRequest {
-	string user_id = 1;
-    string account_id = 2;
-    int64 account_no = 3;
+    string account_id = 1;
 }
 
 message GetAccountResponse {
