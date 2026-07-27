@@ -239,7 +239,7 @@ func (h *LedgerHandler) GetAccountBalance(c *gin.Context) {
 // @Failure 404 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/accounts/{account_id}/reconcile [get]
+// @Router /admin/accounts/{account_id}/ledger [get]
 func (h *LedgerHandler) ReconciliationResult(c *gin.Context) {
 
 	uri, err := httpx.BindURI[ledgerReq.AccountURI](c)

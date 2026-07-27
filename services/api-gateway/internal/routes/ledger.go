@@ -13,7 +13,7 @@ func RegisterLedgerRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 		admin.GET("/ledgers/:id", h.Ledger.GetLedger)
 		admin.GET("/ledgers/account/:account_id", h.Ledger.GetLedgerByAccountID)
 		admin.GET("/accounts/:account_id/balance", h.Ledger.GetAccountBalance)
-		admin.GET("/accounts/:account_id/reconcile", h.Ledger.ReconciliationResult)
+		admin.GET("/accounts/:account_id/ledger", h.Ledger.ReconciliationResult)
 	}
 
 	user := UserGroup(api, deps.Config)

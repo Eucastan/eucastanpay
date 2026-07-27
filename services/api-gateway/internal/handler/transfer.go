@@ -271,7 +271,7 @@ func (h *TransferHandler) ReverseTransfer(c *gin.Context) {
 // @Failure 409 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/accounts/{account_id}/reconcile [get]
+// @Router /admin/accounts/{account_id}/transfer [get]
 func (h *TransferHandler) ReconcileAccount(c *gin.Context) {
 	ctx := proxy.Context(c)
 
