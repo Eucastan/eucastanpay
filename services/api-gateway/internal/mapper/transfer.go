@@ -31,6 +31,12 @@ func ToProtoReconciliation(accID string, accNo int64) *transferpb.ReconcileAccou
 	}
 }
 
+func ToProtoTransferByAccID(accID string) *transferpb.AccountIdRequest {
+	return &transferpb.AccountIdRequest{
+		AccountId: accID,
+	}
+}
+
 func ToProtoTransferByUserID(userID string) *transferpb.UserIdRequest {
 	return &transferpb.UserIdRequest{
 		UserId: userID,

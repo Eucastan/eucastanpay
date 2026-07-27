@@ -88,6 +88,20 @@ func (s *TransferGateway) GetTransfer(ctx context.Context, transferID string) (*
 	return &resp, nil
 }
 
+func (s *TransferGateway) GetTransferByAccID(ctx context.Context, accID string) (*transferResp.TransferResponse, error) {
+	grpcResp, err := s.client.GetTransferByAccountID(
+		ctx,
+		mapper.ToProtoTransferByAccID(accID),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp := mapper.ToGetTransferResponse(grpcResp)
+	return &resp, nil
+}
+
 func (s *TransferGateway) GetTransferByUserID(ctx context.Context, userID string) (*transferResp.TransferResponse, error) {
 	grpcResp, err := s.client.GetTransferByUserID(
 		ctx,

@@ -38,6 +38,10 @@ func (s *TransferApplication) GetTransfer(ctx context.Context, transferID string
 	return s.gateway.GetTransfer(ctx, transferID)
 }
 
+func (s *TransferApplication) GetTransferAccID(ctx context.Context, accID string) (*transferResp.TransferResponse, error) {
+	return s.gateway.GetTransferByAccID(ctx, accID)
+}
+
 func (s *TransferApplication) GetTransferUserID(ctx context.Context, userID string) (*transferResp.TransferResponse, error) {
 	return s.gateway.GetTransferByUserID(ctx, userID)
 }

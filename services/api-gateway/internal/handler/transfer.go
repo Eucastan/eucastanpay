@@ -3,9 +3,7 @@ package handler
 import (
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/application/service"
 	transferReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/transfer"
-
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/httpx"
-
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/proxy"
 	"github.com/gin-gonic/gin"
 )
@@ -94,6 +92,44 @@ func (h *TransferHandler) TransferFromUser(c *gin.Context) {
 func (h *TransferHandler) GetAllTransfers(c *gin.Context) {
 
 	resp, err := h.transferApp.GetAllTransfers(proxy.Context(c))
+	if err != nil {
+		httpx.HandleGRPCError(c, err)
+		return
+	}
+
+	httpx.Success(c, resp)
+}
+
+// GetTransferByAccID godoc
+//
+// @Summary Get transfer by Account ID
+// @Tags Transfer
+//
+// @Security BearerAuth
+//
+// @Accept json
+// @Produce json
+//
+// @Param account_id path string true "Account ID"
+//
+// @Success 200 {object} httpx.APIResponse
+//
+// @Failure 400 {object} httpx.APIResponse
+// @Failure 401 {object} httpx.APIResponse
+// @Failure 403 {object} httpx.APIResponse
+// @Failure 404 {object} httpx.APIResponse
+// @Failure 500 {object} httpx.APIResponse
+//
+// @Router /admin/transfers/{account_id} [get]
+func (h *TransferHandler) GetTransferByAccID(c *gin.Context) {
+
+	uri, err := httpx.BindURI[transferReq.AccountIdURI](c)
+	if err != nil {
+		httpx.ValidationError(c, err)
+		return
+	}
+
+	resp, err := h.transferApp.GetTransferAccID(proxy.Context(c), uri.AccountID)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return
@@ -235,7 +271,7 @@ func (h *TransferHandler) ReverseTransfer(c *gin.Context) {
 // @Failure 409 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/accounts/{account_id}/reconcile [post]
+// @Router /admin/accounts/{account_id}/reconcile [get]
 func (h *TransferHandler) ReconcileAccount(c *gin.Context) {
 	ctx := proxy.Context(c)
 

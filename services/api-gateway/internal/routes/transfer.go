@@ -12,7 +12,8 @@ func RegisterTransferRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers)
 	{
 		admin.GET("/transfers", h.Transfer.GetAllTransfers)
 		admin.GET("/transfers/:id", h.Transfer.GetTransfer)
-		admin.POST("/accounts/:account_id/reconcile", h.Transfer.ReconcileAccount)
+		admin.GET("/accounts/:account_id", h.Transfer.GetTransferByAccID)
+		admin.GET("/accounts/:account_id/reconcile", h.Transfer.ReconcileAccount)
 		admin.POST("/transfers/:reference", middleware.RequireIdempotencyKey(), h.Transfer.ReverseTransfer)
 	}
 

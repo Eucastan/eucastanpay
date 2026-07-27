@@ -9,7 +9,7 @@ func RegisterAccountRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) 
 	admin := AdminGroup(api, deps.Config)
 
 	{
-		admin.GET("/account", h.Account.GetAllUsersAccount)
+		admin.GET("/accounts", h.Account.GetAllUsersAccount)
 		admin.PUT("/account/:id/pay-in", h.Account.InitiatePayIn)
 		admin.PUT("/account/:id/withdraw", h.Account.WithDrawal)
 	}
