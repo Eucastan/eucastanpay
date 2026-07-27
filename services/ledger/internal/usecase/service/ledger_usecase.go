@@ -134,9 +134,15 @@ func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) 
 		Status:       "ok",
 	}
 
+	user, err := u.ledger.FindByAccountID(ctx, accountID)
+	if err != nil {
+		return nil, err
+	}
+
 	// Get balance from Account Service
-	m := clients.Account(u.manager)
-	res, err := m.GetBalance(ctx, &account.GetBalanceRequest{
+	acc := clients.Account(u.manager)
+	res, err := acc.ReconcileBalance(ctx, &account.BalanceRequest{
+		UserId:    user.UserID,
 		AccountId: accountID,
 	})
 
