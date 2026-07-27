@@ -15,6 +15,7 @@ type TransferRepository interface {
 	FindByIdempotencyKey(ctx context.Context, idemKey string) (*domain.Transfer, error)
 	FindByReference(ctx context.Context, tx pgx.Tx, ref string) (*domain.Transfer, error)
 	FindByReferenceNoTx(ctx context.Context, reference string) (*domain.Transfer, error)
+	FindByAccountID(ctx context.Context, accID string) (*domain.Transfer, error)
 	FindByID(ctx context.Context, id string) (*domain.Transfer, error)
 	FindByUserID(ctx context.Context, userID string) (*domain.Transfer, error)
 	UpdateStatus(ctx context.Context, tx pgx.Tx, ref, status string) error

@@ -245,28 +245,14 @@ func (u *TransferUseCase) ReconcileAccount(
 	ctx context.Context,
 	accID string,
 	input *request.ReconciliationRequest,
-) error {
+) (*response.ReconciliationResult, error) {
 	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.ReconcileAccount")
 	defer span.End()
 
-	logger := u.log.WithField("account_id", accID)
-
-	a := clients.Account(u.Manager)
-	_, err := a.ReconcileBalance(ctx, &account.BalanceRequest{
-		AccountId: accID,
-		AccountNo: input.AccountNo,
-	})
-
-	if err != nil {
-		logger.WithError(err).Error("failed to confirm account exists during reconciliation")
-		return err
-	}
-
 	ledg := clients.Ledger(u.Manager)
-	_, err = ledg.ReconcileAccount(ctx, &ledger.ReconcileAccountRequest{AccountId: accID})
+	resp, err := ledg.ReconcileAccount(ctx, &ledger.ReconcileAccountRequest{AccountId: accID})
 	if err != nil {
-		logger.WithError(err).Error("failed to fetch ledger balance")
-		return err
+		return nil, err
 	}
 
 	err = u.TX.WithTx(ctx, func(tx pgx.Tx) error {
@@ -276,16 +262,38 @@ func (u *TransferUseCase) ReconcileAccount(
 			Action:        "reconcile_account",
 			TargetType:    "account",
 			TargetID:      accID,
-			Reason:        "manual_reconciliation",
+			Reason:        "manual_reconciliation" + resp.Message,
 		}
 		return u.TX.SaveOutboxEvent(ctx, tx, events.TopicAdminActionTaken, accID, auditEvent)
 	})
+
 	if err != nil {
-		logger.WithError(err).Error("failed to save admin action event")
-		return err
+		return nil, err
 	}
 
-	logger.Info("reconciliation successful")
+	result := response.ReconciliationResult{
+		AccountID:      resp.AccountId,
+		AccountBalance: resp.AccountBalance,
+		LedgerBalance:  resp.LedgerBalance,
+		Difference:     resp.Difference,
+		Status:         resp.Status,
+		Reason:         resp.Message,
+		ReconciledAt:   resp.ReconciledAt.AsTime(),
+	}
 
-	return nil
+	return &result, nil
+}
+
+func (u *TransferUseCase) GetTransferByAccID(
+	ctx context.Context,
+	accID string,
+) (*response.TransferResponse, error) {
+
+	data, err := u.TX.FindByAccountID(ctx, accID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := response.ToTransferResponse(data)
+	return &resp, nil
 }

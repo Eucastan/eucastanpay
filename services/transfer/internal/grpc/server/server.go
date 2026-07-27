@@ -92,14 +92,19 @@ func (s *TransferServiceServer) ReconcileAccount(ctx context.Context, req *trans
 		AccountNo: req.AccountNo,
 	}
 
-	err = s.t.ReconcileAccount(ctx, req.AccountId, &input)
+	result, err := s.t.ReconcileAccount(ctx, req.AccountId, &input)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
 	}
 
 	return &transferpb.ReconcileAccountResponse{
-		Status: "success",
-		Valid:  true,
+		AccountId:      result.AccountID,
+		AccountBalance: result.AccountBalance,
+		LedgerBalance:  result.LedgerBalance,
+		Difference:     result.Difference,
+		Status:         result.Status,
+		Reason:         result.Reason,
+		ReconciledAt:   timestamppb.New(result.ReconciledAt),
 	}, nil
 }
 

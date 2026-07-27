@@ -15,6 +15,16 @@ type MessageResponse struct {
 	Message string `json:"message"`
 }
 
+type ReconciliationResult struct {
+	AccountID      string    `json:"account_id"`
+	AccountBalance int64     `json:"account_balance"`
+	LedgerBalance  int64     `json:"ledger_balance"`
+	Difference     int64     `json:"difference"`
+	Status         string    `json:"status"` // "ok" or "discrepancy"
+	Reason         string    `json:"reason,omitempty"`
+	ReconciledAt   time.Time `json:"reconciled_at"`
+}
+
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
