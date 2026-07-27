@@ -645,7 +645,49 @@ paths:
       summary: Get Account Balance
       tags:
       - Ledger
-  /admin/accounts/{account_id}/reconcile:
+  /admin/accounts/{account_id}/ledger:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Ledger Account ID
+        in: path
+        name: account_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Reconciliation Result
+      tags:
+      - Ledger
+  /admin/accounts/{account_id}/transfer:
     get:
       consumes:
       - application/json
