@@ -493,6 +493,20 @@ func (u *AccountUseCase) GetByUserID(ctx context.Context, userID string) (*respo
 	return resp, nil
 }
 
+func (u *AccountUseCase) GetBalanceInternal(ctx context.Context, accID string) (*response.AccountResponse, error) {
+	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.GetBalanceInternal")
+	defer span.End()
+
+	result, err := u.ACC.FindByID(ctx, accID)
+	if err != nil {
+		span.RecordError(err)
+		return nil, err
+	}
+
+	resp := response.ToAccountResponse(result)
+	return resp, err
+}
+
 func (u *AccountUseCase) ConfirmSenderAndReceiver(
 	ctx context.Context,
 	fromAccNo int64,

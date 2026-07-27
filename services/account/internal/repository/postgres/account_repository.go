@@ -162,7 +162,8 @@ func (r *AccountRepository) FindByID(ctx context.Context, accID string) (*domain
 	defer span.End()
 
 	query := `
-        SELECT id, user_id, email, account_no, balance, account_type, currency, status, created_at, updated_at
+        SELECT id, user_id, email, account_no, balance, account_type, 
+		  currency, status, created_at, updated_at
         FROM accounts
         WHERE id = $1
     `

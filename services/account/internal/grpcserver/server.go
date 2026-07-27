@@ -98,8 +98,12 @@ func (s AccountServiceServer) ResolveAccount(ctx context.Context, req *accountpb
 }
 
 func (s *AccountServiceServer) ReconcileBalance(ctx context.Context, req *accountpb.BalanceRequest) (*accountpb.GetAccountResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
 
-	resp, err := s.ACC.GetBalance(ctx, req.AccountId, req.UserId)
+	resp, err := s.ACC.GetBalanceInternal(ctx, req.AccountId)
 	if err != nil {
 		return nil, grpcstatus.ToAccountStatus(err)
 	}
