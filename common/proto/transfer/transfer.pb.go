@@ -513,7 +513,7 @@ func (x *ReverseRequest) GetAdminId() string {
 type ReverseResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
-	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Data          *Transfer              `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -555,11 +555,11 @@ func (x *ReverseResponse) GetMessage() string {
 	return ""
 }
 
-func (x *ReverseResponse) GetStatus() string {
+func (x *ReverseResponse) GetData() *Transfer {
 	if x != nil {
-		return x.Status
+		return x.Data
 	}
-	return ""
+	return nil
 }
 
 type ReconcileAccountRequest struct {
@@ -1075,10 +1075,10 @@ const file_proto_transfer_transfer_proto_rawDesc = "" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1c\n" +
 	"\treference\x18\x02 \x01(\tR\treference\x12'\n" +
 	"\x0fidempotency_key\x18\x03 \x01(\tR\x0eidempotencyKey\x12\x19\n" +
-	"\badmin_id\x18\x04 \x01(\tR\aadminId\"C\n" +
+	"\badmin_id\x18\x04 \x01(\tR\aadminId\"S\n" +
 	"\x0fReverseResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\"W\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\x12&\n" +
+	"\x04data\x18\x02 \x01(\v2\x12.transfer.TransferR\x04data\"W\n" +
 	"\x17ReconcileAccountRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x1d\n" +
@@ -1171,28 +1171,29 @@ var file_proto_transfer_transfer_proto_depIdxs = []int32{
 	13, // 1: transfer.Transfer.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: transfer.TransferResponse.resp:type_name -> transfer.Transfer
 	0,  // 3: transfer.ListTransfersResponse.transfers:type_name -> transfer.Transfer
-	13, // 4: transfer.ReconcileAccountResponse.reconciled_at:type_name -> google.protobuf.Timestamp
-	13, // 5: transfer.GetTransferResponse.created_at:type_name -> google.protobuf.Timestamp
-	13, // 6: transfer.GetTransferResponse.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 7: transfer.TransferService.Transfer:input_type -> transfer.TransferRequest
-	5,  // 8: transfer.TransferService.ReverseTransfer:input_type -> transfer.ReverseRequest
-	7,  // 9: transfer.TransferService.ReconcileAccount:input_type -> transfer.ReconcileAccountRequest
-	3,  // 10: transfer.TransferService.GetAllTransfers:input_type -> transfer.ListTransfersRequest
-	9,  // 11: transfer.TransferService.GetTransfer:input_type -> transfer.TransferIdRequest
-	10, // 12: transfer.TransferService.GetTransferByUserID:input_type -> transfer.UserIdRequest
-	11, // 13: transfer.TransferService.GetTransferByAccountID:input_type -> transfer.AccountIdRequest
-	2,  // 14: transfer.TransferService.Transfer:output_type -> transfer.TransferResponse
-	6,  // 15: transfer.TransferService.ReverseTransfer:output_type -> transfer.ReverseResponse
-	8,  // 16: transfer.TransferService.ReconcileAccount:output_type -> transfer.ReconcileAccountResponse
-	4,  // 17: transfer.TransferService.GetAllTransfers:output_type -> transfer.ListTransfersResponse
-	12, // 18: transfer.TransferService.GetTransfer:output_type -> transfer.GetTransferResponse
-	12, // 19: transfer.TransferService.GetTransferByUserID:output_type -> transfer.GetTransferResponse
-	12, // 20: transfer.TransferService.GetTransferByAccountID:output_type -> transfer.GetTransferResponse
-	14, // [14:21] is the sub-list for method output_type
-	7,  // [7:14] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	0,  // 4: transfer.ReverseResponse.data:type_name -> transfer.Transfer
+	13, // 5: transfer.ReconcileAccountResponse.reconciled_at:type_name -> google.protobuf.Timestamp
+	13, // 6: transfer.GetTransferResponse.created_at:type_name -> google.protobuf.Timestamp
+	13, // 7: transfer.GetTransferResponse.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 8: transfer.TransferService.Transfer:input_type -> transfer.TransferRequest
+	5,  // 9: transfer.TransferService.ReverseTransfer:input_type -> transfer.ReverseRequest
+	7,  // 10: transfer.TransferService.ReconcileAccount:input_type -> transfer.ReconcileAccountRequest
+	3,  // 11: transfer.TransferService.GetAllTransfers:input_type -> transfer.ListTransfersRequest
+	9,  // 12: transfer.TransferService.GetTransfer:input_type -> transfer.TransferIdRequest
+	10, // 13: transfer.TransferService.GetTransferByUserID:input_type -> transfer.UserIdRequest
+	11, // 14: transfer.TransferService.GetTransferByAccountID:input_type -> transfer.AccountIdRequest
+	2,  // 15: transfer.TransferService.Transfer:output_type -> transfer.TransferResponse
+	6,  // 16: transfer.TransferService.ReverseTransfer:output_type -> transfer.ReverseResponse
+	8,  // 17: transfer.TransferService.ReconcileAccount:output_type -> transfer.ReconcileAccountResponse
+	4,  // 18: transfer.TransferService.GetAllTransfers:output_type -> transfer.ListTransfersResponse
+	12, // 19: transfer.TransferService.GetTransfer:output_type -> transfer.GetTransferResponse
+	12, // 20: transfer.TransferService.GetTransferByUserID:output_type -> transfer.GetTransferResponse
+	12, // 21: transfer.TransferService.GetTransferByAccountID:output_type -> transfer.GetTransferResponse
+	15, // [15:22] is the sub-list for method output_type
+	8,  // [8:15] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_proto_transfer_transfer_proto_init() }

@@ -70,7 +70,7 @@ message ReverseRequest {
 
 message ReverseResponse {
 	string message = 1;
-    string status = 2;
+    Transfer data = 2;
 }
 
 message ReconcileAccountRequest {
