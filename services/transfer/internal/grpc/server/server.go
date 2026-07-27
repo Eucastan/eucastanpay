@@ -236,3 +236,38 @@ func (s *TransferServiceServer) GetTransferByUserID(
 		CreatedAt:        timestamppb.New(resp.CreatedAt),
 	}, nil
 }
+
+func (s *TransferServiceServer) GetTransferByAccountID(
+	ctx context.Context,
+	req *transferpb.AccountIdRequest,
+) (*transferpb.GetTransferResponse, error) {
+	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.t.GetTransferByAccID(ctx, req.AccountId)
+	if err != nil {
+		return nil, grpcstatus.ToTransferStatus(err)
+	}
+
+	return &transferpb.GetTransferResponse{
+		TransferId:       resp.ID,
+		Reference:        resp.Reference,
+		Step:             resp.Step,
+		FromAccId:        resp.FromAccID,
+		FromAccNo:        resp.FromAccNo,
+		ToAccId:          resp.ToAccID,
+		ToAccNo:          resp.ToAccNo,
+		Amount:           resp.Amount,
+		Description:      resp.Description,
+		IdempotencyKey:   resp.IdempotencyKey,
+		Status:           resp.Status,
+		Mode:             resp.Mode,
+		ReversalRef:      resp.ReversalRef,
+		IsReversed:       resp.IsReversed,
+		FromBalanceAfter: resp.FromBalanceAfter,
+		ToBalanceAfter:   resp.ToBalanceAfter,
+		CreatedAt:        timestamppb.New(resp.CreatedAt),
+	}, nil
+}
