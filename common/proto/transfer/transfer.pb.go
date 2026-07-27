@@ -615,11 +615,16 @@ func (x *ReconcileAccountRequest) GetAccountNo() int64 {
 }
 
 type ReconcileAccountResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
-	Valid         bool                   `protobuf:"varint,2,opt,name=valid,proto3" json:"valid,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	AccountId      string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	AccountBalance int64                  `protobuf:"varint,2,opt,name=account_balance,json=accountBalance,proto3" json:"account_balance,omitempty"`
+	LedgerBalance  int64                  `protobuf:"varint,3,opt,name=ledger_balance,json=ledgerBalance,proto3" json:"ledger_balance,omitempty"`
+	Difference     int64                  `protobuf:"varint,4,opt,name=difference,proto3" json:"difference,omitempty"`
+	Status         string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	Reason         string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
+	ReconciledAt   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=reconciled_at,json=reconciledAt,proto3" json:"reconciled_at,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ReconcileAccountResponse) Reset() {
@@ -652,6 +657,34 @@ func (*ReconcileAccountResponse) Descriptor() ([]byte, []int) {
 	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{8}
 }
 
+func (x *ReconcileAccountResponse) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *ReconcileAccountResponse) GetAccountBalance() int64 {
+	if x != nil {
+		return x.AccountBalance
+	}
+	return 0
+}
+
+func (x *ReconcileAccountResponse) GetLedgerBalance() int64 {
+	if x != nil {
+		return x.LedgerBalance
+	}
+	return 0
+}
+
+func (x *ReconcileAccountResponse) GetDifference() int64 {
+	if x != nil {
+		return x.Difference
+	}
+	return 0
+}
+
 func (x *ReconcileAccountResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
@@ -659,11 +692,18 @@ func (x *ReconcileAccountResponse) GetStatus() string {
 	return ""
 }
 
-func (x *ReconcileAccountResponse) GetValid() bool {
+func (x *ReconcileAccountResponse) GetReason() string {
 	if x != nil {
-		return x.Valid
+		return x.Reason
 	}
-	return false
+	return ""
+}
+
+func (x *ReconcileAccountResponse) GetReconciledAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ReconciledAt
+	}
+	return nil
 }
 
 type TransferIdRequest struct {
@@ -754,6 +794,50 @@ func (x *UserIdRequest) GetUserId() string {
 	return ""
 }
 
+type AccountIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AccountIdRequest) Reset() {
+	*x = AccountIdRequest{}
+	mi := &file_proto_transfer_transfer_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AccountIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AccountIdRequest) ProtoMessage() {}
+
+func (x *AccountIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_transfer_transfer_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AccountIdRequest.ProtoReflect.Descriptor instead.
+func (*AccountIdRequest) Descriptor() ([]byte, []int) {
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *AccountIdRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
 type GetTransferResponse struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	TransferId       string                 `protobuf:"bytes,1,opt,name=transfer_id,json=transferId,proto3" json:"transfer_id,omitempty"`
@@ -781,7 +865,7 @@ type GetTransferResponse struct {
 
 func (x *GetTransferResponse) Reset() {
 	*x = GetTransferResponse{}
-	mi := &file_proto_transfer_transfer_proto_msgTypes[11]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -793,7 +877,7 @@ func (x *GetTransferResponse) String() string {
 func (*GetTransferResponse) ProtoMessage() {}
 
 func (x *GetTransferResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transfer_transfer_proto_msgTypes[11]
+	mi := &file_proto_transfer_transfer_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -806,7 +890,7 @@ func (x *GetTransferResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTransferResponse.ProtoReflect.Descriptor instead.
 func (*GetTransferResponse) Descriptor() ([]byte, []int) {
-	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{11}
+	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetTransferResponse) GetTransferId() string {
@@ -999,15 +1083,26 @@ const file_proto_transfer_transfer_proto_rawDesc = "" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x1d\n" +
 	"\n" +
-	"account_no\x18\x02 \x01(\x03R\taccountNo\"H\n" +
-	"\x18ReconcileAccountResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status\x12\x14\n" +
-	"\x05valid\x18\x02 \x01(\bR\x05valid\"4\n" +
+	"account_no\x18\x02 \x01(\x03R\taccountNo\"\x9a\x02\n" +
+	"\x18ReconcileAccountResponse\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\x12'\n" +
+	"\x0faccount_balance\x18\x02 \x01(\x03R\x0eaccountBalance\x12%\n" +
+	"\x0eledger_balance\x18\x03 \x01(\x03R\rledgerBalance\x12\x1e\n" +
+	"\n" +
+	"difference\x18\x04 \x01(\x03R\n" +
+	"difference\x12\x16\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status\x12\x16\n" +
+	"\x06reason\x18\x06 \x01(\tR\x06reason\x12?\n" +
+	"\rreconciled_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\freconciledAt\"4\n" +
 	"\x11TransferIdRequest\x12\x1f\n" +
 	"\vtransfer_id\x18\x01 \x01(\tR\n" +
 	"transferId\"(\n" +
 	"\rUserIdRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x95\x05\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"1\n" +
+	"\x10AccountIdRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"\x95\x05\n" +
 	"\x13GetTransferResponse\x12\x1f\n" +
 	"\vtransfer_id\x18\x01 \x01(\tR\n" +
 	"transferId\x12\x1c\n" +
@@ -1032,14 +1127,15 @@ const file_proto_transfer_transfer_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x13 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2\xe5\x03\n" +
+	"updated_at\x18\x13 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2\xba\x04\n" +
 	"\x0fTransferService\x12A\n" +
 	"\bTransfer\x12\x19.transfer.TransferRequest\x1a\x1a.transfer.TransferResponse\x12F\n" +
 	"\x0fReverseTransfer\x12\x18.transfer.ReverseRequest\x1a\x19.transfer.ReverseResponse\x12Y\n" +
 	"\x10ReconcileAccount\x12!.transfer.ReconcileAccountRequest\x1a\".transfer.ReconcileAccountResponse\x12R\n" +
 	"\x0fGetAllTransfers\x12\x1e.transfer.ListTransfersRequest\x1a\x1f.transfer.ListTransfersResponse\x12I\n" +
 	"\vGetTransfer\x12\x1b.transfer.TransferIdRequest\x1a\x1d.transfer.GetTransferResponse\x12M\n" +
-	"\x13GetTransferByUserID\x12\x17.transfer.UserIdRequest\x1a\x1d.transfer.GetTransferResponseB7Z5github.com/Eucastan/eucastanpay/common/proto/transferb\x06proto3"
+	"\x13GetTransferByUserID\x12\x17.transfer.UserIdRequest\x1a\x1d.transfer.GetTransferResponse\x12S\n" +
+	"\x16GetTransferByAccountID\x12\x1a.transfer.AccountIdRequest\x1a\x1d.transfer.GetTransferResponseB7Z5github.com/Eucastan/eucastanpay/common/proto/transferb\x06proto3"
 
 var (
 	file_proto_transfer_transfer_proto_rawDescOnce sync.Once
@@ -1053,7 +1149,7 @@ func file_proto_transfer_transfer_proto_rawDescGZIP() []byte {
 	return file_proto_transfer_transfer_proto_rawDescData
 }
 
-var file_proto_transfer_transfer_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_proto_transfer_transfer_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_proto_transfer_transfer_proto_goTypes = []any{
 	(*Transfer)(nil),                 // 0: transfer.Transfer
 	(*TransferRequest)(nil),          // 1: transfer.TransferRequest
@@ -1066,33 +1162,37 @@ var file_proto_transfer_transfer_proto_goTypes = []any{
 	(*ReconcileAccountResponse)(nil), // 8: transfer.ReconcileAccountResponse
 	(*TransferIdRequest)(nil),        // 9: transfer.TransferIdRequest
 	(*UserIdRequest)(nil),            // 10: transfer.UserIdRequest
-	(*GetTransferResponse)(nil),      // 11: transfer.GetTransferResponse
-	(*timestamppb.Timestamp)(nil),    // 12: google.protobuf.Timestamp
+	(*AccountIdRequest)(nil),         // 11: transfer.AccountIdRequest
+	(*GetTransferResponse)(nil),      // 12: transfer.GetTransferResponse
+	(*timestamppb.Timestamp)(nil),    // 13: google.protobuf.Timestamp
 }
 var file_proto_transfer_transfer_proto_depIdxs = []int32{
-	12, // 0: transfer.Transfer.created_at:type_name -> google.protobuf.Timestamp
-	12, // 1: transfer.Transfer.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 0: transfer.Transfer.created_at:type_name -> google.protobuf.Timestamp
+	13, // 1: transfer.Transfer.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: transfer.TransferResponse.resp:type_name -> transfer.Transfer
 	0,  // 3: transfer.ListTransfersResponse.transfers:type_name -> transfer.Transfer
-	12, // 4: transfer.GetTransferResponse.created_at:type_name -> google.protobuf.Timestamp
-	12, // 5: transfer.GetTransferResponse.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 6: transfer.TransferService.Transfer:input_type -> transfer.TransferRequest
-	5,  // 7: transfer.TransferService.ReverseTransfer:input_type -> transfer.ReverseRequest
-	7,  // 8: transfer.TransferService.ReconcileAccount:input_type -> transfer.ReconcileAccountRequest
-	3,  // 9: transfer.TransferService.GetAllTransfers:input_type -> transfer.ListTransfersRequest
-	9,  // 10: transfer.TransferService.GetTransfer:input_type -> transfer.TransferIdRequest
-	10, // 11: transfer.TransferService.GetTransferByUserID:input_type -> transfer.UserIdRequest
-	2,  // 12: transfer.TransferService.Transfer:output_type -> transfer.TransferResponse
-	6,  // 13: transfer.TransferService.ReverseTransfer:output_type -> transfer.ReverseResponse
-	8,  // 14: transfer.TransferService.ReconcileAccount:output_type -> transfer.ReconcileAccountResponse
-	4,  // 15: transfer.TransferService.GetAllTransfers:output_type -> transfer.ListTransfersResponse
-	11, // 16: transfer.TransferService.GetTransfer:output_type -> transfer.GetTransferResponse
-	11, // 17: transfer.TransferService.GetTransferByUserID:output_type -> transfer.GetTransferResponse
-	12, // [12:18] is the sub-list for method output_type
-	6,  // [6:12] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	13, // 4: transfer.ReconcileAccountResponse.reconciled_at:type_name -> google.protobuf.Timestamp
+	13, // 5: transfer.GetTransferResponse.created_at:type_name -> google.protobuf.Timestamp
+	13, // 6: transfer.GetTransferResponse.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 7: transfer.TransferService.Transfer:input_type -> transfer.TransferRequest
+	5,  // 8: transfer.TransferService.ReverseTransfer:input_type -> transfer.ReverseRequest
+	7,  // 9: transfer.TransferService.ReconcileAccount:input_type -> transfer.ReconcileAccountRequest
+	3,  // 10: transfer.TransferService.GetAllTransfers:input_type -> transfer.ListTransfersRequest
+	9,  // 11: transfer.TransferService.GetTransfer:input_type -> transfer.TransferIdRequest
+	10, // 12: transfer.TransferService.GetTransferByUserID:input_type -> transfer.UserIdRequest
+	11, // 13: transfer.TransferService.GetTransferByAccountID:input_type -> transfer.AccountIdRequest
+	2,  // 14: transfer.TransferService.Transfer:output_type -> transfer.TransferResponse
+	6,  // 15: transfer.TransferService.ReverseTransfer:output_type -> transfer.ReverseResponse
+	8,  // 16: transfer.TransferService.ReconcileAccount:output_type -> transfer.ReconcileAccountResponse
+	4,  // 17: transfer.TransferService.GetAllTransfers:output_type -> transfer.ListTransfersResponse
+	12, // 18: transfer.TransferService.GetTransfer:output_type -> transfer.GetTransferResponse
+	12, // 19: transfer.TransferService.GetTransferByUserID:output_type -> transfer.GetTransferResponse
+	12, // 20: transfer.TransferService.GetTransferByAccountID:output_type -> transfer.GetTransferResponse
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_proto_transfer_transfer_proto_init() }
@@ -1106,7 +1206,7 @@ func file_proto_transfer_transfer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_transfer_transfer_proto_rawDesc), len(file_proto_transfer_transfer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
