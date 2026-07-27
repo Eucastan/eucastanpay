@@ -32,7 +32,7 @@ func (s *TransferGateway) Transfer(ctx context.Context, input *transferReq.Trans
 	return &resp, nil
 }
 
-func (s *TransferGateway) ReverseTransfer(ctx context.Context, originalRef, idemKey string) (*transferResp.MessageResponse, error) {
+func (s *TransferGateway) ReverseTransfer(ctx context.Context, originalRef, idemKey string) (*transferResp.TransferResponse, error) {
 	grpcResp, err := s.client.ReverseTransfer(
 		ctx,
 		mapper.ToProtoReverseTransfer(originalRef, idemKey),
@@ -46,7 +46,7 @@ func (s *TransferGateway) ReverseTransfer(ctx context.Context, originalRef, idem
 	return &resp, nil
 }
 
-func (s *TransferGateway) ReconcileAccount(ctx context.Context, accID string, accNo int64) (*transferResp.MessageResponse, error) {
+func (s *TransferGateway) ReconcileAccount(ctx context.Context, accID string, accNo int64) (*transferResp.ReconciliationResult, error) {
 	grpcResp, err := s.client.ReconcileAccount(
 		ctx,
 		mapper.ToProtoReconciliation(accID, accNo),

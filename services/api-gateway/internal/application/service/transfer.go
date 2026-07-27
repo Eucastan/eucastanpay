@@ -22,11 +22,11 @@ func (s *TransferApplication) Transfer(ctx context.Context, input *transferReq.T
 	return s.gateway.Transfer(ctx, input)
 }
 
-func (s *TransferApplication) ReverseTransfer(ctx context.Context, originalRef, idemKey string) (*transferResp.MessageResponse, error) {
+func (s *TransferApplication) ReverseTransfer(ctx context.Context, originalRef, idemKey string) (*transferResp.TransferResponse, error) {
 	return s.gateway.ReverseTransfer(ctx, originalRef, idemKey)
 }
 
-func (s *TransferApplication) ReconcileAccount(ctx context.Context, accID string, accNo int64) (*transferResp.MessageResponse, error) {
+func (s *TransferApplication) ReconcileAccount(ctx context.Context, accID string, accNo int64) (*transferResp.ReconciliationResult, error) {
 	return s.gateway.ReconcileAccount(ctx, accID, accNo)
 }
 

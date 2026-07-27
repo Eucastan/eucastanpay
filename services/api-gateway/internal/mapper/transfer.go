@@ -47,15 +47,38 @@ func ToProtoListTransfer() *transferpb.ListTransfersRequest {
 	return &transferpb.ListTransfersRequest{}
 }
 
-func ToReverseResponse(resp *transferpb.ReverseResponse) transferResp.MessageResponse {
-	return transferResp.MessageResponse{
-		Message: resp.Message,
+func ToReverseResponse(resp *transferpb.ReverseResponse) transferResp.TransferResponse {
+	return transferResp.TransferResponse{
+		ID:               resp.Data.TransferId,
+		Reference:        resp.Data.Reference,
+		Step:             resp.Data.Step,
+		FromAccID:        resp.Data.FromAccId,
+		FromAccNo:        resp.Data.FromAccNo,
+		ToAccID:          resp.Data.ToAccId,
+		ToAccNo:          resp.Data.ToAccNo,
+		Amount:           resp.Data.Amount,
+		Description:      resp.Data.Description,
+		IdempotencyKey:   resp.Data.IdempotencyKey,
+		Direction:        resp.Data.Description,
+		Status:           resp.Data.Status,
+		Mode:             resp.Data.Mode,
+		ReversalRef:      resp.Data.ReversalRef,
+		IsReversed:       resp.Data.IsReversed,
+		FromBalanceAfter: resp.Data.FromBalanceAfter,
+		ToBalanceAfter:   resp.Data.ToBalanceAfter,
+		CreatedAt:        resp.Data.CreatedAt.AsTime(),
 	}
 }
 
-func ToReconcileResponse(resp *transferpb.ReconcileAccountResponse) transferResp.MessageResponse {
-	return transferResp.MessageResponse{
-		Message: resp.Status,
+func ToReconcileResponse(resp *transferpb.ReconcileAccountResponse) transferResp.ReconciliationResult {
+	return transferResp.ReconciliationResult{
+		AccountID:      resp.AccountId,
+		AccountBalance: resp.AccountBalance,
+		LedgerBalance:  resp.LedgerBalance,
+		Difference:     resp.Difference,
+		Status:         resp.Status,
+		Reason:         resp.Reason,
+		ReconciledAt:   resp.ReconciledAt.AsTime(),
 	}
 }
 
