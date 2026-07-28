@@ -9,12 +9,13 @@ type CreateAdminRequest struct {
 }
 
 type UpdateAdminRequest struct {
-	Email     *string `json:"email" binding:"omitempty"`
-	Password  *string `json:"password" binding:"omitempty,min=8"`
-	FirstName *string `json:"first_name" binding:"omitempty"`
-	LastName  *string `json:"last_name" binding:"omitempty"`
-	Role      *string `json:"role" binding:"omitempty"`
-	Status    *string `json:"status" binding:"omitempty"`
+	Email       *string `json:"email"`
+	Password    *string `json:"password" binding:"omitempty,min=8"`
+	FirstName   *string `json:"first_name"`
+	LastName    *string `json:"last_name"`
+	Role        *string `json:"role"`
+	Status      *string `json:"status"`
+	LastLoginAt *string `json:"last_login_at"`
 }
 
 type AdminLoginRequest struct {

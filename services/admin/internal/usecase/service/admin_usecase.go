@@ -144,6 +144,22 @@ func (u *AdminUseCase) UpdateAdmin(ctx context.Context, id string, req *request.
 		return nil, err
 	}
 
+	if req.Email != nil {
+		admin.Email = *req.Email
+	}
+
+	if req.FirstName != nil {
+		admin.FirstName = *req.FirstName
+	}
+
+	if req.LastName != nil {
+		admin.LastName = *req.LastName
+	}
+
+	if req.Password != nil {
+		admin.PasswordHash = *req.Password
+	}
+
 	if req.Role != nil {
 		admin.Role = domain.AdminRole(*req.Role)
 	}

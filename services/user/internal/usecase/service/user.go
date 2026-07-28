@@ -508,16 +508,44 @@ func (u *UserUseCase) Update(ctx context.Context, userID string, input *request.
 	ctx, span := u.telemetry.Start(ctx, "UserUseCase.Update")
 	defer span.End()
 
-	updateUser := &domain.User{
-		ID:            userID,
-		Password:      input.Password,
-		FirstName:     input.FirstName,
-		LastName:      input.LastName,
-		Status:        domain.UserStatus(input.Status),
-		EmailVerified: input.EmailVerified,
+	existing, err := u.User.FindByID(ctx, userID)
+	if err != nil {
+		return err
 	}
 
-	return u.User.Update(ctx, updateUser)
+	if input.Email != nil {
+		existing.Email = *input.Email
+	}
+
+	if input.Phone != nil {
+		existing.Phone = *input.Phone
+	}
+
+	if input.FirstName != nil {
+		existing.FirstName = *input.FirstName
+	}
+
+	if input.LastName != nil {
+		existing.LastName = *input.LastName
+	}
+
+	if input.Password != nil {
+		existing.Password = *input.Password
+	}
+
+	if input.DateOfBirth != nil {
+		existing.DateOfBirth = *input.DateOfBirth
+	}
+
+	if input.Status != nil {
+		existing.Status = domain.UserStatus(*input.Status)
+	}
+
+	if input.EmailVerified != nil {
+		existing.EmailVerified = *input.EmailVerified
+	}
+
+	return u.User.Update(ctx, existing)
 }
 
 func (u *UserUseCase) DeleteUser(ctx context.Context, userID string) error {

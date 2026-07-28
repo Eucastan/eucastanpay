@@ -169,11 +169,14 @@ func (s *UserServer) ActionOnUser(ctx context.Context, req *userpb.ActionRequest
 
 func (s *UserServer) Update(ctx context.Context, req *userpb.UpdateRequest) (*userpb.ActionResponse, error) {
 	input := request.UpdateRequest{
-		Password:      req.Password,
-		FirstName:     req.FirstName,
-		LastName:      req.LastName,
-		Status:        req.Status,
-		EmailVerified: req.EmailVerified,
+		Email:         &req.Email,
+		Phone:         &req.Phone,
+		Password:      &req.Password,
+		FirstName:     &req.FirstName,
+		LastName:      &req.LastName,
+		DateOfBirth:   &req.DateOfBirth,
+		Status:        &req.Status,
+		EmailVerified: &req.EmailVerified,
 	}
 
 	if err := s.User.Update(ctx, req.UserId, &input); err != nil {

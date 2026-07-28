@@ -39,11 +39,14 @@ func ToProtoGetUser(userID string) *userpb.GetUserByIDRequest {
 func ToProtoUpdateUser(userID string, req *userReq.UpdateRequest) *userpb.UpdateRequest {
 	return &userpb.UpdateRequest{
 		UserId:        userID,
-		Password:      req.Password,
-		FirstName:     req.FirstName,
-		LastName:      req.LastName,
-		Status:        req.Status,
-		EmailVerified: req.EmailVerified,
+		Email:         *req.Email,
+		Phone:         *req.Phone,
+		Password:      *req.Password,
+		FirstName:     *req.FirstName,
+		LastName:      *req.LastName,
+		DateOfBirth:   *req.DateOfBirth,
+		Status:        *req.Status,
+		EmailVerified: *req.EmailVerified,
 	}
 }
 

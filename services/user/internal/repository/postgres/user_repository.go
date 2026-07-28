@@ -154,18 +154,24 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) error {
 	query := `
 		UPDATE users 
 		SET
-		 first_name = $2, 
-		 last_name = $3, 
-		 password_hash = $4, 
-		 status = $5, 
-		 email_verified = $6, 
+		 email = $2,
+		 phone = $3,
+		 first_name = $4, 
+		 last_name = $5, 
+		 password_hash = $6,
+		 date_of_birth = $7
+		 status = $8, 
+		 email_verified = $9, 
 		 updated_at = NOW()
 		WHERE id = $1
 	`
 	_, err := r.db.Exec(ctx, query, user.ID,
+		user.Email,
+		user.Phone,
 		user.FirstName,
 		user.LastName,
 		user.Password,
+		user.DateOfBirth,
 		user.Status,
 		user.EmailVerified,
 	)
