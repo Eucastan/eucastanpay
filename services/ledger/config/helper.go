@@ -15,6 +15,7 @@ func ToCfg() *Config {
 	cfg := &Config{
 		HTTPPort:        viper.GetString("HTTP_PORT"),
 		GRPCPort:        viper.GetString("GRPC_PORT"),
+		AccountGRPCPort: viper.GetString("ACCOUNT_GRPC_PORT"),
 		ServiceName:     viper.GetString("SERVICE_NAME"),
 		Version:         viper.GetString("VERSION"),
 		EmailAPIKey:     viper.GetString("EMAIL_API_KEY"),
@@ -43,6 +44,7 @@ func ToCfg() *Config {
 	}
 
 	fmt.Println("Assigned DSN:", cfg.SharedCfg.Dsn)
+	fmt.Println("Assigned Account Service Address:", cfg.AccountGRPCPort)
 
 	return cfg
 }

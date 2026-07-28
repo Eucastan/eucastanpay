@@ -8,7 +8,7 @@ import (
 )
 
 func (a *App) initManager() error {
-	mcfg := grpc.ServiceConfig{
+	account := grpc.ServiceConfig{
 		Name:     "account",
 		Address:  a.cfg.AccountGRPCPort,
 		Insecure: true,
@@ -18,16 +18,16 @@ func (a *App) initManager() error {
 
 	m := grpc.NewManager(discovery.NewStaticRegistry(
 		map[string]string{
-			"account": mcfg.Address,
+			"account": account.Address,
 		},
 	))
 
-	conn, err := grpc.NewConnection(mcfg, a.logger)
+	accountConn, err := grpc.NewConnection(account, a.logger)
 	if err != nil {
 		return err
 	}
 
-	m.Add("account", conn)
+	m.Add(account.Name, accountConn)
 
 	a.manager = m
 	return nil

@@ -45,6 +45,10 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	if err := commonconfig.RequireString("ACCOUNT_GRPC_PORT", cfg.AccountGRPCPort); err != nil {
+		return nil, err
+	}
+
 	if err := commonconfig.RequireMinLength("JWT_SECRET", cfg.SharedCfg.JWTSecret, 32); err != nil {
 		return nil, err
 	}
