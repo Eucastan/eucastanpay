@@ -1,8 +1,6 @@
 package transfer
 
 type TransferRequest struct {
-	UserID      string `json:"user_id" binding:"required"`
-	IdemKey     string `json:"idempotency_key" binding:"required"`
 	ToAccNo     int64  `json:"to_account_no" binding:"required"`
 	Amount      int64  `json:"amount" binding:"required,gt=0"`
 	Description string `json:"description"`
@@ -10,9 +8,7 @@ type TransferRequest struct {
 }
 
 type ReverseTransferRequest struct {
-	UserID    string `json:"user_id" binding:"required"`
 	Reference string `json:"reference" binding:"required"`
-	IdemKey   string `json:"idempotency_key" binding:"required"`
 	ToAccNo   int64  `json:"to_account_no" binding:"required"`
 	Amount    int64  `json:"amount" binding:"required,gt=0"`
 }

@@ -2,117 +2,118 @@ package gateway
 
 import (
 	"context"
-	"log"
 
 	adminpb "github.com/Eucastan/eucastanpay/common/proto/admin"
 	adminReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/admin"
 	adminResp "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/response/admin"
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/mapper"
+	"github.com/sirupsen/logrus"
 )
 
 type AdminGateway struct {
 	client adminpb.AdminServiceClient
+	logger *logrus.Logger
 }
 
-func NewAdminGateway(client adminpb.AdminServiceClient) *AdminGateway {
+func NewAdminGateway(client adminpb.AdminServiceClient, logger *logrus.Logger) *AdminGateway {
 	return &AdminGateway{
 		client: client,
+		logger: logger,
 	}
 }
 
-func (s *AdminGateway) Register(ctx context.Context, req *adminReq.CreateAdminRequest) (*adminResp.AdminResponse, error) {
+func (g *AdminGateway) Register(ctx context.Context, req *adminReq.CreateAdminRequest) (*adminResp.AdminResponse, error) {
 
-	grpcResp, err := s.client.Register(
+	grpcResp, err := g.client.Register(
 		ctx,
 		mapper.ToProtoCreateAdmin(req),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	resp := mapper.ToCreateAdminResponse(grpcResp)
-
 	return &resp, nil
 }
 
-func (s *AdminGateway) Login(ctx context.Context, req *adminReq.AdminLoginRequest) (*adminResp.AdminLoginResponse, error) {
+func (g *AdminGateway) Login(ctx context.Context, req *adminReq.AdminLoginRequest) (*adminResp.AdminLoginResponse, error) {
 
-	grpcResp, err := s.client.Login(
+	grpcResp, err := g.client.Login(
 		ctx,
 		mapper.ToProtoAdminLogin(req),
 	)
 
 	if err != nil {
-		log.Printf("Admin Login RPC failed")
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	resp := mapper.ToLoginAdminResponse(grpcResp)
-
 	return &resp, nil
 }
 
-func (s *AdminGateway) GetAllAdmins(ctx context.Context, limit, page int) (*adminResp.ListAdminsResponse, error) {
+func (g *AdminGateway) GetAllAdmins(ctx context.Context, limit, page int) (*adminResp.ListAdminsResponse, error) {
 
-	grpcResp, err := s.client.GetAllAdmins(
+	grpcResp, err := g.client.GetAllAdmins(
 		ctx,
 		mapper.ToProtoListAdmins(limit, page),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	resp := mapper.ToListAdminsResponse(grpcResp)
-
 	return resp, nil
 }
 
-func (s *AdminGateway) GetAdmin(ctx context.Context, adminID string) (*adminResp.AdminResponse, error) {
+func (g *AdminGateway) GetAdmin(ctx context.Context, adminID string) (*adminResp.AdminResponse, error) {
 
-	grpcResp, err := s.client.GetAdminByID(
+	grpcResp, err := g.client.GetAdminByID(
 		ctx,
 		mapper.ToProtoGetAdmin(adminID),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	resp := mapper.ToGetAdminResponse(grpcResp)
-
 	return resp, nil
 }
 
-func (s *AdminGateway) UpdateAdmin(ctx context.Context, adminID string, req *adminReq.UpdateAdminRequest) (*adminResp.MessageResponse, error) {
+func (g *AdminGateway) UpdateAdmin(ctx context.Context, adminID string, req *adminReq.UpdateAdminRequest) (*adminResp.MessageResponse, error) {
 
-	grpcResp, err := s.client.Update(
+	grpcResp, err := g.client.Update(
 		ctx,
 		mapper.ToProtoUpdateAdmin(adminID, req),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	resp := mapper.ToUpdateAdminResponse(grpcResp)
-
 	return resp, nil
 }
 
-func (s *AdminGateway) DeleteAdmin(ctx context.Context, adminID string) (*adminResp.MessageResponse, error) {
+func (g *AdminGateway) DeleteAdmin(ctx context.Context, adminID string) (*adminResp.MessageResponse, error) {
 
-	grpcResp, err := s.client.Delete(
+	grpcResp, err := g.client.Delete(
 		ctx,
 		mapper.ToProtoDeleteAdmin(adminID),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	resp := mapper.ToDeleteAdminResponse(grpcResp)
-
 	return resp, nil
 }

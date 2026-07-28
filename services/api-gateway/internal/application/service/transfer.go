@@ -18,8 +18,8 @@ func NewTransferApplication(gateway *gateway.TransferGateway) *TransferApplicati
 	}
 }
 
-func (s *TransferApplication) Transfer(ctx context.Context, input *transferReq.TransferRequest) (*transferResp.TransferResp, error) {
-	return s.gateway.Transfer(ctx, input)
+func (s *TransferApplication) Transfer(ctx context.Context, userID, idemKey string, input *transferReq.TransferRequest) (*transferResp.TransferResp, error) {
+	return s.gateway.Transfer(ctx, userID, idemKey, input)
 }
 
 func (s *TransferApplication) ReverseTransfer(ctx context.Context, originalRef, idemKey string) (*transferResp.TransferResponse, error) {

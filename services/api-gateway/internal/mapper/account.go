@@ -15,18 +15,18 @@ func ToProtoGetBalance(accID, userID string) *accountpb.GetBalanceRequest {
 	}
 }
 
-func ToProtoDeposit(req accountreq.DepositRequest) *accountpb.DepositRequest {
+func ToProtoDeposit(accID string, req accountreq.DepositRequest) *accountpb.DepositRequest {
 	return &accountpb.DepositRequest{
-		AccountId: req.AccountID,
+		AccountId: accID,
 		AccountNo: req.AccountNo,
 		Amount:    req.Amount,
 		Currency:  req.Currency,
 	}
 }
 
-func ToProtoWithdraw(req accountreq.DepositRequest) *accountpb.WithDrawalRequest {
+func ToProtoWithdraw(accID string, req accountreq.DepositRequest) *accountpb.WithDrawalRequest {
 	return &accountpb.WithDrawalRequest{
-		AccountId: req.AccountID,
+		AccountId: accID,
 		AccountNo: req.AccountNo,
 		Amount:    req.Amount,
 		Currency:  req.Currency,
@@ -49,9 +49,9 @@ func ToProtoDeleteRequest(accID string) *accountpb.DeleteRequest {
 	}
 }
 
-func ToProtoActionRequest(resp *accountreq.ActionRequest) *accountpb.ActionRequest {
+func ToProtoActionRequest(accID string, resp *accountreq.ActionRequest) *accountpb.ActionRequest {
 	return &accountpb.ActionRequest{
-		AccountId: resp.AccountID,
+		AccountId: accID,
 		Status:    resp.Status,
 		AccountNo: resp.AccountNo,
 	}

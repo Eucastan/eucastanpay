@@ -7,25 +7,29 @@ import (
 	auditReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/audit"
 	auditResp "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/response/audit"
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/mapper"
+	"github.com/sirupsen/logrus"
 )
 
 type AuditGateway struct {
 	client auditpb.AuditServiceClient
+	logger *logrus.Logger
 }
 
-func NewAuditGateway(client auditpb.AuditServiceClient) *AuditGateway {
+func NewAuditGateway(client auditpb.AuditServiceClient, logger *logrus.Logger) *AuditGateway {
 	return &AuditGateway{
 		client: client,
+		logger: logger,
 	}
 }
 
-func (s *AuditGateway) GetAuditByID(ctx context.Context, auditID string) (*auditResp.AuditReadResponse, error) {
-	grpcResp, err := s.client.GetAuditByID(
+func (g *AuditGateway) GetAuditByID(ctx context.Context, auditID string) (*auditResp.AuditReadResponse, error) {
+	grpcResp, err := g.client.GetAuditByID(
 		ctx,
 		mapper.ToProtoGetAuditIDRequest(auditID),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -33,13 +37,14 @@ func (s *AuditGateway) GetAuditByID(ctx context.Context, auditID string) (*audit
 	return resp, nil
 }
 
-func (s *AuditGateway) GetAllAudits(ctx context.Context) (*auditResp.ReadResponse, error) {
-	grpcResp, err := s.client.GetAllAudits(
+func (g *AuditGateway) GetAllAudits(ctx context.Context) (*auditResp.ReadResponse, error) {
+	grpcResp, err := g.client.GetAllAudits(
 		ctx,
 		mapper.ToProtoListAudits(),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -47,14 +52,15 @@ func (s *AuditGateway) GetAllAudits(ctx context.Context) (*auditResp.ReadRespons
 	return resp, nil
 }
 
-func (s *AuditGateway) SearchAuditLogs(ctx context.Context, input *auditReq.Filter) (*auditResp.ReadResponse, error) {
+func (g *AuditGateway) SearchAuditLogs(ctx context.Context, input *auditReq.Filter) (*auditResp.ReadResponse, error) {
 
-	grpcResp, err := s.client.SearchAudit(
+	grpcResp, err := g.client.SearchAudit(
 		ctx,
 		mapper.ToProtoSearchAuditLogs(input),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 

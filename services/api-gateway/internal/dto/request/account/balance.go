@@ -1,13 +1,10 @@
 package account
 
 type GetBalanceRequest struct {
-	AccountID string `json:"account_id" binding:"required"`
-	AccountNo int64  `json:"account_no" binding:"omitempty"`
-	UserID    string `json:"user_id" binding:"required"`
+	AccountNo int64 `json:"account_no" binding:"omitempty"`
 }
 
 type ActionRequest struct {
-	AccountID string `json:"account_id" binding:"required"`
 	Status    string `json:"status" binding:"omitempty"`
 	AccountNo int64  `json:"account_no" binding:"omitempty"`
 }

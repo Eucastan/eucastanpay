@@ -6,10 +6,10 @@ import (
 	transferResp "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/response/transfer"
 )
 
-func ToProtoTransfer(req transferReq.TransferRequest) *transferpb.TransferRequest {
+func ToProtoTransfer(userID, idemKey string, req transferReq.TransferRequest) *transferpb.TransferRequest {
 	return &transferpb.TransferRequest{
-		UserId:         req.UserID,
-		IdempotencyKey: req.IdemKey,
+		UserId:         userID,
+		IdempotencyKey: idemKey,
 		ToAccountNo:    req.ToAccNo,
 		Amount:         req.Amount,
 		Description:    req.Description,

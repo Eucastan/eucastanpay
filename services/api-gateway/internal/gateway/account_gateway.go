@@ -2,29 +2,34 @@ package gateway
 
 import (
 	"context"
+
 	accountpb "github.com/Eucastan/eucastanpay/common/proto/account"
 	accountReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/account"
 	accountResp "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/response/account"
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/mapper"
+	"github.com/sirupsen/logrus"
 )
 
 type AccountGateway struct {
 	client accountpb.AccountServiceClient
+	logger *logrus.Logger
 }
 
-func NewAccountGateway(client accountpb.AccountServiceClient) *AccountGateway {
+func NewAccountGateway(client accountpb.AccountServiceClient, logger *logrus.Logger) *AccountGateway {
 	return &AccountGateway{
 		client: client,
+		logger: logger,
 	}
 }
 
-func (g *AccountGateway) Deposit(ctx context.Context, input *accountReq.DepositRequest) (*accountResp.MessageResponse, error) {
+func (g *AccountGateway) Deposit(ctx context.Context, accID string, input *accountReq.DepositRequest) (*accountResp.MessageResponse, error) {
 	grpcResp, err := g.client.Deposit(
 		ctx,
-		mapper.ToProtoDeposit(*input),
+		mapper.ToProtoDeposit(accID, *input),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -32,13 +37,14 @@ func (g *AccountGateway) Deposit(ctx context.Context, input *accountReq.DepositR
 	return &resp, nil
 }
 
-func (g *AccountGateway) WithDraw(ctx context.Context, input *accountReq.DepositRequest) (*accountResp.MessageResponse, error) {
+func (g *AccountGateway) WithDraw(ctx context.Context, accID string, input *accountReq.DepositRequest) (*accountResp.MessageResponse, error) {
 	grpcResp, err := g.client.Withdraw(
 		ctx,
-		mapper.ToProtoWithdraw(*input),
+		mapper.ToProtoWithdraw(accID, *input),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -53,6 +59,7 @@ func (g *AccountGateway) GetBalance(ctx context.Context, accID, userID string) (
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -67,6 +74,7 @@ func (g *AccountGateway) GetUserAccount(ctx context.Context, userID string) (*ac
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -81,6 +89,7 @@ func (g *AccountGateway) GetAllAccounts(ctx context.Context) ([]*accountResp.Acc
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -88,13 +97,14 @@ func (g *AccountGateway) GetAllAccounts(ctx context.Context) ([]*accountResp.Acc
 	return resp, nil
 }
 
-func (g *AccountGateway) ActionOnAccount(ctx context.Context, input *accountReq.ActionRequest) (*accountResp.MessageResponse, error) {
+func (g *AccountGateway) ActionOnAccount(ctx context.Context, accID string, input *accountReq.ActionRequest) (*accountResp.MessageResponse, error) {
 	grpcResp, err := g.client.ActionOnAccount(
 		ctx,
-		mapper.ToProtoActionRequest(input),
+		mapper.ToProtoActionRequest(accID, input),
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -109,6 +119,7 @@ func (g *AccountGateway) DeleteAccount(ctx context.Context, accID string) (*acco
 	)
 
 	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 

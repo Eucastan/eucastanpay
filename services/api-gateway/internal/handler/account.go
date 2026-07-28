@@ -56,9 +56,7 @@ func (h *AccountHandler) InitiatePayIn(c *gin.Context) {
 		return
 	}
 
-	req.AccountID = uri.AccountID
-
-	resp, err := h.accountApp.Deposit(proxy.Context(c), &req)
+	resp, err := h.accountApp.Deposit(proxy.Context(c), uri.AccountID, &req)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return
@@ -103,9 +101,7 @@ func (h *AccountHandler) WithDrawal(c *gin.Context) {
 		return
 	}
 
-	req.AccountID = uri.AccountID
-
-	resp, err := h.accountApp.WithDraw(proxy.Context(c), &req)
+	resp, err := h.accountApp.WithDraw(proxy.Context(c), uri.AccountID, &req)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return

@@ -58,10 +58,7 @@ func (h *TransferHandler) TransferFromUser(c *gin.Context) {
 		return
 	}
 
-	req.UserID = userID
-	req.IdemKey = idemKey
-
-	resp, err := h.transferApp.Transfer(ctx, &req)
+	resp, err := h.transferApp.Transfer(ctx, userID, idemKey, &req)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return

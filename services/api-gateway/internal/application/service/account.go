@@ -18,12 +18,12 @@ func NewAccountApplication(gateway *gateway.AccountGateway) *AccountApplication 
 	}
 }
 
-func (s *AccountApplication) Deposit(ctx context.Context, input *accountReq.DepositRequest) (*accountResp.MessageResponse, error) {
-	return s.gateway.Deposit(ctx, input)
+func (s *AccountApplication) Deposit(ctx context.Context, accID string, input *accountReq.DepositRequest) (*accountResp.MessageResponse, error) {
+	return s.gateway.Deposit(ctx, accID, input)
 }
 
-func (s *AccountApplication) WithDraw(ctx context.Context, input *accountReq.DepositRequest) (*accountResp.MessageResponse, error) {
-	return s.gateway.WithDraw(ctx, input)
+func (s *AccountApplication) WithDraw(ctx context.Context, accID string, input *accountReq.DepositRequest) (*accountResp.MessageResponse, error) {
+	return s.gateway.WithDraw(ctx, accID, input)
 }
 
 func (s *AccountApplication) GetBalance(ctx context.Context, accID, userID string) (*accountResp.AccountResponse, error) {
@@ -43,10 +43,9 @@ func (s *AccountApplication) GetAllAccounts(ctx context.Context) ([]*accountResp
 	return s.gateway.GetAllAccounts(ctx)
 }
 
-func (s *AccountApplication) ActionOnAccount(ctx context.Context, input *accountReq.ActionRequest) (*accountResp.MessageResponse, error) {
+func (s *AccountApplication) ActionOnAccount(ctx context.Context, accID string, input *accountReq.ActionRequest) (*accountResp.MessageResponse, error) {
 	return s.gateway.ActionOnAccount(
-		ctx,
-		input,
+		ctx, accID, input,
 	)
 }
 

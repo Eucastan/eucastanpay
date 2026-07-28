@@ -25,10 +25,10 @@ func (a *App) initGateways() {
 
 	a.gateways = &Gateways{
 		userGateway:     gateway.NewUserGateway(userClient),
-		adminGateway:    gateway.NewAdminGateway(adminClient),
-		accountGateway:  gateway.NewAccountGateway(accountClient),
-		transferGateway: gateway.NewTransferGateway(transferClient),
-		ledgerGateway:   gateway.NewLedgerGateway(ledgerClient),
-		auditGateway:    gateway.NewAuditGateway(auditClient),
+		adminGateway:    gateway.NewAdminGateway(adminClient, a.logger),
+		accountGateway:  gateway.NewAccountGateway(accountClient, a.logger),
+		transferGateway: gateway.NewTransferGateway(transferClient, a.logger),
+		ledgerGateway:   gateway.NewLedgerGateway(ledgerClient, a.logger),
+		auditGateway:    gateway.NewAuditGateway(auditClient, a.logger),
 	}
 }
