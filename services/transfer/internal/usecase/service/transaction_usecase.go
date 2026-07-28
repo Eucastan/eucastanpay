@@ -67,7 +67,7 @@ func (u *TransferUseCase) GetByUserID(ctx context.Context, userID string) (*resp
 		"user_id":   userID,
 	})
 
-	transfer, err := u.TX.FindByID(ctx, userID)
+	transfer, err := u.TX.FindByUserID(ctx, userID)
 	if err != nil {
 		span.RecordError(err)
 		logger.WithError(err).Error("failed to transaction")
