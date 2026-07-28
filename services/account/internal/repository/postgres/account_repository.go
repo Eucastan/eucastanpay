@@ -158,6 +158,7 @@ func (r *AccountRepository) FindAll(ctx context.Context) ([]domain.Account, erro
 }
 
 func (r *AccountRepository) FindByID(ctx context.Context, accID string) (*domain.Account, error) {
+	r.logger.Info("AccountRepository.FindByID reached")
 	ctx, span := r.telemetry.Start(ctx, "AccountRepository.FindByID")
 	defer span.End()
 
@@ -168,15 +169,19 @@ func (r *AccountRepository) FindByID(ctx context.Context, accID string) (*domain
         WHERE id = $1
     `
 
+	r.logger.Info("Before querying db")
 	acc := &domain.Account{}
 	err := r.DB.QueryRow(ctx, query, accID).Scan(
 		&acc.ID, &acc.UserID, &acc.Email, &acc.AccountNo, &acc.Balance,
 		&acc.AccountType, &acc.Currency, &acc.Status, &acc.CreatedAt, &acc.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, errmessage.ErrAccNotFound
 	}
+
+	r.logger.Info("query successful")
 	return acc, err
 }
 

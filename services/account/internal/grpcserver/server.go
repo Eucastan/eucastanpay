@@ -8,17 +8,20 @@ import (
 	accountpb "github.com/Eucastan/eucastanpay/common/proto/account"
 	"github.com/Eucastan/eucastanpay/services/account/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/account/internal/usecase"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AccountServiceServer struct {
 	accountpb.UnimplementedAccountServiceServer
-	ACC usecase.AccountUseCase
+	ACC    usecase.AccountUseCase
+	logger *logrus.Logger
 }
 
-func NewAccountServiceServer(acc usecase.AccountUseCase) *AccountServiceServer {
+func NewAccountServiceServer(acc usecase.AccountUseCase, logger *logrus.Logger) *AccountServiceServer {
 	return &AccountServiceServer{
-		ACC: acc,
+		ACC:    acc,
+		logger: logger,
 	}
 }
 
@@ -98,6 +101,7 @@ func (s AccountServiceServer) ResolveAccount(ctx context.Context, req *accountpb
 }
 
 func (s *AccountServiceServer) ReconcileBalance(ctx context.Context, req *accountpb.BalanceRequest) (*accountpb.GetAccountResponse, error) {
+	s.logger.Info("AccountServiceServer.ReconcileBalance reached")
 	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
 	if err != nil {
 		return nil, err
@@ -105,9 +109,11 @@ func (s *AccountServiceServer) ReconcileBalance(ctx context.Context, req *accoun
 
 	resp, err := s.ACC.GetBalanceInternal(ctx, req.AccountId)
 	if err != nil {
+		s.logger.WithError(err).Error(err.Error())
 		return nil, grpcstatus.ToAccountStatus(err)
 	}
 
+	s.logger.Info("returning response data")
 	return &accountpb.GetAccountResponse{
 		AccountId:   resp.ID,
 		UserId:      resp.UserID,

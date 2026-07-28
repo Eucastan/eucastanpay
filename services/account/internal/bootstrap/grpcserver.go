@@ -14,7 +14,7 @@ func (a *App) initGRPCServer() {
 		),
 	)
 
-	gs := grpcserver.NewAccountServiceServer(a.uc)
+	gs := grpcserver.NewAccountServiceServer(a.uc, a.logger)
 	accountpb.RegisterAccountServiceServer(grpcServer, gs)
 
 	a.grpcServ = grpcServer

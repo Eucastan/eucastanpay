@@ -494,14 +494,19 @@ func (u *AccountUseCase) GetByUserID(ctx context.Context, userID string) (*respo
 }
 
 func (u *AccountUseCase) GetBalanceInternal(ctx context.Context, accID string) (*response.AccountResponse, error) {
+	u.logger.Info("AccountUseCase.GetBalanceInternal reached")
 	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.GetBalanceInternal")
 	defer span.End()
 
+	u.logger.Info("Before calling FindByID repo")
 	result, err := u.ACC.FindByID(ctx, accID)
 	if err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
+
+	u.logger.Info("returning result after query success")
 
 	resp := response.ToAccountResponse(result)
 	return resp, err
