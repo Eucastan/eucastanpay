@@ -345,11 +345,14 @@ func (x *LoginResponse) GetRefreshToken() string {
 type UpdateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
-	FirstName     string                 `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
-	LastName      string                 `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
-	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
-	EmailVerified bool                   `protobuf:"varint,6,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"`
+	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	Password      string                 `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
+	FirstName     string                 `protobuf:"bytes,5,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName      string                 `protobuf:"bytes,6,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
+	DateOfBirth   string                 `protobuf:"bytes,7,opt,name=date_of_birth,json=dateOfBirth,proto3" json:"date_of_birth,omitempty"`
+	Status        string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
+	EmailVerified bool                   `protobuf:"varint,9,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -391,6 +394,20 @@ func (x *UpdateRequest) GetUserId() string {
 	return ""
 }
 
+func (x *UpdateRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *UpdateRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
 func (x *UpdateRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
@@ -408,6 +425,13 @@ func (x *UpdateRequest) GetFirstName() string {
 func (x *UpdateRequest) GetLastName() string {
 	if x != nil {
 		return x.LastName
+	}
+	return ""
+}
+
+func (x *UpdateRequest) GetDateOfBirth() string {
+	if x != nil {
+		return x.DateOfBirth
 	}
 	return ""
 }
@@ -946,15 +970,18 @@ const file_proto_user_user_proto_rawDesc = "" +
 	"\x04resp\x18\x02 \x01(\v2\n" +
 	".user.UserR\x04resp\x12!\n" +
 	"\faccess_token\x18\x03 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\"\xbf\x01\n" +
+	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\"\x8f\x02\n" +
 	"\rUpdateRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1d\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x14\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x1a\n" +
+	"\bpassword\x18\x04 \x01(\tR\bpassword\x12\x1d\n" +
 	"\n" +
-	"first_name\x18\x03 \x01(\tR\tfirstName\x12\x1b\n" +
-	"\tlast_name\x18\x04 \x01(\tR\blastName\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\x12%\n" +
-	"\x0eemail_verified\x18\x06 \x01(\bR\remailVerified\"-\n" +
+	"first_name\x18\x05 \x01(\tR\tfirstName\x12\x1b\n" +
+	"\tlast_name\x18\x06 \x01(\tR\blastName\x12\"\n" +
+	"\rdate_of_birth\x18\a \x01(\tR\vdateOfBirth\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06status\x12%\n" +
+	"\x0eemail_verified\x18\t \x01(\bR\remailVerified\"-\n" +
 	"\x12GetUserByIDRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"\xc4\x02\n" +
 	"\fUserResponse\x12\x17\n" +
