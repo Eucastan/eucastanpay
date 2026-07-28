@@ -2,8 +2,6 @@ basePath: /api/v1
 definitions:
   github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_account.DepositRequest:
     properties:
-      account_id:
-        type: string
       account_no:
         type: integer
       amount:
@@ -11,7 +9,6 @@ definitions:
       currency:
         type: string
     required:
-    - account_id
     - account_no
     - amount
     type: object
@@ -65,8 +62,6 @@ definitions:
         type: integer
       description:
         type: string
-      idempotency_key:
-        type: string
       mode:
         enum:
         - intraBank
@@ -75,14 +70,10 @@ definitions:
         type: string
       to_account_no:
         type: integer
-      user_id:
-        type: string
     required:
     - amount
-    - idempotency_key
     - mode
     - to_account_no
-    - user_id
     type: object
   github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.CreateKYCRequest:
     properties:

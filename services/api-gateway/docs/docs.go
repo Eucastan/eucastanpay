@@ -2369,14 +2369,10 @@ const docTemplate = `{
         "github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_account.DepositRequest": {
             "type": "object",
             "required": [
-                "account_id",
                 "account_no",
                 "amount"
             ],
             "properties": {
-                "account_id": {
-                    "type": "string"
-                },
                 "account_no": {
                     "type": "integer"
                 },
@@ -2457,19 +2453,14 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "amount",
-                "idempotency_key",
                 "mode",
-                "to_account_no",
-                "user_id"
+                "to_account_no"
             ],
             "properties": {
                 "amount": {
                     "type": "integer"
                 },
                 "description": {
-                    "type": "string"
-                },
-                "idempotency_key": {
                     "type": "string"
                 },
                 "mode": {
@@ -2482,9 +2473,6 @@ const docTemplate = `{
                 },
                 "to_account_no": {
                     "type": "integer"
-                },
-                "user_id": {
-                    "type": "string"
                 }
             }
         },
