@@ -121,7 +121,7 @@ func (s *AccountServiceServer) ReconcileBalance(ctx context.Context, req *accoun
 
 func (s *AccountServiceServer) GetBalance(ctx context.Context, req *accountpb.GetBalanceRequest) (*accountpb.GetAccountResponse, error) {
 
-	user, err := interceptor.RequireUser(ctx)
+	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
 	if err != nil {
 		return nil, err
 	}
