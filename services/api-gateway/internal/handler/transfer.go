@@ -187,7 +187,7 @@ func (h *TransferHandler) GetTransferByUserID(c *gin.Context) {
 // @Failure 404 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/transfers/{id} [get]
+// @Router /admin/transfers/transfer/{id} [get]
 func (h *TransferHandler) GetTransfer(c *gin.Context) {
 
 	uri, err := httpx.BindURI[transferReq.TransferURI](c)

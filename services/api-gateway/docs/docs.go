@@ -1283,7 +1283,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/transfers/{id}": {
+        "/admin/transfers/transfer/{id}": {
             "get": {
                 "security": [
                     {
