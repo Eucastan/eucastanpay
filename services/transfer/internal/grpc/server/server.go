@@ -109,11 +109,7 @@ func (s *TransferServiceServer) ReconcileAccount(ctx context.Context, req *trans
 		return nil, err
 	}
 
-	input := request.ReconciliationRequest{
-		AccountNo: req.AccountNo,
-	}
-
-	result, err := s.t.ReconcileAccount(ctx, req.AccountId, &input)
+	result, err := s.t.ReconcileAccount(ctx, req.AccountId)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
 	}
@@ -151,6 +147,7 @@ func (s *TransferServiceServer) GetAllTransfers(
 			Step:             v.Step,
 			FromAccId:        v.FromAccID,
 			FromAccNo:        v.FromAccNo,
+			ToAccId:          v.ToAccID,
 			ToAccNo:          v.ToAccNo,
 			Amount:           v.Amount,
 			Description:      v.Description,
@@ -237,16 +234,16 @@ func (s *TransferServiceServer) GetTransferByUserID(
 	}, nil
 }
 
-func (s *TransferServiceServer) GetTransferByAccountID(
+func (s *TransferServiceServer) GetTransferByRef(
 	ctx context.Context,
-	req *transferpb.AccountIdRequest,
+	req *transferpb.ReferenceRequest,
 ) (*transferpb.GetTransferResponse, error) {
 	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := s.t.GetTransferByAccID(ctx, req.AccountId)
+	resp, err := s.t.GetTransferByRef(ctx, req.Reference)
 	if err != nil {
 		return nil, grpcstatus.ToTransferStatus(err)
 	}

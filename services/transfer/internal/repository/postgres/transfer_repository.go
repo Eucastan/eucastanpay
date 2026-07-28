@@ -224,7 +224,7 @@ func (r *TransferRepository) FindByAccountID(ctx context.Context, accID string) 
 		amount, description, idempotency_key, direction, status, mode, reversal_ref, 
 		is_reversed, from_balance_after, to_balance_after, created_at, updated_at
         FROM transfers 
-        WHERE id = $1`
+        WHERE from_account_id = $1 OR to_account_id = $1`
 
 	transfer := &domain.Transfer{}
 	err := r.DB.QueryRow(ctx, query, accID).Scan(

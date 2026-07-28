@@ -244,7 +244,6 @@ func (u *TransferUseCase) ReverseTransfer(ctx context.Context, originalRef, idem
 func (u *TransferUseCase) ReconcileAccount(
 	ctx context.Context,
 	accID string,
-	input *request.ReconciliationRequest,
 ) (*response.ReconciliationResult, error) {
 	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.ReconcileAccount")
 	defer span.End()
@@ -284,12 +283,12 @@ func (u *TransferUseCase) ReconcileAccount(
 	return &result, nil
 }
 
-func (u *TransferUseCase) GetTransferByAccID(
+func (u *TransferUseCase) GetTransferByRef(
 	ctx context.Context,
-	accID string,
+	ref string,
 ) (*response.TransferResponse, error) {
 
-	data, err := u.TX.FindByAccountID(ctx, accID)
+	data, err := u.TX.FindByReferenceNoTx(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
