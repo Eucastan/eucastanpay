@@ -10,17 +10,20 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sirupsen/logrus"
 )
 
 type LedgerRepository struct {
 	DB        *pgxpool.Pool
 	telemetry *telemetry.Telemetry
+	logger    *logrus.Logger
 }
 
-func NewLedgerRepository(db *pgxpool.Pool, telemetry *telemetry.Telemetry) *LedgerRepository {
+func NewLedgerRepository(db *pgxpool.Pool, telemetry *telemetry.Telemetry, logger *logrus.Logger) *LedgerRepository {
 	return &LedgerRepository{
 		DB:        db,
 		telemetry: telemetry,
+		logger:    logger,
 	}
 }
 
@@ -152,7 +155,7 @@ func (r *LedgerRepository) FindByReference(ctx context.Context, reference string
         SELECT id, user_id, account_id, amount, entry_type, reference, balance_after, 
                description, created_at, updated_at 
         FROM ledgers 
-        WHERE id = $1
+        WHERE reference = $1
     `
 
 	entry := &domain.Ledger{}
@@ -212,6 +215,7 @@ func (r *LedgerRepository) FindByEntryType(ctx context.Context, entryType string
 }
 
 func (r *LedgerRepository) SumByAccountID(ctx context.Context, accID string) (int64, error) {
+	r.logger.Info("LedgerRepository.SumByAccountID reached >>")
 	ctx, span := r.telemetry.Start(ctx, "LedgerRepository.SumByAccountID")
 	defer span.End()
 
@@ -228,9 +232,12 @@ func (r *LedgerRepository) SumByAccountID(ctx context.Context, accID string) (in
 	var balance int64
 	err := r.DB.QueryRow(ctx, query, accID).Scan(&balance)
 	if err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return 0, err
 	}
+
+	r.logger.Info("LedgerRepository returning balance")
 	return balance, nil
 }
 

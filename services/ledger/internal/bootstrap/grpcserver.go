@@ -14,7 +14,7 @@ func (a *App) initGRPCServer() {
 		),
 	)
 
-	gs := grpcserver.NewLedgerServiceServer(a.uc)
+	gs := grpcserver.NewLedgerServiceServer(a.uc, a.logger)
 	ledgerpb.RegisterLedgerServiceServer(grpcServer, gs)
 
 	a.grpcServ = grpcServer

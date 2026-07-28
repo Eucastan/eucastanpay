@@ -68,6 +68,7 @@ func (u *LedgerUseCase) CreateEntries(
 	}
 
 	if err := u.ledger.CreateLedgerEntry(ctx, tx, debit); err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return err
 	}
@@ -86,16 +87,20 @@ func (u *LedgerUseCase) CreateEntries(
 	}
 
 	if err := u.ledger.CreateLedgerEntry(ctx, tx, credit); err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return err
 	}
 
 	// Publish events to outbox
 	if err := u.publishLedgerEvent(ctx, tx, debit); err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return err
 	}
+
 	if err := u.publishLedgerEvent(ctx, tx, credit); err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return err
 	}
@@ -125,6 +130,8 @@ func (u *LedgerUseCase) publishLedgerEvent(ctx context.Context, tx pgx.Tx, entry
 }
 
 func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) (*response.ReconciliationResult, error) {
+	u.logger.Info("LedgerUseCase.ReconcileAccount reached >>")
+
 	ctx, span := u.telemetry.Start(ctx, "LedgerUseCase.ReconcileAccount")
 	defer span.End()
 
@@ -135,22 +142,31 @@ func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) 
 	}
 
 	// Get balance from Account Service
+	u.logger.Info("Before connecting to account service...")
 	acc := clients.Account(u.manager)
+
+	u.logger.Info("connection success...")
+	u.logger.Info("Before entering Account service method acc.ReconcileBalance")
 	res, err := acc.ReconcileBalance(ctx, &account.BalanceRequest{
 		AccountId: accountID,
 	})
 
 	if err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
+	u.logger.Info("Account service successfully returned balance details")
 	result.AccountBalance = res.Balance
 
 	// Get ledger sum
+	u.logger.Info("Before entering repo method SumByAccountID")
 	ledgerSum, err := u.ledger.SumByAccountID(ctx, accountID)
 	if err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
+
 	result.LedgerBalance = ledgerSum
 	result.Difference = result.AccountBalance - result.LedgerBalance
 
@@ -176,6 +192,7 @@ func (u *LedgerUseCase) ReconcileAccount(ctx context.Context, accountID string) 
 		}
 	}
 
+	u.logger.Info("LedgerUseCase.ReconcileAccount successfully returning result")
 	return result, nil
 }
 

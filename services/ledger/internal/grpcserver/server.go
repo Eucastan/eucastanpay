@@ -7,6 +7,7 @@ import (
 	ledgerpb "github.com/Eucastan/eucastanpay/common/proto/ledger"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/dto/request"
 	"github.com/Eucastan/eucastanpay/services/ledger/internal/usecase"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -15,23 +16,32 @@ import (
 type LedgerServiceServer struct {
 	ledgerpb.UnimplementedLedgerServiceServer
 	Ledger usecase.LedgerUseCase
+	logger *logrus.Logger
 }
 
-func NewLedgerServiceServer(ledger usecase.LedgerUseCase) *LedgerServiceServer {
-	return &LedgerServiceServer{Ledger: ledger}
+func NewLedgerServiceServer(ledger usecase.LedgerUseCase, logger *logrus.Logger) *LedgerServiceServer {
+	return &LedgerServiceServer{
+		Ledger: ledger,
+		logger: logger,
+	}
 }
 
 func (s *LedgerServiceServer) ReconcileAccount(ctx context.Context, req *ledgerpb.ReconcileAccountRequest) (*ledgerpb.ReconcileResponse, error) {
+	s.logger.Info("LedgerServiceServer.ReconcileAccount reached >>")
+
 	_, err := interceptor.RequireAdminRole(ctx, "super_admin", "admin")
 	if err != nil {
 		return nil, err
 	}
 
+	s.logger.Info("Before entering Usecase method Reconciliation >>")
 	result, err := s.Ledger.ReconcileAccount(ctx, req.AccountId)
 	if err != nil {
+		s.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
+	s.logger.Info("returning reconciliation result from ledger usecase")
 	return &ledgerpb.ReconcileResponse{
 		Status:         result.Status,
 		AccountId:      result.AccountID,
@@ -141,11 +151,13 @@ func (s *LedgerServiceServer) GetLedger(ctx context.Context, req *ledgerpb.Ledge
 func (s *LedgerServiceServer) GetLedgerByUserId(ctx context.Context, req *ledgerpb.UserIdRequest) (*ledgerpb.LedgerResponse, error) {
 	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
 	if err != nil {
+		s.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
 	ldg, err := s.Ledger.GetLedgerByUserID(ctx, user.UserID)
 	if err != nil {
+		s.logger.WithError(err).Error(err.Error())
 		return nil, status.Error(codes.Internal, "failed to fetch ledger entry")
 	}
 
