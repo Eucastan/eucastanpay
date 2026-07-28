@@ -12,17 +12,20 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sirupsen/logrus"
 )
 
 type TransferRepository struct {
 	DB        *pgxpool.Pool
 	telemetry *telemetry.Telemetry
+	logger    *logrus.Logger
 }
 
-func NewTransferRepository(db *pgxpool.Pool, telemetry *telemetry.Telemetry) *TransferRepository {
+func NewTransferRepository(db *pgxpool.Pool, telemetry *telemetry.Telemetry, logger *logrus.Logger) *TransferRepository {
 	return &TransferRepository{
 		DB:        db,
 		telemetry: telemetry,
+		logger:    logger,
 	}
 }
 
@@ -83,7 +86,6 @@ func (r *TransferRepository) Create(ctx context.Context, tx pgx.Tx, t *domain.Tr
 		}
 
 		r.telemetry.RecordError(span, err)
-
 		return err
 	}
 	return nil
@@ -104,6 +106,7 @@ func (r *TransferRepository) FindAll(ctx context.Context) ([]domain.Transfer, er
 
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
@@ -132,6 +135,7 @@ func (r *TransferRepository) FindByIdempotencyKey(ctx context.Context, idemKey s
 		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, errmessage.ErrTranferNotFound
 	}
@@ -158,6 +162,7 @@ func (r *TransferRepository) FindByReference(ctx context.Context, tx pgx.Tx, ref
 		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, errmessage.ErrTranferNotFound
 	}
@@ -184,6 +189,7 @@ func (r *TransferRepository) FindByReferenceNoTx(ctx context.Context, reference 
 	)
 
 	if err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
@@ -210,6 +216,7 @@ func (r *TransferRepository) FindByUserID(ctx context.Context, userID string) (*
 		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, errmessage.ErrTranferNotFound
 	}
@@ -235,6 +242,7 @@ func (r *TransferRepository) FindByAccountID(ctx context.Context, accID string) 
 		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, errmessage.ErrTranferNotFound
 	}
@@ -260,6 +268,7 @@ func (r *TransferRepository) FindByID(ctx context.Context, id string) (*domain.T
 		&transfer.ToBalanceAfter, &transfer.CreatedAt, &transfer.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, errmessage.ErrTranferNotFound
 	}

@@ -245,12 +245,17 @@ func (u *TransferUseCase) ReconcileAccount(
 	ctx context.Context,
 	accID string,
 ) (*response.ReconciliationResult, error) {
+	u.log.Info("TransferUseCase.ReconcileAccount reached >>")
 	ctx, span := u.telemetry.Start(ctx, "TransferUseCase.ReconcileAccount")
 	defer span.End()
 
+	u.log.Info("Establishing connection to ledger service...")
 	ledg := clients.Ledger(u.Manager)
+
+	u.log.Info("Connection established, calling Ledger ReconcileAccount method")
 	resp, err := ledg.ReconcileAccount(ctx, &ledger.ReconcileAccountRequest{AccountId: accID})
 	if err != nil {
+		u.log.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -267,6 +272,7 @@ func (u *TransferUseCase) ReconcileAccount(
 	})
 
 	if err != nil {
+		u.log.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
@@ -287,9 +293,11 @@ func (u *TransferUseCase) GetTransferByRef(
 	ctx context.Context,
 	ref string,
 ) (*response.TransferResponse, error) {
+	u.log.Info("TransferUseCase.GetTransferByRef reached >>")
 
 	data, err := u.TX.FindByReferenceNoTx(ctx, ref)
 	if err != nil {
+		u.log.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
