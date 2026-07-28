@@ -561,8 +561,10 @@ func (u *AccountUseCase) GetBalance(ctx context.Context, accID, userID string) (
 	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.GetBalance")
 	defer span.End()
 
+	u.logger.Info("Before entering repo FindByAccountIDAndUserID method")
 	acc, err := u.ACC.FindByAccountIDAndUserID(ctx, accID, userID)
 	if err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}

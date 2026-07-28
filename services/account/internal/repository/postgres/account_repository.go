@@ -268,6 +268,7 @@ func (r *AccountRepository) FindByAccountIDAndUserID(ctx context.Context, accID,
 		&acc.AccountType, &acc.Currency, &acc.Status, &acc.CreatedAt, &acc.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, errmessage.ErrAccNotFound
 	}

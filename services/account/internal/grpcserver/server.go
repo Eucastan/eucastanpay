@@ -129,11 +129,14 @@ func (s *AccountServiceServer) GetBalance(ctx context.Context, req *accountpb.Ge
 
 	user, err := interceptor.RequireUserOwner(ctx, req.UserId)
 	if err != nil {
+		s.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
 
+	s.logger.Info("Before entering usecase GetBalance method")
 	resp, err := s.ACC.GetBalance(ctx, req.AccountId, user.UserID)
 	if err != nil {
+		s.logger.WithError(err).Error(err.Error())
 		return nil, grpcstatus.ToAccountStatus(err)
 	}
 
