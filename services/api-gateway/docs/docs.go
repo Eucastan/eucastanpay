@@ -1350,70 +1350,6 @@ const docTemplate = `{
             }
         },
         "/admin/transfers/{reference}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Get transfer by Reference",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Transfer Reference",
-                        "name": "reference",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
-                        }
-                    }
-                }
-            },
             "post": {
                 "security": [
                     {
@@ -1474,6 +1410,72 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/transfers/{reference}/reference": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get transfer by Reference",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transfer Reference",
+                        "name": "reference",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse"
                         }

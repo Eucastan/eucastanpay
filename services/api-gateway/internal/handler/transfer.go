@@ -117,7 +117,7 @@ func (h *TransferHandler) GetAllTransfers(c *gin.Context) {
 // @Failure 404 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/transfers/{reference} [get]
+// @Router /admin/transfers/{reference}/reference [get]
 func (h *TransferHandler) GetTransferByRef(c *gin.Context) {
 
 	uri, err := httpx.BindURI[transferReq.ReferenceURI](c)
