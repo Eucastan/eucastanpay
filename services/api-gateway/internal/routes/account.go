@@ -18,6 +18,6 @@ func RegisterAccountRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) 
 
 	{
 		user.GET("/account/me", h.Account.GetUserAccount)
-		admin.GET("/account/:id/balance", h.Account.GetBalance)
+		user.GET("/account/:id/balance", h.Account.GetBalance)
 	}
 }
