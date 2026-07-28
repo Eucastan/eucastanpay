@@ -13,7 +13,7 @@ service TransferService {
 	rpc GetAllTransfers(ListTransfersRequest) returns (ListTransfersResponse);
 	rpc GetTransfer(TransferIdRequest) returns (GetTransferResponse);
 	rpc GetTransferByUserID(UserIdRequest) returns (GetTransferResponse);
-	rpc GetTransferByAccountID(AccountIdRequest) returns (GetTransferResponse);
+	rpc GetTransferByRef(ReferenceRequest) returns (GetTransferResponse);
 }
 
 message Transfer {
@@ -96,8 +96,8 @@ message UserIdRequest {
   string user_id = 1;
 }
 
-message AccountIdRequest {
-	string account_id = 1;
+message ReferenceRequest {
+	string reference = 1;
 }
 
 message GetTransferResponse {

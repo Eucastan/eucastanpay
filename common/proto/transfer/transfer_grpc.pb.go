@@ -19,13 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TransferService_Transfer_FullMethodName               = "/transfer.TransferService/Transfer"
-	TransferService_ReverseTransfer_FullMethodName        = "/transfer.TransferService/ReverseTransfer"
-	TransferService_ReconcileAccount_FullMethodName       = "/transfer.TransferService/ReconcileAccount"
-	TransferService_GetAllTransfers_FullMethodName        = "/transfer.TransferService/GetAllTransfers"
-	TransferService_GetTransfer_FullMethodName            = "/transfer.TransferService/GetTransfer"
-	TransferService_GetTransferByUserID_FullMethodName    = "/transfer.TransferService/GetTransferByUserID"
-	TransferService_GetTransferByAccountID_FullMethodName = "/transfer.TransferService/GetTransferByAccountID"
+	TransferService_Transfer_FullMethodName            = "/transfer.TransferService/Transfer"
+	TransferService_ReverseTransfer_FullMethodName     = "/transfer.TransferService/ReverseTransfer"
+	TransferService_ReconcileAccount_FullMethodName    = "/transfer.TransferService/ReconcileAccount"
+	TransferService_GetAllTransfers_FullMethodName     = "/transfer.TransferService/GetAllTransfers"
+	TransferService_GetTransfer_FullMethodName         = "/transfer.TransferService/GetTransfer"
+	TransferService_GetTransferByUserID_FullMethodName = "/transfer.TransferService/GetTransferByUserID"
+	TransferService_GetTransferByRef_FullMethodName    = "/transfer.TransferService/GetTransferByRef"
 )
 
 // TransferServiceClient is the client API for TransferService service.
@@ -38,7 +38,7 @@ type TransferServiceClient interface {
 	GetAllTransfers(ctx context.Context, in *ListTransfersRequest, opts ...grpc.CallOption) (*ListTransfersResponse, error)
 	GetTransfer(ctx context.Context, in *TransferIdRequest, opts ...grpc.CallOption) (*GetTransferResponse, error)
 	GetTransferByUserID(ctx context.Context, in *UserIdRequest, opts ...grpc.CallOption) (*GetTransferResponse, error)
-	GetTransferByAccountID(ctx context.Context, in *AccountIdRequest, opts ...grpc.CallOption) (*GetTransferResponse, error)
+	GetTransferByRef(ctx context.Context, in *ReferenceRequest, opts ...grpc.CallOption) (*GetTransferResponse, error)
 }
 
 type transferServiceClient struct {
@@ -109,10 +109,10 @@ func (c *transferServiceClient) GetTransferByUserID(ctx context.Context, in *Use
 	return out, nil
 }
 
-func (c *transferServiceClient) GetTransferByAccountID(ctx context.Context, in *AccountIdRequest, opts ...grpc.CallOption) (*GetTransferResponse, error) {
+func (c *transferServiceClient) GetTransferByRef(ctx context.Context, in *ReferenceRequest, opts ...grpc.CallOption) (*GetTransferResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetTransferResponse)
-	err := c.cc.Invoke(ctx, TransferService_GetTransferByAccountID_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, TransferService_GetTransferByRef_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ type TransferServiceServer interface {
 	GetAllTransfers(context.Context, *ListTransfersRequest) (*ListTransfersResponse, error)
 	GetTransfer(context.Context, *TransferIdRequest) (*GetTransferResponse, error)
 	GetTransferByUserID(context.Context, *UserIdRequest) (*GetTransferResponse, error)
-	GetTransferByAccountID(context.Context, *AccountIdRequest) (*GetTransferResponse, error)
+	GetTransferByRef(context.Context, *ReferenceRequest) (*GetTransferResponse, error)
 	mustEmbedUnimplementedTransferServiceServer()
 }
 
@@ -158,8 +158,8 @@ func (UnimplementedTransferServiceServer) GetTransfer(context.Context, *Transfer
 func (UnimplementedTransferServiceServer) GetTransferByUserID(context.Context, *UserIdRequest) (*GetTransferResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTransferByUserID not implemented")
 }
-func (UnimplementedTransferServiceServer) GetTransferByAccountID(context.Context, *AccountIdRequest) (*GetTransferResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetTransferByAccountID not implemented")
+func (UnimplementedTransferServiceServer) GetTransferByRef(context.Context, *ReferenceRequest) (*GetTransferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTransferByRef not implemented")
 }
 func (UnimplementedTransferServiceServer) mustEmbedUnimplementedTransferServiceServer() {}
 func (UnimplementedTransferServiceServer) testEmbeddedByValue()                         {}
@@ -290,20 +290,20 @@ func _TransferService_GetTransferByUserID_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TransferService_GetTransferByAccountID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccountIdRequest)
+func _TransferService_GetTransferByRef_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReferenceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TransferServiceServer).GetTransferByAccountID(ctx, in)
+		return srv.(TransferServiceServer).GetTransferByRef(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TransferService_GetTransferByAccountID_FullMethodName,
+		FullMethod: TransferService_GetTransferByRef_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TransferServiceServer).GetTransferByAccountID(ctx, req.(*AccountIdRequest))
+		return srv.(TransferServiceServer).GetTransferByRef(ctx, req.(*ReferenceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -340,8 +340,8 @@ var TransferService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TransferService_GetTransferByUserID_Handler,
 		},
 		{
-			MethodName: "GetTransferByAccountID",
-			Handler:    _TransferService_GetTransferByAccountID_Handler,
+			MethodName: "GetTransferByRef",
+			Handler:    _TransferService_GetTransferByRef_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

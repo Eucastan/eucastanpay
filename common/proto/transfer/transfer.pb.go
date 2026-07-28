@@ -794,27 +794,27 @@ func (x *UserIdRequest) GetUserId() string {
 	return ""
 }
 
-type AccountIdRequest struct {
+type ReferenceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Reference     string                 `protobuf:"bytes,1,opt,name=reference,proto3" json:"reference,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AccountIdRequest) Reset() {
-	*x = AccountIdRequest{}
+func (x *ReferenceRequest) Reset() {
+	*x = ReferenceRequest{}
 	mi := &file_proto_transfer_transfer_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AccountIdRequest) String() string {
+func (x *ReferenceRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AccountIdRequest) ProtoMessage() {}
+func (*ReferenceRequest) ProtoMessage() {}
 
-func (x *AccountIdRequest) ProtoReflect() protoreflect.Message {
+func (x *ReferenceRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_transfer_transfer_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -826,14 +826,14 @@ func (x *AccountIdRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AccountIdRequest.ProtoReflect.Descriptor instead.
-func (*AccountIdRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReferenceRequest.ProtoReflect.Descriptor instead.
+func (*ReferenceRequest) Descriptor() ([]byte, []int) {
 	return file_proto_transfer_transfer_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *AccountIdRequest) GetAccountId() string {
+func (x *ReferenceRequest) GetReference() string {
 	if x != nil {
-		return x.AccountId
+		return x.Reference
 	}
 	return ""
 }
@@ -1099,10 +1099,9 @@ const file_proto_transfer_transfer_proto_rawDesc = "" +
 	"\vtransfer_id\x18\x01 \x01(\tR\n" +
 	"transferId\"(\n" +
 	"\rUserIdRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"1\n" +
-	"\x10AccountIdRequest\x12\x1d\n" +
-	"\n" +
-	"account_id\x18\x01 \x01(\tR\taccountId\"\x95\x05\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"0\n" +
+	"\x10ReferenceRequest\x12\x1c\n" +
+	"\treference\x18\x01 \x01(\tR\treference\"\x95\x05\n" +
 	"\x13GetTransferResponse\x12\x1f\n" +
 	"\vtransfer_id\x18\x01 \x01(\tR\n" +
 	"transferId\x12\x1c\n" +
@@ -1127,15 +1126,15 @@ const file_proto_transfer_transfer_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x13 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2\xba\x04\n" +
+	"updated_at\x18\x13 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2\xb4\x04\n" +
 	"\x0fTransferService\x12A\n" +
 	"\bTransfer\x12\x19.transfer.TransferRequest\x1a\x1a.transfer.TransferResponse\x12F\n" +
 	"\x0fReverseTransfer\x12\x18.transfer.ReverseRequest\x1a\x19.transfer.ReverseResponse\x12Y\n" +
 	"\x10ReconcileAccount\x12!.transfer.ReconcileAccountRequest\x1a\".transfer.ReconcileAccountResponse\x12R\n" +
 	"\x0fGetAllTransfers\x12\x1e.transfer.ListTransfersRequest\x1a\x1f.transfer.ListTransfersResponse\x12I\n" +
 	"\vGetTransfer\x12\x1b.transfer.TransferIdRequest\x1a\x1d.transfer.GetTransferResponse\x12M\n" +
-	"\x13GetTransferByUserID\x12\x17.transfer.UserIdRequest\x1a\x1d.transfer.GetTransferResponse\x12S\n" +
-	"\x16GetTransferByAccountID\x12\x1a.transfer.AccountIdRequest\x1a\x1d.transfer.GetTransferResponseB7Z5github.com/Eucastan/eucastanpay/common/proto/transferb\x06proto3"
+	"\x13GetTransferByUserID\x12\x17.transfer.UserIdRequest\x1a\x1d.transfer.GetTransferResponse\x12M\n" +
+	"\x10GetTransferByRef\x12\x1a.transfer.ReferenceRequest\x1a\x1d.transfer.GetTransferResponseB7Z5github.com/Eucastan/eucastanpay/common/proto/transferb\x06proto3"
 
 var (
 	file_proto_transfer_transfer_proto_rawDescOnce sync.Once
@@ -1162,7 +1161,7 @@ var file_proto_transfer_transfer_proto_goTypes = []any{
 	(*ReconcileAccountResponse)(nil), // 8: transfer.ReconcileAccountResponse
 	(*TransferIdRequest)(nil),        // 9: transfer.TransferIdRequest
 	(*UserIdRequest)(nil),            // 10: transfer.UserIdRequest
-	(*AccountIdRequest)(nil),         // 11: transfer.AccountIdRequest
+	(*ReferenceRequest)(nil),         // 11: transfer.ReferenceRequest
 	(*GetTransferResponse)(nil),      // 12: transfer.GetTransferResponse
 	(*timestamppb.Timestamp)(nil),    // 13: google.protobuf.Timestamp
 }
@@ -1181,14 +1180,14 @@ var file_proto_transfer_transfer_proto_depIdxs = []int32{
 	3,  // 11: transfer.TransferService.GetAllTransfers:input_type -> transfer.ListTransfersRequest
 	9,  // 12: transfer.TransferService.GetTransfer:input_type -> transfer.TransferIdRequest
 	10, // 13: transfer.TransferService.GetTransferByUserID:input_type -> transfer.UserIdRequest
-	11, // 14: transfer.TransferService.GetTransferByAccountID:input_type -> transfer.AccountIdRequest
+	11, // 14: transfer.TransferService.GetTransferByRef:input_type -> transfer.ReferenceRequest
 	2,  // 15: transfer.TransferService.Transfer:output_type -> transfer.TransferResponse
 	6,  // 16: transfer.TransferService.ReverseTransfer:output_type -> transfer.ReverseResponse
 	8,  // 17: transfer.TransferService.ReconcileAccount:output_type -> transfer.ReconcileAccountResponse
 	4,  // 18: transfer.TransferService.GetAllTransfers:output_type -> transfer.ListTransfersResponse
 	12, // 19: transfer.TransferService.GetTransfer:output_type -> transfer.GetTransferResponse
 	12, // 20: transfer.TransferService.GetTransferByUserID:output_type -> transfer.GetTransferResponse
-	12, // 21: transfer.TransferService.GetTransferByAccountID:output_type -> transfer.GetTransferResponse
+	12, // 21: transfer.TransferService.GetTransferByRef:output_type -> transfer.GetTransferResponse
 	15, // [15:22] is the sub-list for method output_type
 	8,  // [8:15] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
