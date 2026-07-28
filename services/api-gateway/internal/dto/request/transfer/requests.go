@@ -39,6 +39,10 @@ type ReverseURI struct {
 	Reference string `uri:"reference" binding:"required"`
 }
 
+type ReferenceURI struct {
+	Reference string `uri:"reference" binding:"required"`
+}
+
 type AccountIdURI struct {
 	AccountID string `uri:"account_id" binding:"required"`
 }

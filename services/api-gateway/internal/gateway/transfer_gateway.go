@@ -46,10 +46,10 @@ func (s *TransferGateway) ReverseTransfer(ctx context.Context, originalRef, idem
 	return &resp, nil
 }
 
-func (s *TransferGateway) ReconcileAccount(ctx context.Context, accID string, accNo int64) (*transferResp.ReconciliationResult, error) {
+func (s *TransferGateway) ReconcileAccount(ctx context.Context, accID string) (*transferResp.ReconciliationResult, error) {
 	grpcResp, err := s.client.ReconcileAccount(
 		ctx,
-		mapper.ToProtoReconciliation(accID, accNo),
+		mapper.ToProtoReconciliation(accID),
 	)
 
 	if err != nil {
@@ -88,10 +88,10 @@ func (s *TransferGateway) GetTransfer(ctx context.Context, transferID string) (*
 	return &resp, nil
 }
 
-func (s *TransferGateway) GetTransferByAccID(ctx context.Context, accID string) (*transferResp.TransferResponse, error) {
-	grpcResp, err := s.client.GetTransferByAccountID(
+func (s *TransferGateway) GetTransferByRef(ctx context.Context, ref string) (*transferResp.TransferResponse, error) {
+	grpcResp, err := s.client.GetTransferByRef(
 		ctx,
-		mapper.ToProtoTransferByAccID(accID),
+		mapper.ToProtoTransferByRef(ref),
 	)
 
 	if err != nil {

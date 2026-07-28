@@ -145,12 +145,7 @@ func (h *AccountHandler) GetBalance(c *gin.Context) {
 
 	userID := proxy.UserID(c)
 
-	accReq := accountreq.GetBalanceRequest{
-		AccountID: uri.AccountID,
-		UserID:    userID,
-	}
-
-	resp, err := h.accountApp.GetBalance(proxy.Context(c), &accReq)
+	resp, err := h.accountApp.GetBalance(proxy.Context(c), uri.AccountID, userID)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return

@@ -26,10 +26,9 @@ func (s *AccountApplication) WithDraw(ctx context.Context, input *accountReq.Dep
 	return s.gateway.WithDraw(ctx, input)
 }
 
-func (s *AccountApplication) GetBalance(ctx context.Context, input *accountReq.GetBalanceRequest) (*accountResp.AccountResponse, error) {
+func (s *AccountApplication) GetBalance(ctx context.Context, accID, userID string) (*accountResp.AccountResponse, error) {
 	return s.gateway.GetBalance(
-		ctx,
-		input,
+		ctx, accID, userID,
 	)
 }
 

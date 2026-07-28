@@ -24,16 +24,15 @@ func ToProtoReverseTransfer(originalRef, idemKey string) *transferpb.ReverseRequ
 	}
 }
 
-func ToProtoReconciliation(accID string, accNo int64) *transferpb.ReconcileAccountRequest {
+func ToProtoReconciliation(accID string) *transferpb.ReconcileAccountRequest {
 	return &transferpb.ReconcileAccountRequest{
 		AccountId: accID,
-		AccountNo: accNo,
 	}
 }
 
-func ToProtoTransferByAccID(accID string) *transferpb.AccountIdRequest {
-	return &transferpb.AccountIdRequest{
-		AccountId: accID,
+func ToProtoTransferByRef(ref string) *transferpb.ReferenceRequest {
+	return &transferpb.ReferenceRequest{
+		Reference: ref,
 	}
 }
 

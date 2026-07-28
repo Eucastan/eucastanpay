@@ -59,13 +59,6 @@ definitions:
       status:
         type: string
     type: object
-  github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_transfer.ReconciliationRequest:
-    properties:
-      to_account_no:
-        type: integer
-    required:
-    - to_account_no
-    type: object
   github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_transfer.TransferRequest:
     properties:
       amount:
@@ -693,12 +686,6 @@ paths:
       - application/json
       description: Reconciliation Account from Transfer service.
       parameters:
-      - description: Reconciliation Request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_transfer.ReconciliationRequest'
       - description: Account Reconciliation
         in: path
         name: account_id
@@ -1137,48 +1124,6 @@ paths:
       summary: List transfers
       tags:
       - Transfer
-  /admin/transfers/{account_id}:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: Account ID
-        in: path
-        name: account_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-      security:
-      - BearerAuth: []
-      summary: Get transfer by Account ID
-      tags:
-      - Transfer
   /admin/transfers/{id}:
     get:
       consumes:
@@ -1222,6 +1167,47 @@ paths:
       tags:
       - Transfer
   /admin/transfers/{reference}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Transfer Reference
+        in: path
+        name: reference
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get transfer by Reference
+      tags:
+      - Transfer
     post:
       consumes:
       - application/json

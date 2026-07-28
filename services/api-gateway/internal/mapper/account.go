@@ -8,10 +8,10 @@ import (
 	accountresp "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/response/account"
 )
 
-func ToProtoGetBalance(req accountreq.GetBalanceRequest) *accountpb.GetBalanceRequest {
+func ToProtoGetBalance(accID, userID string) *accountpb.GetBalanceRequest {
 	return &accountpb.GetBalanceRequest{
-		AccountId: req.AccountID,
-		UserId:    req.UserID,
+		AccountId: accID,
+		UserId:    userID,
 	}
 }
 

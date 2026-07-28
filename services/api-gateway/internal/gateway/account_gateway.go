@@ -46,10 +46,10 @@ func (g *AccountGateway) WithDraw(ctx context.Context, input *accountReq.Deposit
 	return &resp, nil
 }
 
-func (g *AccountGateway) GetBalance(ctx context.Context, input *accountReq.GetBalanceRequest) (*accountResp.AccountResponse, error) {
+func (g *AccountGateway) GetBalance(ctx context.Context, accID, userID string) (*accountResp.AccountResponse, error) {
 	grpcResp, err := g.client.GetBalance(
 		ctx,
-		mapper.ToProtoGetBalance(*input),
+		mapper.ToProtoGetBalance(accID, userID),
 	)
 
 	if err != nil {

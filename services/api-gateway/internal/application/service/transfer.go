@@ -26,8 +26,8 @@ func (s *TransferApplication) ReverseTransfer(ctx context.Context, originalRef, 
 	return s.gateway.ReverseTransfer(ctx, originalRef, idemKey)
 }
 
-func (s *TransferApplication) ReconcileAccount(ctx context.Context, accID string, accNo int64) (*transferResp.ReconciliationResult, error) {
-	return s.gateway.ReconcileAccount(ctx, accID, accNo)
+func (s *TransferApplication) ReconcileAccount(ctx context.Context, accID string) (*transferResp.ReconciliationResult, error) {
+	return s.gateway.ReconcileAccount(ctx, accID)
 }
 
 func (s *TransferApplication) GetAllTransfers(ctx context.Context) (*transferResp.UserTransferResponse, error) {
@@ -38,8 +38,8 @@ func (s *TransferApplication) GetTransfer(ctx context.Context, transferID string
 	return s.gateway.GetTransfer(ctx, transferID)
 }
 
-func (s *TransferApplication) GetTransferAccID(ctx context.Context, accID string) (*transferResp.TransferResponse, error) {
-	return s.gateway.GetTransferByAccID(ctx, accID)
+func (s *TransferApplication) GetTransferByRef(ctx context.Context, ref string) (*transferResp.TransferResponse, error) {
+	return s.gateway.GetTransferByRef(ctx, ref)
 }
 
 func (s *TransferApplication) GetTransferUserID(ctx context.Context, userID string) (*transferResp.TransferResponse, error) {

@@ -100,9 +100,9 @@ func (h *TransferHandler) GetAllTransfers(c *gin.Context) {
 	httpx.Success(c, resp)
 }
 
-// GetTransferByAccID godoc
+// GetTransferByRef godoc
 //
-// @Summary Get transfer by Account ID
+// @Summary Get transfer by Reference
 // @Tags Transfer
 //
 // @Security BearerAuth
@@ -110,7 +110,7 @@ func (h *TransferHandler) GetAllTransfers(c *gin.Context) {
 // @Accept json
 // @Produce json
 //
-// @Param account_id path string true "Account ID"
+// @Param reference path string true "Transfer Reference"
 //
 // @Success 200 {object} httpx.APIResponse
 //
@@ -120,16 +120,16 @@ func (h *TransferHandler) GetAllTransfers(c *gin.Context) {
 // @Failure 404 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/transfers/{account_id} [get]
-func (h *TransferHandler) GetTransferByAccID(c *gin.Context) {
+// @Router /admin/transfers/{reference} [get]
+func (h *TransferHandler) GetTransferByRef(c *gin.Context) {
 
-	uri, err := httpx.BindURI[transferReq.AccountIdURI](c)
+	uri, err := httpx.BindURI[transferReq.ReferenceURI](c)
 	if err != nil {
 		httpx.ValidationError(c, err)
 		return
 	}
 
-	resp, err := h.transferApp.GetTransferAccID(proxy.Context(c), uri.AccountID)
+	resp, err := h.transferApp.GetTransferByRef(proxy.Context(c), uri.Reference)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return
@@ -260,7 +260,6 @@ func (h *TransferHandler) ReverseTransfer(c *gin.Context) {
 // @Accept json
 // @Produce json
 //
-// @Param request body transferReq.ReconciliationRequest true "Reconciliation Request"
 // @Param account_id path string true "Account Reconciliation"
 //
 // @Success 200 {object} httpx.APIResponse
@@ -281,13 +280,7 @@ func (h *TransferHandler) ReconcileAccount(c *gin.Context) {
 		return
 	}
 
-	req, err := httpx.BindJSON[transferReq.ReconciliationRequest](c)
-	if err != nil {
-		httpx.ValidationError(c, err)
-		return
-	}
-
-	resp, err := h.transferApp.ReconcileAccount(ctx, uri.AccountID, req.AccountNo)
+	resp, err := h.transferApp.ReconcileAccount(ctx, uri.AccountID)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return
