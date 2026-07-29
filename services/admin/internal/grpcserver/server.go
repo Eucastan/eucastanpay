@@ -24,6 +24,31 @@ func NewAdminServiceServer(admin usecase.AdminUseCase) *AdminServer {
 	}
 }
 
+func (s *AdminServer) BootstrapAdmin(ctx context.Context, req *adminpb.RegisterRequest) (*adminpb.AdminResponse, error) {
+	input := &request.CreateAdminRequest{
+		Email:     req.Email,
+		Password:  req.Password,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Role:      req.Role,
+	}
+
+	admin, err := s.admin.BootstrapAdmin(ctx, input)
+	if err != nil {
+		return nil, grpcstatus.ToAdminStatus(err)
+	}
+
+	return &adminpb.AdminResponse{
+		AdminId:   admin.ID,
+		Email:     admin.Email,
+		FirstName: admin.FirstName,
+		LastName:  admin.LastName,
+		Status:    admin.Status,
+		CreatedAt: timestamppb.New(admin.CreatedAt),
+		UpdatedAt: timestamppb.New(admin.UpdatedAt),
+	}, nil
+}
+
 func (s *AdminServer) Register(ctx context.Context, req *adminpb.RegisterRequest) (*adminpb.AdminResponse, error) {
 	input := &request.CreateAdminRequest{
 		Email:     req.Email,

@@ -8,6 +8,7 @@ import (
 )
 
 type AdminUseCase interface {
+	BootstrapAdmin(ctx context.Context, input *request.CreateAdminRequest) (*response.AdminResponse, error)
 	CreateAdmin(ctx context.Context, input *request.CreateAdminRequest) (*response.AdminResponse, error)
 	Login(ctx context.Context, input *request.AdminLoginRequest) (*response.AdminLoginResponse, error)
 	GetAdminByID(ctx context.Context, id string) (*response.AdminResponse, error)

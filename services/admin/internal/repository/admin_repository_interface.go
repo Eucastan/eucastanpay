@@ -9,6 +9,7 @@ import (
 
 type AdminRepository interface {
 	WithTx(ctx context.Context, fn func(tx pgx.Tx) error) error
+	Count(ctx context.Context) (int64, error)
 	Create(ctx context.Context, admin *domain.Admin) error
 	FindByEmail(ctx context.Context, email string) (*domain.Admin, error)
 	FindByID(ctx context.Context, id string) (*domain.Admin, error)

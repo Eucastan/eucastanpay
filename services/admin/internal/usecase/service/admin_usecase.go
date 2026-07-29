@@ -29,16 +29,39 @@ func NewAdminUseCase(repo repository.AdminRepository, cfg *config.Config, logger
 	}
 }
 
-func (u *AdminUseCase) CreateAdmin(ctx context.Context, input *request.CreateAdminRequest) (*response.AdminResponse, error) {
-	admins, err := u.repo.List(ctx, 1, 0)
+func (u *AdminUseCase) BootstrapAdmin(
+	ctx context.Context,
+	input *request.CreateAdminRequest,
+) (*response.AdminResponse, error) {
+
+	count, err := u.repo.Count(ctx)
 	if err != nil {
-		u.logger.WithError(err).Error("Failed to check existing admins")
 		return nil, err
 	}
 
-	if len(admins) > 0 {
+	if count > 0 {
 		return nil, errmessage.ErrBootstrapClosed
 	}
+
+	if _, err := u.repo.FindByEmail(ctx, input.Email); err == nil {
+		return nil, errmessage.ErrDuplicateEmail
+	}
+
+	hash, err := security.GeneratePassHash(input.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	admin := domain.ToAdminDB(hash, string(domain.RoleSuperAdmin), input)
+
+	if err := u.repo.Create(ctx, admin); err != nil {
+		return nil, err
+	}
+
+	return response.ToAdminResponse(admin), nil
+}
+
+func (u *AdminUseCase) CreateAdmin(ctx context.Context, input *request.CreateAdminRequest) (*response.AdminResponse, error) {
 
 	if _, err := u.repo.FindByEmail(ctx, input.Email); err == nil {
 		return nil, errmessage.ErrDuplicateEmail
@@ -48,6 +71,10 @@ func (u *AdminUseCase) CreateAdmin(ctx context.Context, input *request.CreateAdm
 	hash, err := security.GeneratePassHash(input.Password)
 	if err != nil {
 		return nil, err
+	}
+
+	if input.Role == string(domain.RoleSuperAdmin) {
+		return nil, errmessage.ErrForbidden
 	}
 
 	admin := domain.ToAdminDB(hash, input.Role, input)

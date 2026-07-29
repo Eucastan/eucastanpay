@@ -5,7 +5,7 @@ type CreateAdminRequest struct {
 	Password  string `json:"password" binding:"required,min=8"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
-	Role      string `json:"role" binding:"required"`
+	Role      string `json:"role"`
 }
 
 type UpdateAdminRequest struct {

@@ -45,7 +45,7 @@ func (h *AdminHandler) CreateBootstrapAdmin(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.adminApp.CreateAdmin(proxy.Context(c), &req)
+	resp, err := h.adminApp.CreateBootstrapAdmin(proxy.Context(c), &req)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return

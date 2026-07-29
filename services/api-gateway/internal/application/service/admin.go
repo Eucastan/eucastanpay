@@ -18,6 +18,11 @@ func NewAdminApplication(gateway *gateway.AdminGateway) *AdminApplication {
 	}
 }
 
+func (s *AdminApplication) CreateBootstrapAdmin(ctx context.Context, req *adminReq.CreateAdminRequest) (*adminResp.AdminResponse, error) {
+
+	return s.gateway.CreateBootstrapAdmin(ctx, req)
+}
+
 func (s *AdminApplication) CreateAdmin(ctx context.Context, req *adminReq.CreateAdminRequest) (*adminResp.AdminResponse, error) {
 
 	return s.gateway.Register(ctx, req)

@@ -6,15 +6,19 @@ import (
 
 func RegisterAdminRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 
-	admin := AdminGroup(api, deps.Config)
+	s := SuperAdmin(api, deps.Config)
 
 	{
-		admin.GET("/", h.Admin.ListAdmins)
-		admin.GET("/me", h.Admin.GetAdminProfile)
-		admin.GET("/:id", h.Admin.GetAdmin)
+		s.GET("/", h.Admin.ListAdmins)
+		s.GET("/:id", h.Admin.GetAdmin)
 
-		admin.POST("/", h.Admin.CreateAdmin)
-		admin.PUT("/:id", h.Admin.UpdateAdmin)
-		admin.DELETE("/:id", h.Admin.DeleteAdmin)
+		s.POST("/", h.Admin.CreateAdmin)
+		s.PUT("/:id", h.Admin.UpdateAdmin)
+		s.DELETE("/:id", h.Admin.DeleteAdmin)
+	}
+
+	admin := AdminGroup(api, deps.Config)
+	{
+		admin.GET("/me", h.Admin.GetAdminProfile)
 	}
 }

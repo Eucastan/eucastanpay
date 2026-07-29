@@ -22,6 +22,22 @@ func NewAdminGateway(client adminpb.AdminServiceClient, logger *logrus.Logger) *
 	}
 }
 
+func (g *AdminGateway) CreateBootstrapAdmin(ctx context.Context, req *adminReq.CreateAdminRequest) (*adminResp.AdminResponse, error) {
+
+	grpcResp, err := g.client.BootstrapAdmin(
+		ctx,
+		mapper.ToProtoCreateAdmin(req),
+	)
+
+	if err != nil {
+		g.logger.WithError(err).Error(err.Error())
+		return nil, err
+	}
+
+	resp := mapper.ToCreateAdminResponse(grpcResp)
+	return &resp, nil
+}
+
 func (g *AdminGateway) Register(ctx context.Context, req *adminReq.CreateAdminRequest) (*adminResp.AdminResponse, error) {
 
 	grpcResp, err := g.client.Register(

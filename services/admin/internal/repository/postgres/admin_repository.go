@@ -36,6 +36,17 @@ func (r *AdminRepository) WithTx(ctx context.Context, fn func(tx pgx.Tx) error) 
 	return tx.Commit(ctx)
 }
 
+func (r *AdminRepository) Count(ctx context.Context) (int64, error) {
+	var total int64
+
+	err := r.db.QueryRow(
+		ctx,
+		`SELECT COUNT(*) FROM admins`,
+	).Scan(&total)
+
+	return total, err
+}
+
 func (r *AdminRepository) Create(ctx context.Context, admin *domain.Admin) error {
 	query := `
         INSERT INTO admins (id, email, password_hash, first_name, last_name, role, status)
