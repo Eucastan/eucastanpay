@@ -33,9 +33,9 @@ func (s *AdminApplication) Login(ctx context.Context, req *adminReq.AdminLoginRe
 	return s.gateway.Login(ctx, req)
 }
 
-func (s *AdminApplication) GetAllAdmins(ctx context.Context, limit, page int) (*adminResp.ListAdminsResponse, error) {
+func (s *AdminApplication) GetAllAdmins(ctx context.Context) (*adminResp.ListAdminsResponse, error) {
 
-	return s.gateway.GetAllAdmins(ctx, limit, page)
+	return s.gateway.GetAllAdmins(ctx)
 }
 
 func (s *AdminApplication) GetAdmin(ctx context.Context, adminID string) (*adminResp.AdminResponse, error) {
@@ -43,7 +43,7 @@ func (s *AdminApplication) GetAdmin(ctx context.Context, adminID string) (*admin
 	return s.gateway.GetAdmin(ctx, adminID)
 }
 
-func (s *AdminApplication) UpdateAdmin(ctx context.Context, adminID string, req *adminReq.UpdateAdminRequest) (*adminResp.MessageResponse, error) {
+func (s *AdminApplication) UpdateAdmin(ctx context.Context, adminID string, req *adminReq.UpdateAdminRequest) (*adminResp.AdminResponse, error) {
 
 	return s.gateway.UpdateAdmin(ctx, adminID, req)
 

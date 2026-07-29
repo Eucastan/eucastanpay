@@ -46,8 +46,6 @@ definitions:
         type: string
       first_name:
         type: string
-      last_login_at:
-        type: string
       last_name:
         type: string
       password:
@@ -857,6 +855,38 @@ paths:
       summary: Get Ledger by Account ID
       tags:
       - Ledger
+  /admin/me:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Admin
+      tags:
+      - Admin
   /admin/transfers:
     get:
       consumes:
@@ -1242,15 +1272,6 @@ paths:
     get:
       consumes:
       - application/json
-      parameters:
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Items per page
-        in: query
-        name: limit
-        type: integer
       produces:
       - application/json
       responses:
@@ -1430,38 +1451,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Editing Admin information
-      tags:
-      - Admin
-  /super-admin/me:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
-      security:
-      - BearerAuth: []
-      summary: Get Admin
       tags:
       - Admin
   /transfers:

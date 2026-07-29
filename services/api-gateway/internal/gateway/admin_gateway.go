@@ -70,11 +70,11 @@ func (g *AdminGateway) Login(ctx context.Context, req *adminReq.AdminLoginReques
 	return &resp, nil
 }
 
-func (g *AdminGateway) GetAllAdmins(ctx context.Context, limit, page int) (*adminResp.ListAdminsResponse, error) {
+func (g *AdminGateway) GetAllAdmins(ctx context.Context) (*adminResp.ListAdminsResponse, error) {
 
 	grpcResp, err := g.client.GetAllAdmins(
 		ctx,
-		mapper.ToProtoListAdmins(limit, page),
+		mapper.ToProtoListAdmins(),
 	)
 
 	if err != nil {
@@ -102,7 +102,7 @@ func (g *AdminGateway) GetAdmin(ctx context.Context, adminID string) (*adminResp
 	return resp, nil
 }
 
-func (g *AdminGateway) UpdateAdmin(ctx context.Context, adminID string, req *adminReq.UpdateAdminRequest) (*adminResp.MessageResponse, error) {
+func (g *AdminGateway) UpdateAdmin(ctx context.Context, adminID string, req *adminReq.UpdateAdminRequest) (*adminResp.AdminResponse, error) {
 
 	grpcResp, err := g.client.Update(
 		ctx,

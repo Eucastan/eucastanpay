@@ -142,7 +142,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /super-admin/me [get]
+// @Router /admin/me [get]
 func (h *AdminHandler) GetAdminProfile(c *gin.Context) {
 	adminID := proxy.AdminID(c)
 
@@ -199,8 +199,6 @@ func (h *AdminHandler) GetAdmin(c *gin.Context) {
 //
 // @Accept json
 // @Produce json
-// @Param page query int false "Page number"
-// @Param limit query int false "Items per page"
 //
 // @Success 200 {object} httpx.APIResponse
 //
@@ -210,13 +208,8 @@ func (h *AdminHandler) GetAdmin(c *gin.Context) {
 //
 // @Router /super-admin [get]
 func (h *AdminHandler) ListAdmins(c *gin.Context) {
-	query, err := httpx.BindQuery[adminReq.Pagination](c)
-	if err != nil {
-		httpx.ValidationError(c, err)
-		return
-	}
 
-	resp, err := h.adminApp.GetAllAdmins(proxy.Context(c), query.Limit, query.Page)
+	resp, err := h.adminApp.GetAllAdmins(proxy.Context(c))
 	if err != nil {
 		httpx.HandleGRPCError(c, err)
 		return

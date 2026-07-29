@@ -25,11 +25,8 @@ func ToProtoAdminLogin(req *adminReq.AdminLoginRequest) *adminpb.LoginRequest {
 	}
 }
 
-func ToProtoListAdmins(limit, page int) *adminpb.ListAdminsRequest {
-	return &adminpb.ListAdminsRequest{
-		Page:  int32(page),
-		Limit: int32(limit),
-	}
+func ToProtoListAdmins() *adminpb.ListAdminsRequest {
+	return &adminpb.ListAdminsRequest{}
 }
 
 func ToProtoGetAdmin(adminID string) *adminpb.GetAdminByIDRequest {
@@ -55,9 +52,16 @@ func ToProtoDeleteAdmin(adminID string) *adminpb.GetAdminByIDRequest {
 	}
 }
 
-func ToUpdateAdminResponse(resp *adminpb.ActionResponse) *adminResp.MessageResponse {
-	return &adminResp.MessageResponse{
-		Message: resp.Message,
+func ToUpdateAdminResponse(resp *adminpb.AdminResponse) *adminResp.AdminResponse {
+	return &adminResp.AdminResponse{
+		ID:        resp.AdminId,
+		Email:     resp.Email,
+		FirstName: resp.FirstName,
+		LastName:  resp.LastName,
+		Role:      resp.Role,
+		Status:    resp.Status,
+		CreatedAt: resp.CreatedAt.AsTime(),
+		UpdatedAt: resp.UpdatedAt.AsTime(),
 	}
 }
 
@@ -74,6 +78,10 @@ func ToCreateAdminResponse(resp *adminpb.AdminResponse) adminResp.AdminResponse 
 		Email:     resp.Email,
 		FirstName: resp.FirstName,
 		LastName:  resp.LastName,
+		Role:      resp.Role,
+		Status:    resp.Status,
+		CreatedAt: resp.CreatedAt.AsTime(),
+		UpdatedAt: resp.UpdatedAt.AsTime(),
 	}
 }
 
