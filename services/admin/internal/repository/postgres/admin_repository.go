@@ -137,17 +137,16 @@ func (r *AdminRepository) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-func (r *AdminRepository) List(ctx context.Context, limit, offset int) ([]domain.Admin, error) {
+func (r *AdminRepository) List(ctx context.Context) ([]domain.Admin, error) {
 
 	query := `
 		SELECT id, email, password_hash, first_name, last_name, role, status, 
 		  last_login_at, created_at, updated_at
 		FROM admins
 		ORDER BY created_at DESC
-		LIMIT $1 OFFSET $2
 	`
 
-	rows, err := r.db.Query(ctx, query, limit, offset)
+	rows, err := r.db.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}

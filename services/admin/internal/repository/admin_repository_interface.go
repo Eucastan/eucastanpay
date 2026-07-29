@@ -15,6 +15,6 @@ type AdminRepository interface {
 	FindByID(ctx context.Context, id string) (*domain.Admin, error)
 	Update(ctx context.Context, admin *domain.Admin) error
 	Delete(ctx context.Context, id string) error
-	List(ctx context.Context, limit, offset int) ([]domain.Admin, error)
+	List(ctx context.Context) ([]domain.Admin, error)
 	SaveOutboxEvent(ctx context.Context, tx pgx.Tx, topic, key string, payload interface{}) error
 }

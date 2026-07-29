@@ -146,8 +146,8 @@ func (u *AdminUseCase) GetAdminByID(ctx context.Context, id string) (*response.A
 	return response.ToAdminResponse(admin), nil
 }
 
-func (u *AdminUseCase) ListAdmins(ctx context.Context, limit, offset int) ([]*response.AdminResponse, error) {
-	admins, err := u.repo.List(ctx, limit, offset)
+func (u *AdminUseCase) ListAdmins(ctx context.Context) ([]*response.AdminResponse, error) {
+	admins, err := u.repo.List(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,15 @@ func (u *AdminUseCase) UpdateAdmin(ctx context.Context, id string, req *request.
 	}
 
 	if req.Email != nil {
-		admin.Email = *req.Email
+		if *req.Email != admin.Email {
+			_, err := u.repo.FindByEmail(ctx, *req.Email)
+
+			if err == nil {
+				return nil, errmessage.ErrDuplicateEmail
+			}
+
+			admin.Email = *req.Email
+		}
 	}
 
 	if req.FirstName != nil {
@@ -184,15 +192,38 @@ func (u *AdminUseCase) UpdateAdmin(ctx context.Context, id string, req *request.
 	}
 
 	if req.Password != nil {
-		admin.PasswordHash = *req.Password
+		hash, err := security.GeneratePassHash(*req.Password)
+		if err != nil {
+			return nil, err
+		}
+
+		admin.PasswordHash = hash
 	}
 
 	if req.Role != nil {
-		admin.Role = domain.AdminRole(*req.Role)
+		switch domain.AdminRole(*req.Role) {
+		case domain.RoleSuperAdmin,
+			domain.RoleAdmin,
+			domain.RoleModerator:
+
+			admin.Role = domain.AdminRole(*req.Role)
+
+		default:
+			return nil, errmessage.ErrInvalidRole
+		}
+
 	}
 
 	if req.Status != nil {
-		admin.Status = domain.AdminStatus(*req.Status)
+		switch domain.AdminStatus(*req.Status) {
+		case domain.StatusActive,
+			domain.StatusDisabled:
+
+			admin.Status = domain.AdminStatus(*req.Status)
+
+		default:
+			return nil, errmessage.ErrInvalidStatus
+		}
 	}
 
 	if err := u.repo.Update(ctx, admin); err != nil {

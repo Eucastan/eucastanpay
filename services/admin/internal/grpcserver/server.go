@@ -136,7 +136,7 @@ func (s *AdminServer) GetAllAdmins(
 		return nil, err
 	}
 
-	admins, err := s.admin.ListAdmins(ctx, int(req.Limit), int(req.Page))
+	admins, err := s.admin.ListAdmins(ctx)
 	if err != nil {
 		return nil, grpcstatus.ToAdminStatus(err)
 	}
@@ -170,24 +170,35 @@ func (s *AdminServer) LogoutByAdminID(ctx context.Context, req *adminpb.GetAdmin
 	}, nil
 }
 
-func (s *AdminServer) Update(ctx context.Context, req *adminpb.UpdateRequest) (*adminpb.ActionResponse, error) {
+func (s *AdminServer) Update(ctx context.Context, req *adminpb.UpdateRequest) (*adminpb.AdminResponse, error) {
 	_, err := interceptor.RequireAdminRole(ctx, "super_admin")
 	if err != nil {
 		return nil, err
 	}
 
 	input := request.UpdateAdminRequest{
-		Status: &req.Status,
-		Role:   &req.Role,
+		Email:     &req.Email,
+		Password:  &req.Password,
+		FirstName: &req.FirstName,
+		LastName:  &req.LastName,
+		Role:      &req.Role,
+		Status:    &req.Status,
 	}
 
-	_, err = s.admin.UpdateAdmin(ctx, req.AdminId, &input)
+	resp, err := s.admin.UpdateAdmin(ctx, req.AdminId, &input)
 	if err != nil {
 		return nil, grpcstatus.ToAdminStatus(err)
 	}
 
-	return &adminpb.ActionResponse{
-		Message: "User updated successfully",
+	return &adminpb.AdminResponse{
+		AdminId:   resp.ID,
+		Email:     resp.Email,
+		FirstName: resp.FirstName,
+		LastName:  resp.LastName,
+		Status:    resp.Status,
+		Role:      resp.Role,
+		CreatedAt: timestamppb.New(resp.CreatedAt),
+		UpdatedAt: timestamppb.New(resp.UpdatedAt),
 	}, nil
 }
 
