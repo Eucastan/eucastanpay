@@ -39,7 +39,7 @@ type AdminServiceClient interface {
 	GetAdminByID(ctx context.Context, in *GetAdminByIDRequest, opts ...grpc.CallOption) (*AdminResponse, error)
 	GetAllAdmins(ctx context.Context, in *ListAdminsRequest, opts ...grpc.CallOption) (*ListAdminsResponse, error)
 	LogoutByAdminID(ctx context.Context, in *GetAdminByIDRequest, opts ...grpc.CallOption) (*ActionResponse, error)
-	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*ActionResponse, error)
+	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*AdminResponse, error)
 	Delete(ctx context.Context, in *GetAdminByIDRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 }
 
@@ -111,9 +111,9 @@ func (c *adminServiceClient) LogoutByAdminID(ctx context.Context, in *GetAdminBy
 	return out, nil
 }
 
-func (c *adminServiceClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
+func (c *adminServiceClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*AdminResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ActionResponse)
+	out := new(AdminResponse)
 	err := c.cc.Invoke(ctx, AdminService_Update_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ type AdminServiceServer interface {
 	GetAdminByID(context.Context, *GetAdminByIDRequest) (*AdminResponse, error)
 	GetAllAdmins(context.Context, *ListAdminsRequest) (*ListAdminsResponse, error)
 	LogoutByAdminID(context.Context, *GetAdminByIDRequest) (*ActionResponse, error)
-	Update(context.Context, *UpdateRequest) (*ActionResponse, error)
+	Update(context.Context, *UpdateRequest) (*AdminResponse, error)
 	Delete(context.Context, *GetAdminByIDRequest) (*ActionResponse, error)
 	mustEmbedUnimplementedAdminServiceServer()
 }
@@ -171,7 +171,7 @@ func (UnimplementedAdminServiceServer) GetAllAdmins(context.Context, *ListAdmins
 func (UnimplementedAdminServiceServer) LogoutByAdminID(context.Context, *GetAdminByIDRequest) (*ActionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method LogoutByAdminID not implemented")
 }
-func (UnimplementedAdminServiceServer) Update(context.Context, *UpdateRequest) (*ActionResponse, error) {
+func (UnimplementedAdminServiceServer) Update(context.Context, *UpdateRequest) (*AdminResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Update not implemented")
 }
 func (UnimplementedAdminServiceServer) Delete(context.Context, *GetAdminByIDRequest) (*ActionResponse, error) {

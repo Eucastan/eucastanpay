@@ -11,6 +11,14 @@ import (
 func ToAdminStatus(err error) error {
 
 	switch {
+	case errors.Is(err, errmessage.ErrForbidden):
+		return status.Error(codes.PermissionDenied, err.Error())
+
+	case errors.Is(err, errmessage.ErrInvalidRole):
+		return status.Error(codes.InvalidArgument, err.Error())
+
+	case errors.Is(err, errmessage.ErrInvalidStatus):
+		return status.Error(codes.InvalidArgument, err.Error())
 
 	case errors.Is(err, errmessage.ErrDuplicateEmail):
 		return status.Error(codes.AlreadyExists, err.Error())

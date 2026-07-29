@@ -337,11 +337,12 @@ func (x *LoginResponse) GetRefreshToken() string {
 type UpdateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AdminId       string                 `protobuf:"bytes,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
-	FirstName     string                 `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
-	LastName      string                 `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
-	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
-	Role          string                 `protobuf:"bytes,6,opt,name=role,proto3" json:"role,omitempty"`
+	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
+	FirstName     string                 `protobuf:"bytes,4,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName      string                 `protobuf:"bytes,5,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
+	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+	Role          string                 `protobuf:"bytes,7,opt,name=role,proto3" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -379,6 +380,13 @@ func (*UpdateRequest) Descriptor() ([]byte, []int) {
 func (x *UpdateRequest) GetAdminId() string {
 	if x != nil {
 		return x.AdminId
+	}
+	return ""
+}
+
+func (x *UpdateRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
 	}
 	return ""
 }
@@ -788,15 +796,16 @@ const file_proto_admin_admin_proto_rawDesc = "" +
 	"\amessage\x18\x01 \x01(\tR\amessage\x12 \n" +
 	"\x04resp\x18\x02 \x01(\v2\f.admin.AdminR\x04resp\x12!\n" +
 	"\faccess_token\x18\x03 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\"\xae\x01\n" +
+	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\"\xc4\x01\n" +
 	"\rUpdateRequest\x12\x19\n" +
-	"\badmin_id\x18\x01 \x01(\tR\aadminId\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1d\n" +
+	"\badmin_id\x18\x01 \x01(\tR\aadminId\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
+	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x1d\n" +
 	"\n" +
-	"first_name\x18\x03 \x01(\tR\tfirstName\x12\x1b\n" +
-	"\tlast_name\x18\x04 \x01(\tR\blastName\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\x12\x12\n" +
-	"\x04role\x18\x06 \x01(\tR\x04role\"0\n" +
+	"first_name\x18\x04 \x01(\tR\tfirstName\x12\x1b\n" +
+	"\tlast_name\x18\x05 \x01(\tR\blastName\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\tR\x06status\x12\x12\n" +
+	"\x04role\x18\a \x01(\tR\x04role\"0\n" +
 	"\x13GetAdminByIDRequest\x12\x19\n" +
 	"\badmin_id\x18\x01 \x01(\tR\aadminId\"\x9e\x02\n" +
 	"\rAdminResponse\x12\x19\n" +
@@ -820,15 +829,15 @@ const file_proto_admin_admin_proto_rawDesc = "" +
 	"\badmin_id\x18\x01 \x01(\tR\aadminId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"*\n" +
 	"\x0eActionResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2\xfd\x03\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2\xfc\x03\n" +
 	"\fAdminService\x12>\n" +
 	"\x0eBootstrapAdmin\x12\x16.admin.RegisterRequest\x1a\x14.admin.AdminResponse\x128\n" +
 	"\bRegister\x12\x16.admin.RegisterRequest\x1a\x14.admin.AdminResponse\x122\n" +
 	"\x05Login\x12\x13.admin.LoginRequest\x1a\x14.admin.LoginResponse\x12@\n" +
 	"\fGetAdminByID\x12\x1a.admin.GetAdminByIDRequest\x1a\x14.admin.AdminResponse\x12C\n" +
 	"\fGetAllAdmins\x12\x18.admin.ListAdminsRequest\x1a\x19.admin.ListAdminsResponse\x12D\n" +
-	"\x0fLogoutByAdminID\x12\x1a.admin.GetAdminByIDRequest\x1a\x15.admin.ActionResponse\x125\n" +
-	"\x06Update\x12\x14.admin.UpdateRequest\x1a\x15.admin.ActionResponse\x12;\n" +
+	"\x0fLogoutByAdminID\x12\x1a.admin.GetAdminByIDRequest\x1a\x15.admin.ActionResponse\x124\n" +
+	"\x06Update\x12\x14.admin.UpdateRequest\x1a\x14.admin.AdminResponse\x12;\n" +
 	"\x06Delete\x12\x1a.admin.GetAdminByIDRequest\x1a\x15.admin.ActionResponseB4Z2github.com/Eucastan/eucastanpay/common/proto/adminb\x06proto3"
 
 var (
@@ -879,7 +888,7 @@ var file_proto_admin_admin_proto_depIdxs = []int32{
 	6,  // 17: admin.AdminService.GetAdminByID:output_type -> admin.AdminResponse
 	8,  // 18: admin.AdminService.GetAllAdmins:output_type -> admin.ListAdminsResponse
 	10, // 19: admin.AdminService.LogoutByAdminID:output_type -> admin.ActionResponse
-	10, // 20: admin.AdminService.Update:output_type -> admin.ActionResponse
+	6,  // 20: admin.AdminService.Update:output_type -> admin.AdminResponse
 	10, // 21: admin.AdminService.Delete:output_type -> admin.ActionResponse
 	14, // [14:22] is the sub-list for method output_type
 	6,  // [6:14] is the sub-list for method input_type
