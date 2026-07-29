@@ -49,7 +49,7 @@ func (r *AdminRepository) Count(ctx context.Context) (int64, error) {
 
 func (r *AdminRepository) Create(ctx context.Context, admin *domain.Admin) error {
 	query := `
-        INSERT INTO admins (id, email, password, first_name, last_name, role, status)
+        INSERT INTO admins (id, email, password_hash, first_name, last_name, role, status)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING created_at, updated_at`
 
@@ -61,7 +61,7 @@ func (r *AdminRepository) Create(ctx context.Context, admin *domain.Admin) error
 
 func (r *AdminRepository) FindByEmail(ctx context.Context, email string) (*domain.Admin, error) {
 	query := `
-        SELECT id, email, password, first_name, last_name, role, 
+        SELECT id, email, password_hash, first_name, last_name, role, 
 		  status, last_login_at, created_at, updated_at
         FROM admins WHERE email = $1`
 
@@ -80,7 +80,7 @@ func (r *AdminRepository) FindByEmail(ctx context.Context, email string) (*domai
 func (r *AdminRepository) FindByID(ctx context.Context, id string) (*domain.Admin, error) {
 
 	query := `
-		SELECT id, email, password, first_name, last_name, role, 
+		SELECT id, email, password_hash, first_name, last_name, role, 
 		  status, last_login_at, created_at, updated_at
 		FROM admins
 		WHERE id = $1
@@ -111,7 +111,7 @@ func (r *AdminRepository) Update(ctx context.Context, admin *domain.Admin) error
 
 	query := `
 		UPDATE admins
-		SET email = $1, password = $2, first_name = $3, last_name = $4, 
+		SET email = $1, password_hash = $2, first_name = $3, last_name = $4, 
 		  role = $5, status = $6, last_login_at = $7, updated_at = NOW()
 		WHERE id = $8
 	`
@@ -140,7 +140,7 @@ func (r *AdminRepository) Delete(ctx context.Context, id string) error {
 func (r *AdminRepository) List(ctx context.Context) ([]domain.Admin, error) {
 
 	query := `
-		SELECT id, email, password, first_name, last_name, role, status, 
+		SELECT id, email, password_hash, first_name, last_name, role, status, 
 		  last_login_at, created_at, updated_at
 		FROM admins
 		ORDER BY created_at DESC
