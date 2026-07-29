@@ -4,7 +4,7 @@ CREATE TYPE admin_role AS ENUM ('super_admin', 'admin', 'moderator');
 CREATE TABLE IF NOT EXISTS admins (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
+    password TEXT NOT NULL,
 
     first_name TEXT,
     last_name TEXT,
