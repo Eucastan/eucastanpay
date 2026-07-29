@@ -169,7 +169,7 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/users/{id} [put]
+// @Router /admin/users/{id} [patch]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	req, err := httpx.BindJSON[userReq.UpdateRequest](c)

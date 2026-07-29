@@ -23,7 +23,7 @@ func NewLedgerHandler(base *proxy.Base, ledgerApp *service.LedgerApplication) *L
 
 // GetAllLedgers godoc
 //
-// @Summary Get All Ledger Entries
+// @Summary Get All Ledger Entries or sort by credit and debit entry
 // @Tags Ledger
 //
 // @Security BearerAuth

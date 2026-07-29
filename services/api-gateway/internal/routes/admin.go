@@ -13,7 +13,7 @@ func RegisterAdminRoutes(api *gin.RouterGroup, deps Dependencies, h Handlers) {
 		s.GET("/:id", h.Admin.GetAdmin)
 
 		s.POST("/", h.Admin.CreateAdmin)
-		s.PUT("/:id", h.Admin.UpdateAdmin)
+		s.PATCH("/:id", h.Admin.UpdateAdmin)
 		s.DELETE("/:id", h.Admin.DeleteAdmin)
 	}
 

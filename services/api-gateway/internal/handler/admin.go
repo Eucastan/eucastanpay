@@ -245,7 +245,7 @@ func (h *AdminHandler) ListAdmins(c *gin.Context) {
 // @Failure 404 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/{id} [put]
+// @Router /admin/{id} [patch]
 func (h *AdminHandler) UpdateAdmin(c *gin.Context) {
 	uri, err := httpx.BindURI[adminReq.AdminURI](c)
 	if err != nil {

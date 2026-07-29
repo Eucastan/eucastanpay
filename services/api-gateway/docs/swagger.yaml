@@ -46,6 +46,8 @@ definitions:
         type: string
       first_name:
         type: string
+      last_login_at:
+        type: string
       last_name:
         type: string
       password:
@@ -124,6 +126,8 @@ definitions:
     type: object
   github_com_Eucastan_eucastanpay_services_api-gateway_internal_dto_request_user.UpdateRequest:
     properties:
+      date_of_birth:
+        type: string
       email:
         type: string
       email_verified:
@@ -381,7 +385,7 @@ paths:
       summary: Get Admin
       tags:
       - Admin
-    put:
+    patch:
       consumes:
       - application/json
       parameters:
@@ -960,7 +964,7 @@ paths:
             $ref: '#/definitions/github_com_Eucastan_eucastanpay_services_api-gateway_internal_httpx.APIResponse'
       security:
       - BearerAuth: []
-      summary: Get All Ledger Entries
+      summary: Get All Ledger Entries or sort by credit and debit entry
       tags:
       - Ledger
   /admin/ledgers/{id}:
@@ -1313,7 +1317,7 @@ paths:
       summary: Deleting User information
       tags:
       - User
-    put:
+    patch:
       consumes:
       - application/json
       parameters:
