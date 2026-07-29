@@ -72,7 +72,7 @@ func (h *AdminHandler) CreateBootstrapAdmin(c *gin.Context) {
 // @Failure 409 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin [post]
+// @Router /super-admin [post]
 func (h *AdminHandler) CreateAdmin(c *gin.Context) {
 	req, err := httpx.BindJSON[adminReq.CreateAdminRequest](c)
 	if err != nil {
@@ -142,7 +142,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/me [get]
+// @Router /super-admin/me [get]
 func (h *AdminHandler) GetAdminProfile(c *gin.Context) {
 	adminID := proxy.AdminID(c)
 
@@ -173,7 +173,7 @@ func (h *AdminHandler) GetAdminProfile(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/{id} [get]
+// @Router /super-admin/{id} [get]
 func (h *AdminHandler) GetAdmin(c *gin.Context) {
 	uri, err := httpx.BindURI[adminReq.AdminURI](c)
 	if err != nil {
@@ -208,7 +208,7 @@ func (h *AdminHandler) GetAdmin(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin [get]
+// @Router /super-admin [get]
 func (h *AdminHandler) ListAdmins(c *gin.Context) {
 	query, err := httpx.BindQuery[adminReq.Pagination](c)
 	if err != nil {
@@ -245,7 +245,7 @@ func (h *AdminHandler) ListAdmins(c *gin.Context) {
 // @Failure 404 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/{id} [patch]
+// @Router /super-admin/{id} [patch]
 func (h *AdminHandler) UpdateAdmin(c *gin.Context) {
 	uri, err := httpx.BindURI[adminReq.AdminURI](c)
 	if err != nil {
@@ -286,7 +286,7 @@ func (h *AdminHandler) UpdateAdmin(c *gin.Context) {
 // @Failure 403 {object} httpx.APIResponse
 // @Failure 500 {object} httpx.APIResponse
 //
-// @Router /admin/{id} [delete]
+// @Router /super-admin/{id} [delete]
 func (h *AdminHandler) DeleteAdmin(c *gin.Context) {
 	uri, err := httpx.BindURI[adminReq.AdminURI](c)
 	if err != nil {

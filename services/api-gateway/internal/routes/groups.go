@@ -26,7 +26,7 @@ func AdminGroup(api *gin.RouterGroup, cfg *config.Config) *gin.RouterGroup {
 
 func SuperAdmin(api *gin.RouterGroup, cfg *config.Config) *gin.RouterGroup {
 
-	g := api.Group("/admin")
+	g := api.Group("/super-admin")
 	g.Use(commonmw.AdminAuth(cfg.SharedCfg.JWTSecret))
 	g.Use(commonmw.RequireAdminRole("super_admin"))
 
