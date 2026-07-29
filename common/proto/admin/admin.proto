@@ -7,6 +7,7 @@ option go_package = "github.com/Eucastan/eucastanpay/common/proto/admin";
 import "google/protobuf/timestamp.proto";
 
 service AdminService {
+	rpc BootstrapAdmin(RegisterRequest) returns (AdminResponse);
 	rpc Register(RegisterRequest) returns (AdminResponse);
 	rpc Login(LoginRequest) returns (LoginResponse);
     rpc GetAdminByID(GetAdminByIDRequest) returns (AdminResponse);

@@ -820,8 +820,9 @@ const file_proto_admin_admin_proto_rawDesc = "" +
 	"\badmin_id\x18\x01 \x01(\tR\aadminId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"*\n" +
 	"\x0eActionResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2\xbd\x03\n" +
-	"\fAdminService\x128\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2\xfd\x03\n" +
+	"\fAdminService\x12>\n" +
+	"\x0eBootstrapAdmin\x12\x16.admin.RegisterRequest\x1a\x14.admin.AdminResponse\x128\n" +
 	"\bRegister\x12\x16.admin.RegisterRequest\x1a\x14.admin.AdminResponse\x122\n" +
 	"\x05Login\x12\x13.admin.LoginRequest\x1a\x14.admin.LoginResponse\x12@\n" +
 	"\fGetAdminByID\x12\x1a.admin.GetAdminByIDRequest\x1a\x14.admin.AdminResponse\x12C\n" +
@@ -864,22 +865,24 @@ var file_proto_admin_admin_proto_depIdxs = []int32{
 	11, // 3: admin.AdminResponse.created_at:type_name -> google.protobuf.Timestamp
 	11, // 4: admin.AdminResponse.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 5: admin.ListAdminsResponse.admins:type_name -> admin.Admin
-	1,  // 6: admin.AdminService.Register:input_type -> admin.RegisterRequest
-	2,  // 7: admin.AdminService.Login:input_type -> admin.LoginRequest
-	5,  // 8: admin.AdminService.GetAdminByID:input_type -> admin.GetAdminByIDRequest
-	7,  // 9: admin.AdminService.GetAllAdmins:input_type -> admin.ListAdminsRequest
-	5,  // 10: admin.AdminService.LogoutByAdminID:input_type -> admin.GetAdminByIDRequest
-	4,  // 11: admin.AdminService.Update:input_type -> admin.UpdateRequest
-	5,  // 12: admin.AdminService.Delete:input_type -> admin.GetAdminByIDRequest
-	6,  // 13: admin.AdminService.Register:output_type -> admin.AdminResponse
-	3,  // 14: admin.AdminService.Login:output_type -> admin.LoginResponse
-	6,  // 15: admin.AdminService.GetAdminByID:output_type -> admin.AdminResponse
-	8,  // 16: admin.AdminService.GetAllAdmins:output_type -> admin.ListAdminsResponse
-	10, // 17: admin.AdminService.LogoutByAdminID:output_type -> admin.ActionResponse
-	10, // 18: admin.AdminService.Update:output_type -> admin.ActionResponse
-	10, // 19: admin.AdminService.Delete:output_type -> admin.ActionResponse
-	13, // [13:20] is the sub-list for method output_type
-	6,  // [6:13] is the sub-list for method input_type
+	1,  // 6: admin.AdminService.BootstrapAdmin:input_type -> admin.RegisterRequest
+	1,  // 7: admin.AdminService.Register:input_type -> admin.RegisterRequest
+	2,  // 8: admin.AdminService.Login:input_type -> admin.LoginRequest
+	5,  // 9: admin.AdminService.GetAdminByID:input_type -> admin.GetAdminByIDRequest
+	7,  // 10: admin.AdminService.GetAllAdmins:input_type -> admin.ListAdminsRequest
+	5,  // 11: admin.AdminService.LogoutByAdminID:input_type -> admin.GetAdminByIDRequest
+	4,  // 12: admin.AdminService.Update:input_type -> admin.UpdateRequest
+	5,  // 13: admin.AdminService.Delete:input_type -> admin.GetAdminByIDRequest
+	6,  // 14: admin.AdminService.BootstrapAdmin:output_type -> admin.AdminResponse
+	6,  // 15: admin.AdminService.Register:output_type -> admin.AdminResponse
+	3,  // 16: admin.AdminService.Login:output_type -> admin.LoginResponse
+	6,  // 17: admin.AdminService.GetAdminByID:output_type -> admin.AdminResponse
+	8,  // 18: admin.AdminService.GetAllAdmins:output_type -> admin.ListAdminsResponse
+	10, // 19: admin.AdminService.LogoutByAdminID:output_type -> admin.ActionResponse
+	10, // 20: admin.AdminService.Update:output_type -> admin.ActionResponse
+	10, // 21: admin.AdminService.Delete:output_type -> admin.ActionResponse
+	14, // [14:22] is the sub-list for method output_type
+	6,  // [6:14] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name
 	6,  // [6:6] is the sub-list for extension extendee
 	0,  // [0:6] is the sub-list for field type_name

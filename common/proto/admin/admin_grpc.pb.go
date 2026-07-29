@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	AdminService_BootstrapAdmin_FullMethodName  = "/admin.AdminService/BootstrapAdmin"
 	AdminService_Register_FullMethodName        = "/admin.AdminService/Register"
 	AdminService_Login_FullMethodName           = "/admin.AdminService/Login"
 	AdminService_GetAdminByID_FullMethodName    = "/admin.AdminService/GetAdminByID"
@@ -32,6 +33,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AdminServiceClient interface {
+	BootstrapAdmin(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*AdminResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*AdminResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	GetAdminByID(ctx context.Context, in *GetAdminByIDRequest, opts ...grpc.CallOption) (*AdminResponse, error)
@@ -47,6 +49,16 @@ type adminServiceClient struct {
 
 func NewAdminServiceClient(cc grpc.ClientConnInterface) AdminServiceClient {
 	return &adminServiceClient{cc}
+}
+
+func (c *adminServiceClient) BootstrapAdmin(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*AdminResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminResponse)
+	err := c.cc.Invoke(ctx, AdminService_BootstrapAdmin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *adminServiceClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*AdminResponse, error) {
@@ -123,6 +135,7 @@ func (c *adminServiceClient) Delete(ctx context.Context, in *GetAdminByIDRequest
 // All implementations must embed UnimplementedAdminServiceServer
 // for forward compatibility.
 type AdminServiceServer interface {
+	BootstrapAdmin(context.Context, *RegisterRequest) (*AdminResponse, error)
 	Register(context.Context, *RegisterRequest) (*AdminResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	GetAdminByID(context.Context, *GetAdminByIDRequest) (*AdminResponse, error)
@@ -140,6 +153,9 @@ type AdminServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAdminServiceServer struct{}
 
+func (UnimplementedAdminServiceServer) BootstrapAdmin(context.Context, *RegisterRequest) (*AdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method BootstrapAdmin not implemented")
+}
 func (UnimplementedAdminServiceServer) Register(context.Context, *RegisterRequest) (*AdminResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Register not implemented")
 }
@@ -180,6 +196,24 @@ func RegisterAdminServiceServer(s grpc.ServiceRegistrar, srv AdminServiceServer)
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&AdminService_ServiceDesc, srv)
+}
+
+func _AdminService_BootstrapAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).BootstrapAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_BootstrapAdmin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).BootstrapAdmin(ctx, req.(*RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _AdminService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -315,6 +349,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "admin.AdminService",
 	HandlerType: (*AdminServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "BootstrapAdmin",
+			Handler:    _AdminService_BootstrapAdmin_Handler,
+		},
 		{
 			MethodName: "Register",
 			Handler:    _AdminService_Register_Handler,
