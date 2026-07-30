@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"strconv"
 
 	"github.com/Eucastan/eucastanpay/services/api-gateway/internal/application/service"
@@ -127,7 +128,9 @@ func (h *AuditHandler) GetAuditRead(c *gin.Context) {
 		return
 	}
 
-	h.Logger.Infof("%+v", res)
+	h.Logger.Infof("GetAuditRead Hander: %+v", res)
+	b, _ := json.MarshalIndent(res, "", "  ")
+	h.Logger.Info(string(b))
 
 	httpx.Success(c, res)
 }

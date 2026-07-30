@@ -5,6 +5,7 @@ import (
 
 	auditpb "github.com/Eucastan/eucastanpay/common/proto/audit"
 	auditReq "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/request/audit"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	auditResp "github.com/Eucastan/eucastanpay/services/api-gateway/internal/dto/response/audit"
 )
@@ -44,6 +45,11 @@ func ToProtoSearchAuditLogs(req *auditReq.Filter) *auditpb.SearchRequest {
 }
 
 func ToAuditReadResponse(r *auditpb.AuditEntryResponse) *auditResp.AuditReadResponse {
+	payload, err := protojson.Marshal(r.Metadata)
+	if err != nil {
+		payload = []byte("{}")
+	}
+
 	return &auditResp.AuditReadResponse{
 		ID:            r.AuditId,
 		EventType:     r.EventType,
@@ -55,7 +61,7 @@ func ToAuditReadResponse(r *auditpb.AuditEntryResponse) *auditResp.AuditReadResp
 		UserID:        r.UserId,
 		Amount:        r.Amount,
 		Status:        r.Status,
-		Payload:       json.RawMessage(r.Metadata.String()),
+		Payload:       json.RawMessage(payload),
 		CreatedAt:     r.CreatedAt.AsTime(),
 	}
 }
@@ -63,6 +69,11 @@ func ToAuditReadResponse(r *auditpb.AuditEntryResponse) *auditResp.AuditReadResp
 func ToListAuditReadResponse(req *auditpb.GetAllAuditResponse) *auditResp.ReadResponse {
 	data := make([]auditResp.AuditReadResponse, 0, len(req.Data))
 	for _, r := range req.Data {
+		payload, err := protojson.Marshal(r.Metadata)
+		if err != nil {
+			payload = []byte("{}")
+		}
+
 		data = append(data, auditResp.AuditReadResponse{
 			ID:            r.AuditId,
 			EventType:     r.EventType,
@@ -74,7 +85,7 @@ func ToListAuditReadResponse(req *auditpb.GetAllAuditResponse) *auditResp.ReadRe
 			UserID:        r.UserId,
 			Amount:        r.Amount,
 			Status:        r.Status,
-			Payload:       json.RawMessage(r.Metadata.String()),
+			Payload:       json.RawMessage(payload),
 			CreatedAt:     r.CreatedAt.AsTime(),
 		})
 	}
@@ -87,6 +98,11 @@ func ToListAuditReadResponse(req *auditpb.GetAllAuditResponse) *auditResp.ReadRe
 func ToSearchAuditResponse(req *auditpb.SearchResponse) *auditResp.ReadResponse {
 	data := make([]auditResp.AuditReadResponse, 0, len(req.Entries))
 	for _, r := range req.Entries {
+		payload, err := protojson.Marshal(r.Metadata)
+		if err != nil {
+			payload = []byte("{}")
+		}
+
 		data = append(data, auditResp.AuditReadResponse{
 			ID:            r.AuditId,
 			EventType:     r.EventType,
@@ -98,7 +114,7 @@ func ToSearchAuditResponse(req *auditpb.SearchResponse) *auditResp.ReadResponse 
 			UserID:        r.UserId,
 			Amount:        r.Amount,
 			Status:        r.Status,
-			Payload:       json.RawMessage(r.Metadata.String()),
+			Payload:       json.RawMessage(payload),
 			CreatedAt:     r.CreatedAt.AsTime(),
 		})
 	}
