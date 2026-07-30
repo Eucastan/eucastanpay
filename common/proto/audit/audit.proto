@@ -5,6 +5,7 @@ package audit;
 option go_package = "github.com/Eucastan/eucastanpay/common/proto/audit";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
 
 service AuditService {
   rpc SearchAudit (SearchRequest) returns (SearchResponse);
@@ -53,6 +54,6 @@ message AuditEntryResponse {
   string user_id         = 8;
   int64  amount          = 9;
   string status          = 10;
-  string payload    = 11;   
+  google.protobuf.Struct metadata = 11;  
   google.protobuf.Timestamp created_at = 12;
 }

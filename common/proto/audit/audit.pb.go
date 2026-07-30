@@ -9,6 +9,7 @@ package audit
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -334,7 +335,7 @@ type AuditEntryResponse struct {
 	UserId        string                 `protobuf:"bytes,8,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Amount        int64                  `protobuf:"varint,9,opt,name=amount,proto3" json:"amount,omitempty"`
 	Status        string                 `protobuf:"bytes,10,opt,name=status,proto3" json:"status,omitempty"`
-	Payload       string                 `protobuf:"bytes,11,opt,name=payload,proto3" json:"payload,omitempty"`
+	Metadata      *structpb.Struct       `protobuf:"bytes,11,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -440,11 +441,11 @@ func (x *AuditEntryResponse) GetStatus() string {
 	return ""
 }
 
-func (x *AuditEntryResponse) GetPayload() string {
+func (x *AuditEntryResponse) GetMetadata() *structpb.Struct {
 	if x != nil {
-		return x.Payload
+		return x.Metadata
 	}
-	return ""
+	return nil
 }
 
 func (x *AuditEntryResponse) GetCreatedAt() *timestamppb.Timestamp {
@@ -458,7 +459,7 @@ var File_proto_audit_audit_proto protoreflect.FileDescriptor
 
 const file_proto_audit_audit_proto_rawDesc = "" +
 	"\n" +
-	"\x17proto/audit/audit.proto\x12\x05audit\x1a\x1fgoogle/protobuf/timestamp.proto\"\x95\x02\n" +
+	"\x17proto/audit/audit.proto\x12\x05audit\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x95\x02\n" +
 	"\rSearchRequest\x12%\n" +
 	"\x0ecorrelation_id\x18\x01 \x01(\tR\rcorrelationId\x12\x1c\n" +
 	"\treference\x18\x02 \x01(\tR\treference\x12\x1d\n" +
@@ -482,7 +483,7 @@ const file_proto_audit_audit_proto_rawDesc = "" +
 	"\x13GetAllAuditResponse\x12-\n" +
 	"\x04data\x18\x01 \x03(\v2\x19.audit.AuditEntryResponseR\x04data\"+\n" +
 	"\x0eGetByIDRequest\x12\x19\n" +
-	"\baudit_id\x18\x01 \x01(\tR\aauditId\"\x8d\x03\n" +
+	"\baudit_id\x18\x01 \x01(\tR\aauditId\"\xa8\x03\n" +
 	"\x12AuditEntryResponse\x12\x19\n" +
 	"\baudit_id\x18\x01 \x01(\tR\aauditId\x12\x1d\n" +
 	"\n" +
@@ -496,8 +497,8 @@ const file_proto_audit_audit_proto_rawDesc = "" +
 	"\auser_id\x18\b \x01(\tR\x06userId\x12\x16\n" +
 	"\x06amount\x18\t \x01(\x03R\x06amount\x12\x16\n" +
 	"\x06status\x18\n" +
-	" \x01(\tR\x06status\x12\x18\n" +
-	"\apayload\x18\v \x01(\tR\apayload\x129\n" +
+	" \x01(\tR\x06status\x123\n" +
+	"\bmetadata\x18\v \x01(\v2\x17.google.protobuf.StructR\bmetadata\x129\n" +
 	"\n" +
 	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt2\xcd\x01\n" +
 	"\fAuditService\x12:\n" +
@@ -525,23 +526,25 @@ var file_proto_audit_audit_proto_goTypes = []any{
 	(*GetAllAuditResponse)(nil),   // 3: audit.GetAllAuditResponse
 	(*GetByIDRequest)(nil),        // 4: audit.GetByIDRequest
 	(*AuditEntryResponse)(nil),    // 5: audit.AuditEntryResponse
-	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),       // 6: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil), // 7: google.protobuf.Timestamp
 }
 var file_proto_audit_audit_proto_depIdxs = []int32{
 	5, // 0: audit.SearchResponse.entries:type_name -> audit.AuditEntryResponse
 	5, // 1: audit.GetAllAuditResponse.data:type_name -> audit.AuditEntryResponse
-	6, // 2: audit.AuditEntryResponse.created_at:type_name -> google.protobuf.Timestamp
-	0, // 3: audit.AuditService.SearchAudit:input_type -> audit.SearchRequest
-	2, // 4: audit.AuditService.GetAllAudits:input_type -> audit.AuditRequest
-	4, // 5: audit.AuditService.GetAuditByID:input_type -> audit.GetByIDRequest
-	1, // 6: audit.AuditService.SearchAudit:output_type -> audit.SearchResponse
-	3, // 7: audit.AuditService.GetAllAudits:output_type -> audit.GetAllAuditResponse
-	5, // 8: audit.AuditService.GetAuditByID:output_type -> audit.AuditEntryResponse
-	6, // [6:9] is the sub-list for method output_type
-	3, // [3:6] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	6, // 2: audit.AuditEntryResponse.metadata:type_name -> google.protobuf.Struct
+	7, // 3: audit.AuditEntryResponse.created_at:type_name -> google.protobuf.Timestamp
+	0, // 4: audit.AuditService.SearchAudit:input_type -> audit.SearchRequest
+	2, // 5: audit.AuditService.GetAllAudits:input_type -> audit.AuditRequest
+	4, // 6: audit.AuditService.GetAuditByID:input_type -> audit.GetByIDRequest
+	1, // 7: audit.AuditService.SearchAudit:output_type -> audit.SearchResponse
+	3, // 8: audit.AuditService.GetAllAudits:output_type -> audit.GetAllAuditResponse
+	5, // 9: audit.AuditService.GetAuditByID:output_type -> audit.AuditEntryResponse
+	7, // [7:10] is the sub-list for method output_type
+	4, // [4:7] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_proto_audit_audit_proto_init() }
