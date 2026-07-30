@@ -23,11 +23,13 @@ func NewAuditGateway(client auditpb.AuditServiceClient, logger *logrus.Logger) *
 }
 
 func (g *AuditGateway) GetAuditByID(ctx context.Context, auditID string) (*auditResp.AuditReadResponse, error) {
-	grpcResp, err := g.client.GetAuditByID(
-		ctx,
-		mapper.ToProtoGetAuditIDRequest(auditID),
-	)
+	g.logger.Infof("Gateway audit id = %q", auditID)
 
+	req := mapper.ToProtoGetAuditIDRequest(auditID)
+
+	g.logger.Infof("Proto audit id = %q", req.AuditId)
+
+	grpcResp, err := g.client.GetAuditByID(ctx, req)
 	if err != nil {
 		g.logger.WithError(err).Error(err.Error())
 		return nil, err
