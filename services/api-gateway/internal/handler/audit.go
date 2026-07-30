@@ -83,6 +83,8 @@ func (h *AuditHandler) SearchAuditLogs(c *gin.Context) {
 		return
 	}
 
+	h.Logger.Infof("%+v", res)
+
 	httpx.Success(c, auditResp.SearchResult{
 		Count: len(res.Data),
 		Data:  res.Data,
@@ -125,6 +127,8 @@ func (h *AuditHandler) GetAuditRead(c *gin.Context) {
 		return
 	}
 
+	h.Logger.Infof("%+v", res)
+
 	httpx.Success(c, res)
 }
 
@@ -153,6 +157,8 @@ func (h *AuditHandler) GetAllAuditReads(c *gin.Context) {
 		httpx.ValidationError(c, err)
 		return
 	}
+
+	h.Logger.Infof("%+v", res)
 
 	httpx.Success(c, res)
 }

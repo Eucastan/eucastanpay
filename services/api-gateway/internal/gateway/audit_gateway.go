@@ -40,6 +40,7 @@ func (g *AuditGateway) GetAuditByID(ctx context.Context, auditID string) (*audit
 	}).Info(grpcResp)
 
 	resp := mapper.ToAuditReadResponse(grpcResp)
+	g.logger.Infof("%+v", resp)
 	return resp, nil
 }
 
@@ -54,11 +55,8 @@ func (g *AuditGateway) GetAllAudits(ctx context.Context) (*auditResp.ReadRespons
 		return nil, err
 	}
 
-	g.logger.WithFields(logrus.Fields{
-		"count": len(grpcResp.Data),
-	}).Info(grpcResp)
-
 	resp := mapper.ToListAuditReadResponse(grpcResp)
+	g.logger.Infof("%+v", resp)
 	return resp, nil
 }
 
@@ -74,10 +72,7 @@ func (g *AuditGateway) SearchAuditLogs(ctx context.Context, input *auditReq.Filt
 		return nil, err
 	}
 
-	g.logger.WithFields(logrus.Fields{
-		"count": len(grpcResp.Entries),
-	}).Info(grpcResp)
-
 	resp := mapper.ToSearchAuditResponse(grpcResp)
+	g.logger.Infof("%+v", resp)
 	return resp, nil
 }
