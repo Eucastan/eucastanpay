@@ -101,6 +101,7 @@ func (s *AuditServiceServer) SearchAudit(ctx context.Context, req *auditpb.Searc
 
 func (s *AuditServiceServer) GetAuditByID(ctx context.Context, req *auditpb.GetByIDRequest) (*auditpb.AuditEntryResponse, error) {
 	s.logger.Info("AuditServiceServer.GetAuditByID is reached >>")
+	s.logger.Infof("Incoming audit id: %q", req.AuditId)
 
 	auditRead, err := s.Audit.GetAuditReadByID(ctx, req.AuditId)
 	if err != nil {

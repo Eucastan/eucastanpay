@@ -247,12 +247,14 @@ func (r *AuditRepository) FindAllAuditRead(ctx context.Context) ([]domain.AuditR
 
 func (r *AuditRepository) FindByID(ctx context.Context, id string) (*domain.AuditRead, error) {
 	r.logger.Info("AuditRepository.FindByID reached >>")
+	r.logger.Infof("Incoming audit id: %q", id)
 
 	ctx, span := r.telemetry.Start(ctx, "AuditRepository.FindByID")
 	defer span.End()
 
 	query := `
-	    SELECT id, event_type, service, correlation_id, causation_id, reference, account_id, user_id, amount, status, payload, created_at
+	    SELECT id, event_type, service, correlation_id, causation_id, reference, 
+		 account_id, user_id, amount, status, payload, created_at
 		FROM audit_read
 		WHERE id = $1
 	`

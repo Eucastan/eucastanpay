@@ -51,6 +51,7 @@ func (u *AuditUseCase) Search(ctx context.Context, f postgres.Filter) ([]respons
 
 func (u *AuditUseCase) GetAuditReadByID(ctx context.Context, id string) (*response.AuditReadResponse, error) {
 	u.logger.Info("AuditUseCase.GetAuditReadByID reached >>")
+	u.logger.Infof("Incoming audit id: %q", id)
 
 	ctx, span := u.telemetry.Start(ctx, "AuditUseCase.GetAuditReadByID")
 	defer span.End()
