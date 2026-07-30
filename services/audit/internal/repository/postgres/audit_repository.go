@@ -9,6 +9,7 @@ import (
 	"github.com/Eucastan/eucastanpay/services/audit/internal/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sirupsen/logrus"
 )
 
 type Filter struct {
@@ -26,12 +27,14 @@ type Filter struct {
 type AuditRepository struct {
 	DB        *pgxpool.Pool
 	telemetry *telemetry.Telemetry
+	logger    *logrus.Logger
 }
 
-func NewAuditRepository(db *pgxpool.Pool, telemetry *telemetry.Telemetry) *AuditRepository {
+func NewAuditRepository(db *pgxpool.Pool, telemetry *telemetry.Telemetry, log *logrus.Logger) *AuditRepository {
 	return &AuditRepository{
 		DB:        db,
 		telemetry: telemetry,
+		logger:    log,
 	}
 }
 
@@ -62,6 +65,8 @@ func (r *AuditRepository) WithTX(ctx context.Context, fn func(tx pgx.Tx) error) 
 }
 
 func (r *AuditRepository) Insert(ctx context.Context, tx pgx.Tx, log *domain.AuditLog) error {
+	r.logger.Info("AuditRepository.Insert reached >>")
+
 	ctx, span := r.telemetry.Start(ctx, "AuditRepository.Insert")
 	defer span.End()
 
@@ -73,6 +78,7 @@ func (r *AuditRepository) Insert(ctx context.Context, tx pgx.Tx, log *domain.Aud
 	_, err := tx.Exec(ctx, query, log.ID, log.EventType, log.CorrelationID,
 		log.CausationID, log.Reference, log.Payload, log.CreatedAt)
 	if err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return err
 	}
@@ -81,6 +87,8 @@ func (r *AuditRepository) Insert(ctx context.Context, tx pgx.Tx, log *domain.Aud
 }
 
 func (r *AuditRepository) InsertRead(ctx context.Context, tx pgx.Tx, read *domain.AuditRead) error {
+	r.logger.Info("AuditRepository.InsertRead reached >>")
+
 	ctx, span := r.telemetry.Start(ctx, "AuditRepository.InsertRead")
 	defer span.End()
 
@@ -91,6 +99,7 @@ func (r *AuditRepository) InsertRead(ctx context.Context, tx pgx.Tx, read *domai
 	_, err := tx.Exec(ctx, query, read.ID, read.EventType, read.Service, read.CorrelationID, read.CausationID,
 		read.Reference, read.AccountID, read.UserID, read.Amount, read.Status, read.Payload, read.CreatedAt)
 	if err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return err
 	}
@@ -99,6 +108,8 @@ func (r *AuditRepository) InsertRead(ctx context.Context, tx pgx.Tx, read *domai
 }
 
 func (r *AuditRepository) Search(ctx context.Context, f Filter) ([]domain.AuditRead, error) {
+	r.logger.Info("AuditRepository.Search reached >>")
+
 	ctx, span := r.telemetry.Start(ctx, "AuditRepository.Search")
 	defer span.End()
 
@@ -130,6 +141,7 @@ func (r *AuditRepository) Search(ctx context.Context, f Filter) ([]domain.AuditR
 	)
 
 	if err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
@@ -156,6 +168,7 @@ func (r *AuditRepository) Search(ctx context.Context, f Filter) ([]domain.AuditR
 			&a.CreatedAt,
 		)
 		if err != nil {
+			r.logger.WithError(err).Error(err.Error())
 			return nil, err
 		}
 
@@ -163,13 +176,20 @@ func (r *AuditRepository) Search(ctx context.Context, f Filter) ([]domain.AuditR
 	}
 
 	if err := rows.Err(); err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
+
+	r.logger.WithFields(logrus.Fields{
+		"count": len(result),
+	}).Info(result)
 
 	return result, nil
 }
 
 func (r *AuditRepository) FindAllAuditRead(ctx context.Context) ([]domain.AuditRead, error) {
+	r.logger.Info("AuditRepository.FindAllAuditRead")
+
 	ctx, span := r.telemetry.Start(ctx, "AuditRepository.FindAllAuditRead")
 	defer span.End()
 
@@ -181,6 +201,7 @@ func (r *AuditRepository) FindAllAuditRead(ctx context.Context) ([]domain.AuditR
 	`
 	rows, err := r.DB.Query(ctx, query)
 	if err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
@@ -207,6 +228,7 @@ func (r *AuditRepository) FindAllAuditRead(ctx context.Context) ([]domain.AuditR
 			&a.CreatedAt,
 		)
 		if err != nil {
+			r.logger.WithError(err).Error(err.Error())
 			return nil, err
 		}
 
@@ -214,13 +236,18 @@ func (r *AuditRepository) FindAllAuditRead(ctx context.Context) ([]domain.AuditR
 	}
 
 	if err := rows.Err(); err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		return nil, err
 	}
+
+	r.logger.Info(result)
 
 	return result, nil
 }
 
 func (r *AuditRepository) FindByID(ctx context.Context, id string) (*domain.AuditRead, error) {
+	r.logger.Info("AuditRepository.FindByID reached >>")
+
 	ctx, span := r.telemetry.Start(ctx, "AuditRepository.FindByID")
 	defer span.End()
 
@@ -245,9 +272,14 @@ func (r *AuditRepository) FindByID(ctx context.Context, id string) (*domain.Audi
 		&auditLog.Payload,
 		&auditLog.CreatedAt,
 	)
+
 	if err != nil {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
+
+	r.logger.Info(auditLog)
+
 	return auditLog, nil
 }

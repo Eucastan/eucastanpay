@@ -5,5 +5,5 @@ import (
 )
 
 func (a *App) initRepository() {
-	a.repo = postgres.NewAuditRepository(a.database.DB, a.telemetry)
+	a.repo = postgres.NewAuditRepository(a.database.DB, a.telemetry, a.logger)
 }

@@ -55,7 +55,7 @@ func ToAuditReadResponse(r *auditpb.AuditEntryResponse) *auditResp.AuditReadResp
 		UserID:        r.UserId,
 		Amount:        r.Amount,
 		Status:        r.Status,
-		Payload:       json.RawMessage(r.Payload),
+		Payload:       json.RawMessage(r.Metadata.String()),
 		CreatedAt:     r.CreatedAt.AsTime(),
 	}
 }
@@ -74,7 +74,7 @@ func ToListAuditReadResponse(req *auditpb.GetAllAuditResponse) *auditResp.ReadRe
 			UserID:        r.UserId,
 			Amount:        r.Amount,
 			Status:        r.Status,
-			Payload:       json.RawMessage(r.Payload),
+			Payload:       json.RawMessage(r.Metadata.String()),
 			CreatedAt:     r.CreatedAt.AsTime(),
 		})
 	}
@@ -98,7 +98,7 @@ func ToSearchAuditResponse(req *auditpb.SearchResponse) *auditResp.ReadResponse 
 			UserID:        r.UserId,
 			Amount:        r.Amount,
 			Status:        r.Status,
-			Payload:       json.RawMessage(r.Payload),
+			Payload:       json.RawMessage(r.Metadata.String()),
 			CreatedAt:     r.CreatedAt.AsTime(),
 		})
 	}

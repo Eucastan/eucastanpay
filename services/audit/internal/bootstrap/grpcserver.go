@@ -14,7 +14,7 @@ func (a *App) initGRPCServer() {
 		),
 	)
 
-	gs := server.NewAuditServiceServer(a.uc)
+	gs := server.NewAuditServiceServer(a.uc, a.logger)
 	auditpb.RegisterAuditServiceServer(grpcServer, gs)
 
 	a.grpcServ = grpcServer

@@ -7,26 +7,36 @@ import (
 	"github.com/Eucastan/eucastanpay/services/audit/internal/dto/response"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/repository"
 	"github.com/Eucastan/eucastanpay/services/audit/internal/repository/postgres"
+	"github.com/sirupsen/logrus"
 )
 
 type AuditUseCase struct {
 	Repo      repository.AuditRepository
 	telemetry *telemetry.Telemetry
+	logger    *logrus.Logger
 }
 
-func NewAuditUseCase(repo repository.AuditRepository, telemetry *telemetry.Telemetry) *AuditUseCase {
+func NewAuditUseCase(
+	repo repository.AuditRepository,
+	telemetry *telemetry.Telemetry,
+	logger *logrus.Logger,
+) *AuditUseCase {
 	return &AuditUseCase{
 		Repo:      repo,
 		telemetry: telemetry,
+		logger:    logger,
 	}
 }
 
 func (u *AuditUseCase) Search(ctx context.Context, f postgres.Filter) ([]response.AuditReadResponse, error) {
+	u.logger.Info("AuditUseCase.Search is reached >>")
+
 	ctx, span := u.telemetry.Start(ctx, "AuditUseCase.Search")
 	defer span.End()
 
 	data, err := u.Repo.Search(ctx, f)
 	if err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
@@ -40,11 +50,14 @@ func (u *AuditUseCase) Search(ctx context.Context, f postgres.Filter) ([]respons
 }
 
 func (u *AuditUseCase) GetAuditReadByID(ctx context.Context, id string) (*response.AuditReadResponse, error) {
+	u.logger.Info("AuditUseCase.GetAuditReadByID reached >>")
+
 	ctx, span := u.telemetry.Start(ctx, "AuditUseCase.GetAuditReadByID")
 	defer span.End()
 
 	auditRead, err := u.Repo.FindByID(ctx, id)
 	if err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
@@ -53,11 +66,14 @@ func (u *AuditUseCase) GetAuditReadByID(ctx context.Context, id string) (*respon
 }
 
 func (u *AuditUseCase) GetAllAuditReads(ctx context.Context) ([]response.AuditReadResponse, error) {
+	u.logger.Info("AuditUseCase.GetAllAuditReads reached >>")
+
 	ctx, span := u.telemetry.Start(ctx, "AuditUseCase.GetAllAuditReads")
 	defer span.End()
 
 	reads, err := u.Repo.FindAllAuditRead(ctx)
 	if err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
