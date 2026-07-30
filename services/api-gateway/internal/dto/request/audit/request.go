@@ -15,5 +15,5 @@ type Filter struct {
 }
 
 type AuditIdRequest struct {
-	AuditID string `json:"id"`
+	AuditID string `json:"id" binding:"required"`
 }

@@ -117,6 +117,8 @@ func (h *AuditHandler) GetAuditRead(c *gin.Context) {
 		return
 	}
 
+	h.Logger.Infof("Handler AuditID = %q", uri.AuditID)
+
 	res, err := h.auditApp.GetAuditByID(proxy.Context(c), uri.AuditID)
 	if err != nil {
 		httpx.HandleGRPCError(c, err)

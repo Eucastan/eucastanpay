@@ -19,6 +19,6 @@ func (a *App) initApplications() {
 		accountApp:  service.NewAccountApplication(a.gateways.accountGateway),
 		transferApp: service.NewTransferApplication(a.gateways.transferGateway),
 		ledgerApp:   service.NewLedgerApplication(a.gateways.ledgerGateway),
-		auditApp:    service.NewAuditApplication(a.gateways.auditGateway),
+		auditApp:    service.NewAuditApplication(a.gateways.auditGateway, a.logger),
 	}
 }
