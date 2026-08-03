@@ -74,13 +74,11 @@ func main() {
 	emailProvider := provider.NewEmailProvider(cfg)
 
 	publisher := producer.NewPublisher(
-		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
-		cfg.SharedCfg.Kafka.Password, tm,
+		cfg.SharedCfg.Kafka, tm, log,
 	)
 
 	consumerInit := consumer.NewConsumer(
-		cfg.SharedCfg.Kafka.Brokers, cfg.SharedCfg.Kafka.Username,
-		cfg.SharedCfg.Kafka.Password, "notification-service-group",
+		cfg.SharedCfg.Kafka, "notification-service-group",
 		tm, log,
 	)
 
@@ -199,16 +197,15 @@ func main() {
 	notificationHandler := handler.NewNotificationHandler(notificationUC)
 
 	// Health check init
-	healthChecker := healthcheck.NewHealthChecker("notification-service", cfg.Version, log)
-	healthChecker.SetDatabase(db.DB)
-	healthChecker.SetKafkaConsumer(consumerInit)
+	health := healthcheck.New("notification-service", cfg.Version, log)
+	health.Add()
 
 	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	r.GET("/health", healthChecker.Health)
-	r.GET("/live", healthChecker.Liveness)
-	r.GET("/ready", healthChecker.Readiness)
+	r.GET("/health", health.Health)
+	r.GET("/live", health.Liveness)
+	r.GET("/ready", health.Readiness)
 
 	mw := middleware.New(log, cfg.SharedCfg.JWTSecret)
 	r.Use(mw.Recovery())

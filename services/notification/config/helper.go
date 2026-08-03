@@ -34,6 +34,7 @@ func ToCfg() *Config {
 				),
 				Username: viper.GetString("KAFKA_USERNAME"),
 				Password: viper.GetString("KAFKA_PASSWORD"),
+				CaCert:   viper.GetString("KAFKA_CA_CERT"),
 			},
 			LogLevel: viper.GetString("LOG_LEVEL"),
 		},

@@ -10,6 +10,7 @@ import (
 	manager "github.com/Eucastan/eucastanpay/common/pkg/grpc"
 	"github.com/Eucastan/eucastanpay/common/pkg/grpc/discovery"
 	"github.com/Eucastan/eucastanpay/common/pkg/healthcheck"
+	adminkafka "github.com/Eucastan/eucastanpay/common/pkg/kafka/admin"
 	"github.com/Eucastan/eucastanpay/common/pkg/logger"
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/Eucastan/eucastanpay/services/api-gateway/config"
@@ -21,18 +22,19 @@ import (
 )
 
 type App struct {
-	cfg          *config.Config
-	router       *gin.Engine
-	server       *http.Server
-	logger       *logrus.Logger
-	redis        *redis.Client
-	telemetry    *telemetry.Telemetry
-	rateLimiter  *ratelimiter.RedisLimiter
-	manager      *manager.Manager
-	health       *healthcheck.Checker
-	gateways     *Gateways
-	applications *Applications
-	handlers     *Handlers
+	cfg               *config.Config
+	router            *gin.Engine
+	server            *http.Server
+	logger            *logrus.Logger
+	redis             *redis.Client
+	telemetry         *telemetry.Telemetry
+	rateLimiter       *ratelimiter.RedisLimiter
+	topicsInitializer *adminkafka.Initializer
+	manager           *manager.Manager
+	health            *healthcheck.Checker
+	gateways          *Gateways
+	applications      *Applications
+	handlers          *Handlers
 }
 
 func New() (*App, error) {
@@ -77,6 +79,10 @@ func (a *App) Run() error {
 
 func (a *App) bootstrap() error {
 	a.initLogger()
+	
+	if err := a.initTopics(); err != nil {
+		return err
+	}
 
 	if err := a.initTelemetry(); err != nil {
 		return err
