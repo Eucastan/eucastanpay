@@ -2,12 +2,13 @@ package consumer
 
 import (
 	"context"
-	"crypto/tls"
 	"sync"
 	"time"
 
 	"github.com/segmentio/kafka-go/sasl/plain"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/config"
+	"github.com/Eucastan/eucastanpay/common/pkg/kafka/kafkaconfig"
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -24,24 +25,31 @@ type Consumer struct {
 	groupID   string
 	handlers  map[string]HandlerFunc
 	readers   []*kafka.Reader
+	mechanism *plain.Mechanism
+	dialer    *kafka.Dialer
 	mu        sync.Mutex
 	wg        sync.WaitGroup
 	telemetry *telemetry.Telemetry
 	logger    *logrus.Logger
 }
 
-func NewConsumer(brokers []string, username, password string, groupID string, telemetry *telemetry.Telemetry, logger *logrus.Logger) *Consumer {
+func NewConsumer(cfg config.KafkaConfig, groupID string, telemetry *telemetry.Telemetry, logger *logrus.Logger) *Consumer {
 	if logger == nil {
 		logger = logrus.New()
 	}
 
+	mechanism := kafkaconfig.NewMechanism(cfg)
+	dialer := kafkaconfig.NewDialer(cfg)
+
 	return &Consumer{
-		brokers:   brokers,
-		username:  username,
-		password:  password,
+		brokers:   cfg.Brokers,
+		username:  cfg.Username,
+		password:  cfg.Password,
 		groupID:   groupID,
 		handlers:  make(map[string]HandlerFunc),
 		readers:   []*kafka.Reader{},
+		mechanism: mechanism,
+		dialer:    dialer,
 		telemetry: telemetry,
 		logger:    logger,
 	}
@@ -71,24 +79,12 @@ func (c *Consumer) consumeTopic(
 	ctx, span := c.telemetry.Start(ctx, "Consumer.consumeTopic")
 	defer span.End()
 
-	mechanism := plain.Mechanism{
-		Username: c.username,
-		Password: c.password,
-	}
-
-	dialer := &kafka.Dialer{
-		Timeout:       10 * time.Second,
-		DualStack:     true,
-		SASLMechanism: mechanism,
-		TLS:           &tls.Config{},
-	}
-
 	reader := kafka.NewReader(
 		kafka.ReaderConfig{
 			Brokers:           c.brokers,
 			GroupID:           c.groupID,
 			Topic:             topic,
-			Dialer:            dialer,
+			Dialer:            c.dialer,
 			MinBytes:          1,
 			MaxBytes:          10e6,
 			MaxWait:           time.Second,

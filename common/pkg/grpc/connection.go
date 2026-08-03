@@ -19,6 +19,7 @@ func NewConnection(cfg ServiceConfig, log *logrus.Logger, opts ...grpc.DialOptio
 
 		grpc.WithChainUnaryInterceptor(
 			interceptor.CorrelationClientInterceptor(),
+			interceptor.RetryInterceptor(3),
 		),
 
 		grpc.WithDefaultCallOptions(

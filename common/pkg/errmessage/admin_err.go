@@ -4,6 +4,7 @@ import "errors"
 
 var (
 	ErrForbidden       = errors.New("forbidden")
+	ErrServiceNotFound = errors.New("service not found")
 	ErrInvalidRole     = errors.New("invalid role")
 	ErrInvalidStatus   = errors.New("invalid status update")
 	ErrAdminNotFound   = errors.New("admin not found")

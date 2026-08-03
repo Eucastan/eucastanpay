@@ -7,7 +7,10 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go/sasl/plain"
+	"github.com/sirupsen/logrus"
 
+	"github.com/Eucastan/eucastanpay/common/pkg/config"
+	"github.com/Eucastan/eucastanpay/common/pkg/kafka/kafkaconfig"
 	"github.com/Eucastan/eucastanpay/common/pkg/telemetry"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel"
@@ -18,33 +21,37 @@ type Publisher struct {
 	writer    *kafka.Writer
 	brokers   []string
 	telemetry *telemetry.Telemetry
+	mechanism *plain.Mechanism
+	tlsConfig *tls.Config
+	logger    *logrus.Logger
+	TLS       bool
+	SASL      bool
 }
 
-func NewPublisher(brokers []string, username, password string, telemetry *telemetry.Telemetry) *Publisher {
-
-	fmt.Println("BROKERS:", brokers)
-	fmt.Println("USERNAME:", username)
-	fmt.Println("PASSWORD LENGTH:", len(password))
-
-	mechanism := plain.Mechanism{
-		Username: username,
-		Password: password,
+func NewPublisher(cfg config.KafkaConfig, telemetry *telemetry.Telemetry, logger *logrus.Logger) *Publisher {
+	if logger == nil {
+		logger = logrus.New()
 	}
 
-	transport := &kafka.Transport{
-		SASL: mechanism,
-		TLS:  &tls.Config{},
-	}
+	fmt.Println("BROKERS:", cfg.Brokers)
+	fmt.Println("USERNAME:", cfg.Username)
+	fmt.Println("PASSWORD LENGTH:", len(cfg.Password))
+
+	mechanism := kafkaconfig.NewMechanism(cfg)
+	transport := kafkaconfig.NewTransport(cfg)
 
 	return &Publisher{
 		writer: &kafka.Writer{
-			Addr:      kafka.TCP(brokers...),
+			Addr:      kafka.TCP(cfg.Brokers...),
 			Transport: transport,
 			Balancer:  &kafka.LeastBytes{},
 			Async:     false,
 		},
-		brokers:   brokers,
+		mechanism: mechanism,
+		tlsConfig: transport.TLS,
+		brokers:   cfg.Brokers,
 		telemetry: telemetry,
+		logger:    logger,
 	}
 }
 
@@ -95,7 +102,12 @@ func (p *Publisher) Publish(ctx context.Context, topic string, key string, event
 }
 
 func (p *Publisher) Ping(ctx context.Context) error {
-	conn, err := kafka.DialContext(ctx, "tcp", p.brokers[0])
+	dialer := &kafka.Dialer{
+		SASLMechanism: p.mechanism,
+		TLS:           p.tlsConfig,
+	}
+
+	conn, err := dialer.DialContext(ctx, "tcp", p.brokers[0])
 	if err != nil {
 		return err
 	}

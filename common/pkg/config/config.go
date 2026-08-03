@@ -24,6 +24,9 @@ type KafkaConfig struct {
 	Brokers  []string `mapstructure:"KAFKA_BROKERS"`
 	Username string   `mapstructure:"KAFKA_USERNAME"`
 	Password string   `mapstructure:"KAFKA_PASSWORD"`
+	CaCert   string   `mapstructure:"KAFKA_CA_CERT"`
+	TLS      bool     `mapstructure:"KAFKA_TLS"`
+	SASL     bool     `mapstructure:"KAFKA_SASL"`
 }
 
 func ValidateSchema(schema string) error {
