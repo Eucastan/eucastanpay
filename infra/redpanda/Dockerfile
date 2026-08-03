@@ -1,4 +1,4 @@
-FROM docker.redpanda.com/redpandadata/redpanda:v25.1.4
+FROM redpandadata/redpanda:v25.1.4
 
 EXPOSE 9092
 EXPOSE 9644
