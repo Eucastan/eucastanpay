@@ -33,7 +33,15 @@ func ToConfig() *Config {
 
 		SharedCfg: commonconfig.SharedCfg{
 			JWTSecret: viper.GetString("JWT_SECRET"),
-			LogLevel:  viper.GetString("LOG_LEVEL"),
+			Kafka: commonconfig.KafkaConfig{
+				Brokers:  viper.GetStringSlice("KAFKA_BROKERS"),
+				Username: viper.GetString("KAFKA_USERNAME"),
+				Password: viper.GetString("KAFKA_PASSWORD"),
+				CaCert:   viper.GetString("KAFKA_CA_CERT"),
+				TLS:      false,
+				SASL:     false,
+			},
+			LogLevel: viper.GetString("LOG_LEVEL"),
 		},
 	}
 }
