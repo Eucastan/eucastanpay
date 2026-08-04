@@ -66,6 +66,10 @@ func (i *Initializer) EnsureTopics(ctx context.Context) error {
 
 	dialer := kafkaconfig.NewDialer(i.cfg)
 
+	if len(i.cfg.Brokers) == 0 {
+		return fmt.Errorf("no kafka brokers configured")
+	}
+
 	conn, err := dialer.DialContext(ctx, "tcp", i.cfg.Brokers[0])
 	if err != nil {
 		return err
