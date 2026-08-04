@@ -23,6 +23,12 @@ config.yaml
 *.key
 *.pem
 
+# Kafka
+ca.pem
+*.pem
+*.key
+*.crt
+
 # Logs & Temporary Files
 
 *.log
