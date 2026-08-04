@@ -1,7 +1,6 @@
 package config
 
 import (
-	"strings"
 	"time"
 
 	commonconfig "github.com/Eucastan/eucastanpay/common/pkg/config"
@@ -34,7 +33,7 @@ func ToConfig() *Config {
 
 		SharedCfg: commonconfig.SharedCfg{
 			JWTSecret: viper.GetString("JWT_SECRET"),
-			Kafka: commonconfig.KafkaConfig{
+			/*Kafka: commonconfig.KafkaConfig{
 				Brokers: strings.Split(
 					viper.GetString("KAFKA_BROKERS"),
 					",",
@@ -42,9 +41,9 @@ func ToConfig() *Config {
 				Username: viper.GetString("KAFKA_USERNAME"),
 				Password: viper.GetString("KAFKA_PASSWORD"),
 				CaCert:   viper.GetString("KAFKA_CA_CERT"),
-				TLS:      false,
-				SASL:     false,
-			},
+				TLS:      true,
+				SASL:     true,
+			},*/
 			LogLevel: viper.GetString("LOG_LEVEL"),
 		},
 	}

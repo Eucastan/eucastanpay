@@ -80,9 +80,9 @@ func (a *App) Run() error {
 func (a *App) bootstrap() error {
 	a.initLogger()
 	
-	if err := a.initTopics(); err != nil {
+	/*if err := a.initTopics(); err != nil {
 		return err
-	}
+	}*/
 
 	if err := a.initTelemetry(); err != nil {
 		return err
