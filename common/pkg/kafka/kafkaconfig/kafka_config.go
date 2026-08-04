@@ -3,6 +3,7 @@ package kafkaconfig
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"os"
 	"time"
 
@@ -26,7 +27,7 @@ func NewMechanism(cfg config.KafkaConfig) *plain.Mechanism {
 	return &mechanism
 }
 
-func NewTransport(cfg config.KafkaConfig) *kafka.Transport {
+func NewTransport(cfg config.KafkaConfig) (*kafka.Transport, error) {
 	transport := &kafka.Transport{}
 	if cfg.SASL {
 		transport.SASL = NewMechanism(cfg)
@@ -36,12 +37,12 @@ func NewTransport(cfg config.KafkaConfig) *kafka.Transport {
 
 		caCert, err := os.ReadFile(cfg.CaCert)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		pool := x509.NewCertPool()
 		if !pool.AppendCertsFromPEM(caCert) {
-			panic("failed to load kafka CA certificate")
+			return nil, fmt.Errorf("failed to load kafka CA certificate")
 		}
 
 		transport.TLS = &tls.Config{
@@ -49,15 +50,16 @@ func NewTransport(cfg config.KafkaConfig) *kafka.Transport {
 		}
 	}
 
-	return transport
+	return transport, nil
 }
 
-func NewDialer(cfg config.KafkaConfig) *kafka.Dialer {
-	dialer := &kafka.Dialer{}
+func NewDialer(cfg config.KafkaConfig) (*kafka.Dialer, error) {
+	dialer := &kafka.Dialer{
+		Timeout:   10 * time.Second,
+		DualStack: true,
+	}
 
 	if cfg.SASL {
-		dialer.Timeout = 10 * time.Second
-		dialer.DualStack = true
 		dialer.SASLMechanism = NewMechanism(cfg)
 	}
 
@@ -65,12 +67,12 @@ func NewDialer(cfg config.KafkaConfig) *kafka.Dialer {
 
 		caCert, err := os.ReadFile(cfg.CaCert)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		pool := x509.NewCertPool()
 		if !pool.AppendCertsFromPEM(caCert) {
-			panic("failed to load kafka CA certificate")
+			return nil, fmt.Errorf("failed to load kafka CA certificate")
 		}
 
 		dialer.TLS = &tls.Config{
@@ -78,5 +80,5 @@ func NewDialer(cfg config.KafkaConfig) *kafka.Dialer {
 		}
 	}
 
-	return dialer
+	return dialer, nil
 }

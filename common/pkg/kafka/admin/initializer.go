@@ -64,7 +64,10 @@ func (i *Initializer) EnsureTopics(ctx context.Context) error {
 		events.TopicNotificationDLQ,
 	}
 
-	dialer := kafkaconfig.NewDialer(i.cfg)
+	dialer, err := kafkaconfig.NewDialer(i.cfg)
+	if err != nil {
+		return err
+	}
 
 	if len(i.cfg.Brokers) == 0 {
 		return fmt.Errorf("no kafka brokers configured")

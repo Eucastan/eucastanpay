@@ -39,7 +39,10 @@ func NewConsumer(cfg config.KafkaConfig, groupID string, telemetry *telemetry.Te
 	}
 
 	mechanism := kafkaconfig.NewMechanism(cfg)
-	dialer := kafkaconfig.NewDialer(cfg)
+	dialer, err := kafkaconfig.NewDialer(cfg)
+	if err != nil {
+		panic(err)
+	}
 
 	return &Consumer{
 		brokers:   cfg.Brokers,

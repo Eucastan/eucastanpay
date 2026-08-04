@@ -38,7 +38,10 @@ func NewPublisher(cfg config.KafkaConfig, telemetry *telemetry.Telemetry, logger
 	fmt.Println("PASSWORD LENGTH:", len(cfg.Password))
 
 	mechanism := kafkaconfig.NewMechanism(cfg)
-	transport := kafkaconfig.NewTransport(cfg)
+	transport, err := kafkaconfig.NewTransport(cfg)
+	if err != nil {
+		panic(err)
+	}
 
 	return &Publisher{
 		writer: &kafka.Writer{
