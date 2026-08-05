@@ -59,12 +59,16 @@ func NewConsumer(cfg config.KafkaConfig, groupID string, telemetry *telemetry.Te
 }
 
 func (c *Consumer) Register(topic string, handler HandlerFunc) {
+	c.logger.Infof("REGISTERING %s", topic)
 	c.handlers[topic] = handler
 }
 
 // Start listening to multiple topics
 func (c *Consumer) Start(ctx context.Context) {
+	c.logger.Infof("registered handlers=%d", len(c.handlers))
+
 	for topic, handler := range c.handlers {
+		c.logger.Infof("starting consumer for %s", topic)
 		c.wg.Add(1)
 
 		go func(topic string, handler HandlerFunc) {
@@ -112,6 +116,7 @@ func (c *Consumer) consumeTopic(
 
 		msgCtx, span := c.telemetry.Start(ctx, "FetchMessage")
 
+		c.logger.Info("Consumer alive")
 		msg, err := reader.FetchMessage(msgCtx)
 		if err != nil {
 			span.End()
