@@ -105,6 +105,7 @@ func (c *Consumer) consumeTopic(
 	c.mu.Unlock()
 
 	c.logger.Infof("consumer started topic=%s", topic)
+	c.logger.Infof("Consumer topic=%s brokers=%v group=%s", topic, c.brokers, c.groupID)
 
 	for {
 
@@ -117,6 +118,7 @@ func (c *Consumer) consumeTopic(
 		msgCtx, span := c.telemetry.Start(ctx, "FetchMessage")
 
 		c.logger.Info("Consumer alive")
+		c.logger.Infof("Consumer topic=%s brokers=%v group=%s", topic, c.brokers, c.groupID)
 		msg, err := reader.FetchMessage(msgCtx)
 		if err != nil {
 			span.End()
