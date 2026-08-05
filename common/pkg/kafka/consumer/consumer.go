@@ -119,7 +119,8 @@ func (c *Consumer) consumeTopic(
 
 		c.logger.Info("Consumer alive")
 		c.logger.Infof("Consumer topic=%s brokers=%v group=%s", topic, c.brokers, c.groupID)
-		msg, err := reader.FetchMessage(msgCtx)
+		c.logger.Infof("Calling FetchMessage for %s", topic)
+		msg, err := reader.ReadMessage(msgCtx)
 		if err != nil {
 			span.End()
 			if ctx.Err() != nil {
@@ -129,6 +130,8 @@ func (c *Consumer) consumeTopic(
 			c.logger.Printf("fetch error topic=%s err=%v\n", topic, err)
 			continue
 		}
+
+		c.logger.Infof("FetchMessage returned for %s", topic)
 
 		carrier := propagation.MapCarrier{}
 		for _, h := range msg.Headers {
