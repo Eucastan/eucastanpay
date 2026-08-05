@@ -104,6 +104,9 @@ func (c *Consumer) consumeTopic(
 	c.readers = append(c.readers, reader)
 	c.mu.Unlock()
 
+	stats := reader.Stats()
+	c.logger.Infof("%+v", stats)
+
 	c.logger.Infof("consumer started topic=%s", topic)
 	c.logger.Infof("Consumer topic=%s brokers=%v group=%s", topic, c.brokers, c.groupID)
 
@@ -120,7 +123,7 @@ func (c *Consumer) consumeTopic(
 		c.logger.Info("Consumer alive")
 		c.logger.Infof("Consumer topic=%s brokers=%v group=%s", topic, c.brokers, c.groupID)
 		c.logger.Infof("Calling FetchMessage for %s", topic)
-		msg, err := reader.ReadMessage(msgCtx)
+		msg, err := reader.FetchMessage(msgCtx)
 		if err != nil {
 			span.End()
 			if ctx.Err() != nil {
