@@ -64,10 +64,15 @@ func (s *AccountServiceServer) Withdraw(ctx context.Context, req *accountpb.With
 }
 
 func (s *AccountServiceServer) GetUserAccount(ctx context.Context, req *accountpb.GetUserAccountRequest) (*accountpb.GetAccountResponse, error) {
+	s.logger.Info("AccountServiceServer.GetUserAccount reached >>")
+
 	resp, err := s.ACC.GetByUserID(ctx, req.UserId)
 	if err != nil {
+		s.logger.WithError(err).Error(err.Error())
 		return nil, grpcstatus.ToAccountStatus(err)
 	}
+
+	s.logger.Info("Account retrieved successfully")
 
 	return &accountpb.GetAccountResponse{
 		AccountId:   resp.ID,
@@ -77,14 +82,20 @@ func (s *AccountServiceServer) GetUserAccount(ctx context.Context, req *accountp
 		Balance:     resp.Balance,
 		AccountType: resp.AccountType,
 		Currency:    resp.Currency,
+		Status:      resp.Status,
 	}, nil
 }
 
 func (s AccountServiceServer) ResolveAccount(ctx context.Context, req *accountpb.ConfirmAccountRequest) (*accountpb.ConfirmAccountResponse, error) {
+	s.logger.Info("AccountServiceServer.ResolverAccount reached >>")
+
 	resp, err := s.ACC.ConfirmSenderAndReceiver(ctx, req.FromAccountNo, req.ToAccountNo)
 	if err != nil {
+		s.logger.WithError(err).Error(err.Error())
 		return nil, grpcstatus.ToAccountStatus(err)
 	}
+
+	s.logger.Info("Account confirmed successfully")
 
 	return &accountpb.ConfirmAccountResponse{
 		FromAccountId: resp.FromAccID,

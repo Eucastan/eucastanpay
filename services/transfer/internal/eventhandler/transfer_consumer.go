@@ -240,7 +240,7 @@ func (h *TransferConsumer) OnCreditCompleted(ctx context.Context, msg []byte) er
 			return err
 		}
 
-		h.logger.Info("Successfully saved to outbox for transfer completed event")
+		h.logger.Info("Successfully saved to outbox for transfers completed event")
 
 		h.logger.Info("Marking event as Processed")
 		return h.idemStore.MarkEventProcessedTx(ctx, tx, uuid.NewString(), eventID, events.TopicCreditCompleted)

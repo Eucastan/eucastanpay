@@ -115,7 +115,7 @@ func (u *TransferUseCase) TransferFromUser(
 		UserId: userID,
 	})
 	if err != nil {
-		u.log.WithError(err).Error("failed to confirm user has account")
+		u.log.WithError(err).Error(err.Error())
 		u.telemetry.RecordError(span, err)
 		return nil, err
 	}
@@ -126,6 +126,8 @@ func (u *TransferUseCase) TransferFromUser(
 	})
 
 	if err != nil {
+		u.log.WithError(err).Error(err.Error())
+		u.telemetry.RecordError(span, err)
 		return nil, err
 	}
 

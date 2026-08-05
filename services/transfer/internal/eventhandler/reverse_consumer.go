@@ -13,7 +13,7 @@ import (
 
 type SagaRequest struct {
 	ParentMetadata events.EventMetadata
-	UserID string
+	UserID         string
 	Reference      string
 	FromAccID      string
 	FromAccNo      int64
@@ -41,7 +41,7 @@ func (h *TransferConsumer) OnReverseInitiated(ctx context.Context, msg []byte) e
 
 	return h.emitDebitRequest(ctx, SagaRequest{
 		ParentMetadata: event.EventMetadata,
-		UserID: event.UserID,
+		UserID:         event.UserID,
 		Reference:      event.Reference,
 		FromAccID:      event.FromAccID,
 		ToAccID:        event.ToAccID,
@@ -56,6 +56,8 @@ func (h *TransferConsumer) emitDebitRequest(
 	ctx context.Context,
 	req SagaRequest,
 ) error {
+	h.logger.Info("Emitting debit request")
+
 	ctx, span := h.telemetry.Start(ctx, "TransferConsumer.startSaga")
 	defer span.End()
 
@@ -74,7 +76,7 @@ func (h *TransferConsumer) emitDebitRequest(
 		err = h.repo.SaveOutboxEvent(ctx, tx, events.TopicDebitRequested, req.Reference,
 			events.DebitRequestedEvent{
 				EventMetadata: events.NewChildEvent(req.ParentMetadata),
-				UserID: req.UserID,
+				UserID:        req.UserID,
 				Reference:     req.Reference,
 				FromAccID:     req.FromAccID,
 				FromAccNo:     req.FromAccNo,
@@ -84,6 +86,7 @@ func (h *TransferConsumer) emitDebitRequest(
 			},
 		)
 		if err != nil {
+			h.logger.WithError(err).Error(err.Error())
 			span.RecordError(err)
 			return err
 		}

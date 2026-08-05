@@ -479,11 +479,14 @@ func (u *AccountUseCase) GetAllAccount(ctx context.Context) ([]response.AccountR
 }
 
 func (u *AccountUseCase) GetByUserID(ctx context.Context, userID string) (*response.AccountResponse, error) {
+	u.logger.Info("AccountUseCase.GetUserID reached >>")
+
 	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.GetByUserID")
 	defer span.End()
 
 	acc, err := u.ACC.FindByUserID(ctx, userID)
 	if err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}
@@ -517,17 +520,20 @@ func (u *AccountUseCase) ConfirmSenderAndReceiver(
 	fromAccNo int64,
 	toAccNo int64,
 ) (*response.ConfirmAccountResponse, error) {
+	u.logger.Info("AccountUseCase.ConfirmSenderAndReceiver reached >>")
 
 	var resp response.ConfirmAccountResponse
 
 	err := u.ACC.WithTx(ctx, func(tx pgx.Tx) error {
 		from, err := u.ACC.ConfirmAccountNo(ctx, tx, fromAccNo)
 		if err != nil {
+			u.logger.WithError(err).Error(err.Error())
 			return err
 		}
 
 		to, err := u.ACC.ConfirmAccountNo(ctx, tx, toAccNo)
 		if err != nil {
+			u.logger.WithError(err).Error(err.Error())
 			return err
 		}
 
@@ -543,11 +549,14 @@ func (u *AccountUseCase) ConfirmSenderAndReceiver(
 }
 
 func (u *AccountUseCase) GetByAccountIDAndUserID(ctx context.Context, accID, userID string) (*response.AccountResponse, error) {
+	u.logger.Info("AccountUseCase.GetByAccountIDAndUserID reached >>")
+
 	ctx, span := u.telemetry.Start(ctx, "AccountUseCase.GetByAccountIDAndUserID")
 	defer span.End()
 
 	acc, err := u.ACC.FindByAccountIDAndUserID(ctx, accID, userID)
 	if err != nil {
+		u.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, err
 	}

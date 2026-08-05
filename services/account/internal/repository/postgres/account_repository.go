@@ -208,6 +208,8 @@ func (r *AccountRepository) FindByIDTX(ctx context.Context, tx pgx.Tx, accID str
 }
 
 func (r *AccountRepository) ConfirmAccountNo(ctx context.Context, tx pgx.Tx, accNo int64) (*domain.Account, error) {
+	r.logger.Info("AccountRepository.ConfirmAccountNo reached >>")
+
 	ctx, span := r.telemetry.Start(ctx, "AccountRepository.ConfirmAccountNo")
 	defer span.End()
 
@@ -223,13 +225,18 @@ func (r *AccountRepository) ConfirmAccountNo(ctx context.Context, tx pgx.Tx, acc
 		&acc.AccountType, &acc.Currency, &acc.Status, &acc.CreatedAt, &acc.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, errmessage.ErrAccNotFound
 	}
+
+	r.logger.Info(acc)
 	return acc, err
 }
 
 func (r *AccountRepository) FindByUserID(ctx context.Context, userID string) (*domain.Account, error) {
+	r.logger.Info("AccountRepository.FindByUserID reached >>")
+
 	ctx, span := r.telemetry.Start(ctx, "AccountRepository.FindByUserID")
 	defer span.End()
 
@@ -245,13 +252,18 @@ func (r *AccountRepository) FindByUserID(ctx context.Context, userID string) (*d
 		&acc.AccountType, &acc.Currency, &acc.Status, &acc.CreatedAt, &acc.UpdatedAt,
 	)
 	if err == pgx.ErrNoRows {
+		r.logger.WithError(err).Error(err.Error())
 		span.RecordError(err)
 		return nil, errmessage.ErrAccNotFound
 	}
+
+	r.logger.Info(acc)
 	return acc, err
 }
 
 func (r *AccountRepository) FindByAccountIDAndUserID(ctx context.Context, accID, userID string) (*domain.Account, error) {
+	r.logger.Info("AccountRepository.FindByAccountIDAndUserID reached >>")
+
 	ctx, span := r.telemetry.Start(ctx, "AccountRepository.FindByAccountIDAndUserID")
 	defer span.End()
 
@@ -272,6 +284,8 @@ func (r *AccountRepository) FindByAccountIDAndUserID(ctx context.Context, accID,
 		span.RecordError(err)
 		return nil, errmessage.ErrAccNotFound
 	}
+
+	r.logger.Info(acc)
 	return acc, err
 }
 
