@@ -9,7 +9,7 @@ import (
 
 func (a *App) initConsumer() {
 	c := consumer.NewConsumer(
-		a.cfg.SharedCfg.Kafka, "transfer-group",
+		a.cfg.SharedCfg.Kafka, "transfer-service-group",
 		a.telemetry, a.logger,
 	)
 
