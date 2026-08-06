@@ -38,6 +38,11 @@ func NewConsumer(cfg config.KafkaConfig, groupID string, telemetry *telemetry.Te
 		logger = logrus.New()
 	}
 
+	logger.Infof("BROKERS=%v", cfg.Brokers)
+	logger.Infof("USERNAME=%s", cfg.Username)
+	logger.Infof("TLS=%v", cfg.TLS)
+	logger.Infof("SASL=%v", cfg.SASL)
+
 	mechanism := kafkaconfig.NewMechanism(cfg)
 	dialer, err := kafkaconfig.NewDialer(cfg)
 	if err != nil {
@@ -104,6 +109,7 @@ func (c *Consumer) consumeTopic(
 	c.readers = append(c.readers, reader)
 	c.mu.Unlock()
 
+	c.logger.Infof("%+v", reader.Config())
 	stats := reader.Stats()
 	c.logger.Infof("%+v", stats)
 
