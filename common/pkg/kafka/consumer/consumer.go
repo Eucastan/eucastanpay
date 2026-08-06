@@ -103,6 +103,7 @@ func (c *Consumer) consumeTopic(
 			CommitInterval:    0,
 			SessionTimeout:    30 * time.Second,
 			HeartbeatInterval: 3 * time.Second,
+			//StartOffset:       kafka.FirstOffset,
 		},
 	)
 	c.mu.Lock()

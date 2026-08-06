@@ -22,6 +22,7 @@ type Redis struct {
 
 type KafkaConfig struct {
 	Brokers  []string `mapstructure:"KAFKA_BROKERS"`
+	GroupID  string   `mapstructure:"KAFKA_GROUP_ID"`
 	Username string   `mapstructure:"KAFKA_USERNAME"`
 	Password string   `mapstructure:"KAFKA_PASSWORD"`
 	CaCert   string   `mapstructure:"KAFKA_CA_CERT"`
