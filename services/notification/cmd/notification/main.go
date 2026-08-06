@@ -78,7 +78,8 @@ func main() {
 	)
 
 	consumerInit := consumer.NewConsumer(
-		cfg.SharedCfg.Kafka, "notification-service-group",
+		cfg.SharedCfg.Kafka,
+		cfg.SharedCfg.Kafka.GroupID,
 		tm, log,
 	)
 

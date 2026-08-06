@@ -10,7 +10,7 @@ import (
 func (a *App) initConsumer() {
 	c := consumer.NewConsumer(
 		a.cfg.SharedCfg.Kafka,
-		"audit-service-group",
+		a.cfg.SharedCfg.Kafka.GroupID,
 		a.telemetry, a.logger,
 	)
 
