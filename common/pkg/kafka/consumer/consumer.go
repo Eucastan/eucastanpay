@@ -94,7 +94,7 @@ func (c *Consumer) consumeTopic(
 	reader := kafka.NewReader(
 		kafka.ReaderConfig{
 			Brokers:           c.brokers,
-			GroupID:           c.groupID,
+			GroupID:           c.groupID + "-" + topic,
 			Topic:             topic,
 			Dialer:            c.dialer,
 			MinBytes:          1,
