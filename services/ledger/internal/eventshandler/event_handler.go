@@ -63,7 +63,8 @@ func (h *LedgerEventHandler) OnTransferCompleted(ctx context.Context, msg []byte
 			return err
 		}
 		if processed {
-			return events.ErrProcessed
+			h.Log.Infof("event already processed, skipping: %s", eventID)
+			return nil // idempotent
 		}
 
 		err = h.Ledger.CreateEntries(
@@ -105,7 +106,8 @@ func (h *LedgerEventHandler) OnAccountDeposit(ctx context.Context, msg []byte) e
 			return err
 		}
 		if processed {
-			return events.ErrProcessed
+			h.Log.Infof("event already processed, skipping: %s", eventID)
+			return nil // idempotent
 		}
 
 		err = h.Repo.CreateLedgerEntry(
@@ -155,7 +157,8 @@ func (h *LedgerEventHandler) OnCasWithdraw(ctx context.Context, msg []byte) erro
 			return err
 		}
 		if processed {
-			return events.ErrProcessed
+			h.Log.Infof("event already processed, skipping: %s", eventID)
+			return nil // idempotent
 		}
 
 		err = h.Repo.CreateLedgerEntry(

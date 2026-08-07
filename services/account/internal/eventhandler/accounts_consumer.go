@@ -70,7 +70,7 @@ func (h *AccountConsumer) OnCreateAccountRequest(ctx context.Context, msg []byte
 			return err
 		}
 		if processed {
-			return events.ErrProcessed
+			return nil
 		}
 
 		createReq := &request.CreateAccountRequest{
@@ -264,7 +264,7 @@ func (h *AccountConsumer) OnCreditRequested(ctx context.Context, msg []byte) err
 			return err
 		}
 		if processed {
-			return events.ErrProcessed
+			return nil
 		}
 
 		confirmAcc, err := h.Repo.ConfirmAccountNo(ctx, tx, event.ToAccNo)

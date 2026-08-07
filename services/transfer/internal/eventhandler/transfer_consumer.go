@@ -88,7 +88,8 @@ func (h *TransferConsumer) OnDebitCompleted(ctx context.Context, msg []byte) err
 		}
 
 		if processed {
-			return events.ErrProcessed // idempotent
+			h.logger.Infof("event already processed, skipping: %s", eventID)
+			return nil // idempotent
 		}
 		h.logger.Infof("Idempotency Check Passed reference=%s", eventID)
 
@@ -159,7 +160,8 @@ func (h *TransferConsumer) OnDebitFailed(ctx context.Context, msg []byte) error 
 			return err
 		}
 		if processed {
-			return events.ErrProcessed // idempotent
+			h.logger.Infof("event already processed, skipping: %s", eventID)
+			return nil // idempotent
 		}
 
 		if err := h.repo.UpdateStatus(ctx, tx, event.Reference, string(domain.TransferStatusFailed)); err != nil {
@@ -196,7 +198,8 @@ func (h *TransferConsumer) OnCreditCompleted(ctx context.Context, msg []byte) er
 			return err
 		}
 		if processed {
-			return events.ErrProcessed // idempotent
+			h.logger.Infof("event already processed, skipping: %s", eventID)
+			return nil // idempotent
 		}
 
 		h.logger.Info("Before Update Balance after Credit")
@@ -271,7 +274,8 @@ func (h *TransferConsumer) OnCreditFailed(ctx context.Context, msg []byte) error
 			return err
 		}
 		if processed {
-			return events.ErrProcessed // idempotent
+			h.logger.Infof("event already processed, skipping: %s", eventID)
+			return nil // idempotent
 		}
 
 		transfer, err := h.repo.FindByReference(ctx, tx, event.Reference)

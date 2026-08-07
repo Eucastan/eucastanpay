@@ -70,7 +70,7 @@ func (h *TransferConsumer) emitDebitRequest(
 		}
 
 		if processed {
-			return events.ErrProcessed
+			return nil
 		}
 
 		err = h.repo.SaveOutboxEvent(ctx, tx, events.TopicDebitRequested, req.Reference,
