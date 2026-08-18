@@ -19,9 +19,10 @@ var publicMethods = map[string]bool{
 	"/user.UserService/RefreshToken":    true,
 	"/user.UserService/RequestPassword": true,
 
-	"/admin.AdminService/Register":     true,
-	"/admin.AdminService/Login":        true,
-	"/admin.AdminService/RefreshToken": true,
+	// "/admin.AdminService/Register":     true,
+	"/admin.AdminService/BootstrapAdmin": true,
+	"/admin.AdminService/Login":          true,
+	"/admin.AdminService/RefreshToken":   true,
 }
 
 func AuthAnyInterceptor(secret string) grpc.UnaryServerInterceptor {
